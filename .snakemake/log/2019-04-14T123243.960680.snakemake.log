@@ -1,4 +1,0 @@
-KeyError in line 57 of /stornext/snfs5/next-gen/scratch/medhat/projects/princess/modules/align.snakefile:
-'samtools_threads'
-  File "/stornext/snfs5/next-gen/scratch/medhat/projects/princess/Snakefile", line 19, in <module>
-  File "/stornext/snfs5/next-gen/scratch/medhat/projects/princess/modules/align.snakefile", line 57, in <module>

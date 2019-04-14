@@ -1,3 +1,0 @@
-WorkflowError in line 18 of /stornext/snfs5/next-gen/scratch/medhat/projects/princess/Snakefile:
-Failed to open /stornext/snfs5/next-gen/scratch/medhat/projects/princess/align.snakefile.
-  File "/stornext/snfs5/next-gen/scratch/medhat/projects/princess/Snakefile", line 18, in <module>

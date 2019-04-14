@@ -1,3 +1,0 @@
-NameError in line 24 of /stornext/snfs5/next-gen/scratch/medhat/projects/princess/Snakefile:
-name 'confg' is not defined
-  File "/stornext/snfs5/next-gen/scratch/medhat/projects/princess/Snakefile", line 24, in <module>
