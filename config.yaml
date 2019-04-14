@@ -1,0 +1,19 @@
+# Information about samples
+###########################
+sample_directory: "./samples/" # samples by default should exist in this directory unless otherwise.
+read_type: "" # ont or pacbio
+###########################
+
+
+
+# Information about samples
+###########################
+ref: ""
+###########################
+
+
+
+# Samtools Parameters
+#####################
+samtools_threads: 5
+#####################
