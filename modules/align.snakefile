@@ -17,7 +17,7 @@ rule minimap2:
     Using Minimap2 to align reads
     """
     input:
-        datain="{sample}_fastq.tar.gz"
+        datain = os.path.join(config['sample_directory'], "{sample}."+extension)   
     output:
         dataout="align/minimap/{sample}.bam"
     params:

@@ -1,6 +1,6 @@
 # Information about samples
 ###########################
-sample_directory: "./samples/" # samples by default should exist in this directory unless otherwise.
+sample_directory: "samples" # samples by default should exist in this directory unless otherwise.
 read_type: "" # ont or pacbio
 ###########################
 
@@ -17,3 +17,10 @@ ref: ""
 #####################
 samtools_threads: 5
 #####################
+
+
+
+# Aligner
+#########
+aligner: "minimap"
+#########
