@@ -17,7 +17,7 @@ rule minimap2:
     Using Minimap2 to align reads
     """
     input:
-        datain = os.path.join(config['sample_directory'], "{sample}."+extension)   
+        datain = os.path.join(config['sample_directory'], "{sample}."+extension)
     output:
         dataout="align/minimap/{sample}.bam"
     params:
@@ -28,9 +28,11 @@ rule minimap2:
         x = x_param,
     benchmark:
         "align/minimap/{sample}.minimap.benchmark.txt"
+    conda:
+        ALIGN
     message:
         "Running minimap2 , sample is: {wildcards.sample}"
-    threads:10
+    threads:config['minimap_threads']
     run:
         shell("""
             minimap2 {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" | samtools sort -@ {threads} - > "{output.dataout}"
@@ -44,6 +46,8 @@ rule index_bam:
         "align/{aligner}/{sample}.bam"
     output:
         "align/{aligner}/{sample}.bam.bai"
+    conda:
+        ALIGN
     shell:
         "samtools index {input}"
 
@@ -54,8 +58,15 @@ rule merge_align:
     output:
         file_name="align/{aligner}/data.bam"
     message:"mergeing data"
+    conda:
+        ALIGN
     threads: config['samtools_threads']
     run:
         mybam=" ".join(["-in {}".format(i) for i in input.bams])
         print("mergeing data {}".format(mybam))
-        shell("bamtools merge " + mybam + " -out {output.file_name}")
+        #shell("bamtools merge " + mybam + " -out {output.file_name}")
+        shell(
+        """
+        samtools merge {output} {input}
+        """
+        )

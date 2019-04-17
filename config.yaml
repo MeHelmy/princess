@@ -1,6 +1,6 @@
 # Information about samples
 ###########################
-sample_directory: "samples" # samples by default should exist in this directory unless otherwise.
+sample_directory: "/users/mmahmoud/home/projects/princess/samples" # samples by default should exist in this directory unless otherwise.
 read_type: "" # ont or pacbio
 ###########################
 
@@ -23,4 +23,5 @@ samtools_threads: 5
 # Aligner
 #########
 aligner: "minimap"
+minimap_threads: 5
 #########

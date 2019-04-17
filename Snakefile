@@ -24,6 +24,14 @@ extension = samples[0].rsplit(".", 1)[-1]
 sample_list = [ i.rsplit(".", 1)[0] for i in samples ]
 
 
+
+# Preparing conda environements.
+###############################
+ALIGN="envs/align.yaml"
+
+
+
+
 # Include all snakefiles sub-moduels
 ###################################
 prefixed = ["./modules/"+filename for filename in os.listdir('./modules') if filename.endswith(".snakefile")]
