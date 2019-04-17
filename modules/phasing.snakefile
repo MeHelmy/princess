@@ -7,9 +7,13 @@ rule gt:
     output:
         "gt/{aligner}/data.{chr}.vcf"
     params:
-        reference=REFERENCES[ref[0]],
+        reference=config['ref'],
+    conda:
+        WHATSHAP
     log:
         "gt/{aligner}/data.{chr}.log"
+    benchmark:
+        "gt/{aligner}/data.{chr}.benchmark.txt"
     shell:
         """
         whatshap genotype --reference {params.reference} \
@@ -26,9 +30,13 @@ rule phasing:
         phased="phased/{aligner}/data.{chr}.vcf",
         read_list="phased/{aligner}/data.{chr}.reads",
     params:
-        reference=REFERENCES[ref[0]],
+        reference=config['ref'],
+    conda:
+        WHATSHAP
     log:
         "phased/{aligner}/data.{chr}.log"
+    benchmark:
+        "phased/{aligner}/data.{chr}.benchmark.txt"
     shell:
         """
         whatshap phase --reference {params.reference} \
@@ -42,5 +50,7 @@ rule all_phased:
     input:lambda wildcards: expand("phased/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list[ref[0]]),
     output:
         "phased/{aligner}/data.vcf"
+    conda:
+        WHATSHAP
     shell:
         "vcfcat {input} | vcfstreamsort > {output}"

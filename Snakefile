@@ -29,6 +29,7 @@ sample_list = [ i.rsplit(".", 1)[0] for i in samples ]
 ###############################
 ALIGN="envs/align.yaml"
 SV="envs/sv.yaml"
+WHATSHAP="envs/whatshap.yaml"
 
 
 
