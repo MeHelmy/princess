@@ -25,3 +25,8 @@ samtools_threads: 5
 aligner: "minimap"
 minimap_threads: 5
 #########
+
+
+# Structural Variant Parameters
+###############################
+sniffles_coverage: 3

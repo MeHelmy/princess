@@ -28,7 +28,7 @@ sample_list = [ i.rsplit(".", 1)[0] for i in samples ]
 # Preparing conda environements.
 ###############################
 ALIGN="envs/align.yaml"
-
+SV="envs/sv.yaml"
 
 
 
@@ -41,6 +41,17 @@ for f in prefixed:
 
 # RULES
 #######
+onstart:
+    shell("cat pictures/start.txt")
 
 rule all:
     input: expand("align/{aligner}/data.bam", aligner=config['aligner'])
+
+## ------------------------------------------------------------------------------------ ##
+## Success and failure messages
+## ------------------------------------------------------------------------------------ ##
+onsuccess:
+	shell("cat pictures/success.txt")
+
+onerror:
+	shell("cat pictures/fail.txt")
