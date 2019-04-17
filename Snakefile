@@ -45,7 +45,7 @@ onstart:
     shell("cat pictures/start.txt")
 
 rule all:
-    input: expand("align/{aligner}/data.bam", aligner=config['aligner'])
+    input: expand("sv/{aligner}/sniffles.vcf", aligner=config['aligner'])
 
 ## ------------------------------------------------------------------------------------ ##
 ## Success and failure messages

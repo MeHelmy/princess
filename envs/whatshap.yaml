@@ -11,6 +11,7 @@ dependencies:
   - pysam=0.15.2=py35h0380709_0
   - pyvcf=0.6.8=py35_0
   - samtools=1.9=h43f6869_9
+  - vcflib=1.0.0_rc2=h56106d0_2
   - whatshap=0.17=py35h470a237_0
   - xopen=0.5.0=py_0
   - bz2file=0.98=py_0
