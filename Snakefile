@@ -19,9 +19,16 @@ if len(config) == 0:
 
 # Listing samples
 #################
-samples = [ntpath.basename(sample) for sample in glob.glob(config['sample_directory']+"/*")]
-extension = samples[0].rsplit(".", 1)[-1]
-sample_list = [ i.rsplit(".", 1)[0] for i in samples ]
+
+# GET SAMPLES EXTENSION
+sample_extension = config['sample_extension'] if config['sample_extension'] else "gz"
+
+# GET WORKING DIRECTORY DEFAULT IS CURRENT DIRECTORY
+data_dir = config["data_dir"] if config['data_dir'] else os.getcwd()
+
+# GET SAMPLES LIST
+sample_list = config['sample_list'] if config['sample_list'] else [ntpath.basename(sample) for sample in glob.glob( data_dir +"/*."+ sample_extension)]
+
 
 
 
