@@ -42,7 +42,7 @@ WHATSHAP="envs/whatshap.yaml"
 
 # Include all snakefiles sub-moduels
 ###################################
-prefixed = ["./modules/"+filename for filename in os.listdir('./modules') if filename.endswith(".snakefile")]
+prefixed = ["./modules/"+filename for filename in os.listdir('./modules') if filename.endswith(".smk")]
 for f in prefixed:
     include: f
 ###################################
