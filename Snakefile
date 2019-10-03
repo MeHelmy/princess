@@ -39,6 +39,10 @@ SV="envs/sv.yaml"
 WHATSHAP="envs/whatshap.yaml"
 
 
+# Importing scripts
+###################
+rawcoverage_script = config['read_raw_coverage']
+
 
 # Include all snakefiles sub-moduels
 ###################################

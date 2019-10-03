@@ -1,5 +1,15 @@
+##########################
+######  ALIGN RULES ######
+#########################
+
+
+
+#### MINIMAP2 ####
+##################
+
 # Minimap2 Parameters
-#####################
+#====================
+
 if config["read_type"].lower() == "pacbio":
     minimap2_read_type = "-H"
     x_param = "-ax map-pb"
@@ -9,16 +19,6 @@ elif config["read_type"].lower() == "ont":
 else:
     minimap2_read_type = ""
     x_param = ""
-#####################
-
-
-#####################
-######  RULES ######
-####################
-
-
-#### MINIMAP2 ####
-##################
 
 rule minimap2:
     """
@@ -121,21 +121,4 @@ rule merge_align:
     run:
         shell("""
         samtools merge {output} {input.bams}
-        """)
-
-#### BAM STATISTICS ####
-########################
-
-rule bam_stat:
-    """
-    Calculate statistics from merged bam file
-    """
-    input:"align/{aligner}/data.bam"
-    output:"statitics/{aligner}/data.stat"
-    message:"Calculating aligned reads statistics from bam file"
-    benchmark: "benchmark/align/{aligner}/stat.benchmark.txt"
-    conda: ALIGN
-    run:
-        shell("""
-        samtools stats {input} > {output}
         """)

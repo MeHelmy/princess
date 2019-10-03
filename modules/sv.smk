@@ -1,6 +1,6 @@
+######################
+###### SV RULES ######
 #####################
-######  RULES ######
-####################
 
 
 #### SNIFFLES ####
@@ -27,15 +27,3 @@ rule sniffles:
         shell("""
             sniffles --min_support {params.coverage} --mapped_reads {input.datain} --vcf {output.dataout} --num_reads_report -1 --genotype --report_seq  > {log} 2>&1
             """)
-
-#### SV STATISTICS ####
-#######################
-
-    input: expand("sv/{aligner}/sniffles.vcf", aligner=config['aligner'])
-    output: "statitics/sv/data.stat"
-    message: "calculating statistics for structural variant"
-    benchmark: "benchmark/sv/stat.benchmark.txt"
-    run:
-        shell("""
-        survivor stats {input} -1 -1 -1  {output}
-        """)

@@ -30,3 +30,23 @@ minimap_threads: 5
 # Structural Variant Parameters
 ###############################
 sniffles_coverage: 3
+
+
+# Calling Variant Parameters
+############################
+clair_coverage: 2
+clair_threads: 5
+clair_pypy: "/users/mmahmoud/home/source/Clair/pypy3/pypy3.5-7.0.0-linux_x86_64-portable/bin/pypy"
+
+
+# Zipping Parameters
+#####################
+bgzip_threads: 5
+
+
+# Scripts
+##########
+read_raw_coverage: "scripts/rawcoverage.py"
+read_raw_coverage_threads: 5
+
+updat_snps_script: "scripts/phasing_report_update_vcf.py"
