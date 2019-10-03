@@ -12,12 +12,6 @@ else:
 #####################
 
 
-
-
-
-
-
-
 #####################
 ######  RULES ######
 ####################
@@ -93,7 +87,6 @@ rule sam2bam
         shell("""
         samtools view -bhS {input} | samtools sort -@ {threads} - > {output}
         """)
-
 
 #### INDEX BAM ####
 ###################
