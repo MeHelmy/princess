@@ -96,6 +96,8 @@ rule partion_bam:
     output:
         hap_bam = "align/{aligner}/data_hap.bam"
     message: "Partioning bam file"
+    conda:
+        WHATSHAP
     params:
         ref = REFERENCES[ref[0]]
     run:

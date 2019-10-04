@@ -39,7 +39,7 @@ rule minimap2:
         "align/minimap/{sample}.log"
     message:
         "Running minimap2 , sample is: {wildcards.sample}"
-    threads: config['minimap_threads']
+    threads: config['aligner_threads']
     benchmark: "benchmark/align/minimap/{sample}.benchmark.txt"
     conda: ALIGN
     run:
@@ -65,7 +65,7 @@ rule ngmlr:
         "align/ngmlr/{sample}.log"
     message:
         "Running ngmlr , sample is: {wildcards.sample}"
-    threads: config['ngmlr_threads']
+    threads: config['aligner_threads']
     benchmark: "benchmark/align/ngmlr/{sample}.benchmark.txt"
     conda: ALIGN
     run:
@@ -121,4 +121,21 @@ rule merge_align:
     run:
         shell("""
         samtools merge {output} {input.bams}
+        """)
+
+#### CONVER BAM FILE TO TAB ####
+################################
+
+rule bam_2_tab:
+    """
+    This rules takes bam file and extract to tab delimeted file: reads   HP  PS.
+    """
+    input: "align/{aligner}/data_hap.bam",
+    output: "align/{aligner}/data_hap.tab",
+    message: "Extracting read hp and ps info from tagged bam file."
+    conda: ALIGN
+    benchmark: "benchmark/align/{aligner}/bam2tab.benchmark.txt"
+    run:
+        shell("""
+        samtools view  {input} |  grep  "PS:i:" |  awk 'BEGIN{{OFS="\\t";}}{{print $1,$(NF-2), $(NF)}}'  > {output}
         """)
