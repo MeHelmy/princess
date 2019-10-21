@@ -11,6 +11,20 @@
 #### CLAIR #######
 ##################
 
+# CLAIR Parameters
+#====================
+
+TRAINING_DATA = config["training_data_pacbio"]
+TRAINING_DATA_ONT = config["training_data_ont"]
+CLAIR=config["clair_script"]
+if config['read_type'] == "pacbio":
+    training_data=config["training_data_pacbio"]
+elif config['read_type'] == "ont":
+    training_data="training_data_ont"
+else:
+    print("Unknow data type {} supported format are: ont and pacbio".format(config['read_type']))
+    exit()
+
 rule call_snps:
     """
     Calling SNPs using clair

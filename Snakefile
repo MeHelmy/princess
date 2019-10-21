@@ -20,7 +20,6 @@ if len(config) == 0:
 
 # Listing samples
 #################
-
 # GET SAMPLES EXTENSION
 sample_extension = config['sample_extension'] if config['sample_extension'] else "gz"
 
@@ -29,7 +28,41 @@ data_dir = config["data_dir"] if config['data_dir'] else os.getcwd()
 
 # GET SAMPLES LIST
 sample_list = config['sample_list'] if config['sample_list'] else [ntpath.basename(sample) for sample in glob.glob( data_dir +"/*."+ sample_extension)]
+#############
 
+
+
+# Config reference and chromosomes list
+#######################################
+REFERENCES = config["references"]
+ref = config["ref"]
+chr_list = {}
+if  config["chr_list"] and ref:
+    for reference in ref:
+        if reference in config["chr_list"] and config["chr_list"][reference]:
+            chr_list[reference] = config["chr_list"][reference]
+        else:
+            f = Fasta(config["references"][reference])
+            chr_list[reference] = [chr_name for chr_name in f.keys()]
+else:
+    for reference in ref:
+        f = Fasta(config["references"][reference])
+        chr_list[reference] = [chr_name for chr_name in f.keys()]
+#############
+
+
+
+# Declare aligner
+#################
+aligner = config["aligner"]
+#############
+
+
+
+# Metytlation variables
+#######################
+ont_sample_dir = config['fast5_dir']
+#############
 
 
 
@@ -38,11 +71,16 @@ sample_list = config['sample_list'] if config['sample_list'] else [ntpath.basena
 ALIGN="envs/align.yaml"
 SV="envs/sv.yaml"
 WHATSHAP="envs/whatshap.yaml"
+#############
+
 
 
 # Importing scripts
 ###################
 rawcoverage_script = config['read_raw_coverage']
+updat_sv = config['updat_sv']
+#############
+
 
 
 # Include all snakefiles sub-moduels
@@ -52,13 +90,35 @@ for f in prefixed:
     include: f
 ###################################
 
+
+
+# Building output
+##################
+final_output = []
+
+if not config['methylation']:
+    pass
+elif config['methylation'] and all(value  for value in ont_sample_dir.values()):
+    final_output.append("meth/"+ aligner + "/methylation_calls.tsv")
+else:
+    sys.exit("Every ONT sample should have corresponding fast5 directory, please correct fast5_dir files in config.yaml")
+
+if config['update_snps'] and config['paternal_snps'] and config['maternal_snps']:
+    final_output.extend(["stat.txt", *expand("assembly/{aligner}/data.spliced.scrubbed.vcf.gz", aligner=config['aligner']),\
+    *expand("sv/{aligner}/sniffles_hp_updated.vcf", aligner=config['aligner'])])
+else:
+    final_output.extend(["stat.txt", *expand("sv/{aligner}/sv_snp.vcf.gz",  aligner=config['aligner'])])
+###################################
+
+
+
 # RULES
 #######
 onstart:
     shell("cat pictures/start.txt")
 
 rule all:
-    input: expand("sv/{aligner}/sniffles.vcf", aligner=config['aligner'])
+    input: final_output
 
 ## ------------------------------------------------------------------------------------ ##
 ## Success and failure messages
