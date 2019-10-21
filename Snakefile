@@ -1,6 +1,7 @@
 # import Lib
 ############
 import os, glob, ntpath
+from pyfaidx import Fasta
 
 
 ############################
