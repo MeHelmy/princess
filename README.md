@@ -19,6 +19,8 @@ for more information about [Installing Conda press here](https://bioconda.github
 To download same Conda version [here](https://repo.continuum.io/miniconda/Miniconda3-4.7.12-Linux-x86_64.sh "Conda 4.7.12")*
 
 > After conda is installed Snakemake should be installed
-> `conda install snakemake=5.7.1`
+~~~
+conda install snakemake=5.7.1
+~~~
 
 ## Tutorial
