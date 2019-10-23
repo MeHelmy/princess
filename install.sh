@@ -26,6 +26,7 @@ export PATH=$clair_dir/pypy-7.2.0-linux_x86_64-portable/bin:$PATH
 wget https://bootstrap.pypa.io/get-pip.py
 
 pypy get-pip.py
+rm get-pip.py
 pypy -m pip install --no-cache-dir intervaltree==2.1.0
 
 echo "Done"
