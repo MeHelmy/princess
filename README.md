@@ -1,5 +1,5 @@
 # Princess
-![princess](./pictures/leia.png)
+![princess](./pictures/leia.png=100x)
 
 ## What it can do
 
@@ -13,4 +13,8 @@
 * __QC Statistics__ for each step
 
 ## Installation
+*Here I'm assuming that conda is installed
+Princess was tested on conda version 4.6.14
+you can download from [here][1]*
+[1]: https://repo.continuum.io/miniconda/Miniconda2-4.6.14-Linux-x86_64.sh "Conda"
 ## Tutorial
