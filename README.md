@@ -36,8 +36,8 @@ chmod +x install.sh
 ~~~
 cd princess
 ~~~
-Then copy your data or soft link it.
-example: assume we are working on two files in `/home/user/samples`
+Then copy your data or soft link it.  
+Example: assume we are working on two files in `/home/user/samples`
 and this directory contains two samples `sampl1.fasta` and `sample2.fatsa`
 ~~~
 To copy:
@@ -48,5 +48,5 @@ ln -s /home/user/samples/sample1.fasta ./
 ln -s /home/user/samples/sample12.fasta ./
 ~~~
 As you can see the files extensions in the previous step was `fasta` Now we will update the field  
-`sample_extension` in the `config.yaml` instead of `gz` which is the default to be `sample_extension: "fasta"`  
+`sample_extension` in the `config.yaml` instead of `gz` which is the default to be `fasta` the end result will be: `sample_extension: "fasta"`  
 same step if it was `fastq, fa, fq etc...`
