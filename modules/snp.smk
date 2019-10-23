@@ -14,6 +14,7 @@
 # CLAIR Parameters
 #====================
 
+CLAIR=config["clair_location"]
 TRAINING_DATA = config["training_data_pacbio"]
 TRAINING_DATA_ONT = config["training_data_ont"]
 CLAIR=config["clair_script"]
@@ -39,15 +40,15 @@ rule call_snps:
         train_data=training_data,
         minCoverage=config['clair_coverage'],
         clair_location=CLAIR,
-        process_script=process_clar,
+        # process_script=process_clar,
         temp_out="{chr}_vcf.tmp",
         mypypy=config['clair_pypy'],
     benchmark: "benchmark/snp/{aligner}/{chr}.benchmark.txt"
+    conda: CLAIR_ENV
     threads: config['clair_threads']
     shell:
         """
-        export PATH=/users/mmahmoud/home/source/Clair/pypy2/pypy-7.0.0-linux_x86_64-portable/bin:$PATH && \
-        source activate clar &&\
+        export PATH=$PWD/bin/pypy-7.2.0-linux_x86_64-portable/bin:$PATH && \
         python {params.clair_location} callVarBam \
             --chkpnt_fn {params.train_data} \
             --bam_fn {input.bam} \
@@ -70,28 +71,28 @@ rule update_header:
     input:"{sample}.vcf"
     output:"{sample}_update_header.vcf"
     message:"Update header file to change from float to string"
-    run:
-        shell("""
+    shell:"""
         sed 's/ID=PS,Number=1,Type=Integer,Descri/ID=PS,Number=1,Type=String,Descri/' {input} > {output}
-        """)
+        """
 
 #### BGZIP UPDATED FILE #######
 ###############################
 
-# TODO:  The are a better way just by using {sample}.vcf as input , but debug needed cause it conflict with other rules.
+# TODO:  The are a better way just by using {sample}.vcf as input , but debug needed cause it conflict with other rules. beside it conflict with rule bgzip_file:
 
-rule bgzip_vcf:
-    """
-    bgzip phased file
-    """
-    input: "{sample}/data_update_header.vcf"
-    output: "{sample}/data_update_header.vcf.gz"
-    message: "bgzip the phased file"
-    threads: config['bgzip_threads']
-    run:
-        shell("""
-        bgzip -c -@ {threads} {input} > {output}
-        """)
+# rule bgzip_vcf:
+#     """
+#     bgzip phased file
+#     """
+#     input: "{sample}/data_update_header.vcf"
+#     output: "{sample}/data_update_header.vcf.gz"
+#     message: "bgzip the phased file"
+#     threads: config['bgzip_threads']
+#     shell:"""
+#         bgzip -c -@ {threads} {input} > {output}
+#         """
+
+
 
 #### INDEXING VCF FILE ########
 ###############################
@@ -103,11 +104,10 @@ rule vcf_index:
     input: "{sample}.vcf.gz"
     output: "{sample}.vcf.gz.tbi"
     message: "Indexing phacsed vcf file"
-    conda:
-    run:
-        shell("""
+    conda: PRINCESS_ENV
+    shell:"""
         tabix -p vcf {input}
-        """)
+        """
 
 #### MERGING PHASED VCF FILE WITH PARENTAL SNPs ########
 ########################################################
@@ -126,17 +126,19 @@ rule merge_parental_snps:
     output: "phased/{aligner}/data_paternal_maternal.vcf.gz"
     message: "merging vcf from samplepaternal and maternal respectively"
     benchmark: "benchmark/snp/{aligner}/merge_parental.benchmark.txt"
-    conda:
-    run:
-        shell("""
+    conda: PRINCESS_ENV
+    shell:"""
         bcftools merge {input.sample_snps} {input.paternal_snps} {input.maternal_snps} | bgzip > {output}
-        """)
+        """
 
 #### UPDATING PHASED SNPs ########
 ##################################
 
 rule update_snps:
-    input: "phased/{aligner}/data_paternal_maternal.vcf"
+    """
+    Here we shall take the input from merge_parental_snps but we need to unzip it first.
+    """
+    input: "phased/{aligner}/data_paternal_maternal.vcf.gz"
     output:
         updated_vcf = "phased/{aligner}/data_updated.vcf",
     message: "Running update SNPs"
@@ -145,9 +147,7 @@ rule update_snps:
         phased_stat = "statitics/phased/phasing_stat.txt",
         block_tsv = "statitics/phased/blocks.tsv",
     benchmark: "benchmark/snp/{aligner}/update_snps.benchmark.txt"
-    conda:
-    run:
-        shell("""
+    shell:"""
         mkdir -p statitics/phased  &&
         python {params.update_script} -i {input} -u {output.updated_vcf} -o {params.block_tsv} -s {params.phased_stat}
-        """)
+        """

@@ -34,18 +34,17 @@ rule minimap2:
         h = minimap2_read_type,
         md = "--MD",
         x = x_param,
-        rg = "@RG\\tSM:SAMPLE\\tID:LONG",
+        # rg = "@RG\\tSM:SAMPLE\\tID:LONG", shuld be used like -R {params.rg}
     log:
         "align/minimap/{sample}.log"
     message:
         "Running minimap2 , sample is: {wildcards.sample}"
     threads: config['aligner_threads']
     benchmark: "benchmark/align/minimap/{sample}.benchmark.txt"
-    conda: ALIGN
-    run:
-        shell("""
-            minimap2 -R {params.rg} {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" | samtools sort -@ {threads} - > "{output.dataout}"
-            """)
+    conda: PRINCESS_ENV
+    shell:"""
+            minimap2  {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" | samtools sort -@ {threads} - > "{output.dataout}"
+            """
 
 #### NGMLR ####
 ###############
@@ -67,26 +66,24 @@ rule ngmlr:
         "Running ngmlr , sample is: {wildcards.sample}"
     threads: config['aligner_threads']
     benchmark: "benchmark/align/ngmlr/{sample}.benchmark.txt"
-    conda: ALIGN
-    run:
-        shell("""
+    conda: PRINCESS_ENV
+    shell:"""
             ngmlr -r "{params.reference}" -q "{input.datain}" --rg-sm SAMPLE -o "{output.dataout}" -t "{threads}" -x "{params.platform}" --bam-fix > {log} 2>&1
-            """)
+            """
 
 #### SAM2BAM ####
 ################
 
-rule sam2bam
+rule sam2bam:
     input: "{sample}.sam"
     output: "{sample}.bam"
     message: "Covert SAM to sorted BAM"
-    threads: config['ngmlr_threads']
-    benchmark: "benchmark/align/sam2bam.benchmark.txt"
-    conda: ALIGN
-    run:
-        shell("""
+    threads: config['aligner_threads']
+    benchmark: "benchmark/align/{sample}.sam2bam.benchmark.txt"
+    conda: PRINCESS_ENV
+    shell:"""
         samtools view -bhS {input} | samtools sort -@ {threads} - > {output}
-        """)
+        """
 
 #### INDEX BAM ####
 ###################
@@ -100,8 +97,8 @@ rule index_bam:
     output:
         "{sample}.bam.bai"
     benchmark: "benchmark/align/ngmlr/{sample}.benchmark.txt"
-    messgae: "Indexing {input}"
-    conda: ALIGN
+    message: "Indexing {input}"
+    conda: PRINCESS_ENV
     shell:
         "samtools index {input}"
 
@@ -117,11 +114,25 @@ rule merge_align:
     message:"Mergeing data"
     threads: config['samtools_threads']
     benchmark: "benchmark/align/{aligner}/merging.benchmark.txt"
-    conda: ALIGN
-    run:
-        shell("""
+    conda: PRINCESS_ENV
+    shell:"""
         samtools merge {output} {input.bams}
-        """)
+        """
+
+#### ADD RG TO BAM FILE ####
+############################
+
+rule add_rg:
+    input:"{sample}.bam"
+    output:"{sample}_rg.bam"
+    params:
+        rg = "@RG\\tSM:SAMPLE\\tID:LONG",
+    conda: PRINCESS_ENV
+    shell:"""
+        samtools addreplacerg -r "{params.rg}" -o {output} {input}
+    """
+
+
 
 #### CONVER BAM FILE TO TAB ####
 ################################
@@ -133,9 +144,8 @@ rule bam_2_tab:
     input: "align/{aligner}/data_hap.bam",
     output: "align/{aligner}/data_hap.tab",
     message: "Extracting read hp and ps info from tagged bam file."
-    conda: ALIGN
+    conda: PRINCESS_ENV
     benchmark: "benchmark/align/{aligner}/bam2tab.benchmark.txt"
-    run:
-        shell("""
+    shell:"""
         samtools view  {input} |  grep  "PS:i:" |  awk 'BEGIN{{OFS="\\t";}}{{print $1,$(NF-2), $(NF)}}'  > {output}
-        """)
+        """

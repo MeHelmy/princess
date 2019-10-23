@@ -18,12 +18,11 @@ rule reads_stat:
         read_stat_script = rawcoverage_script,
     threads: config['read_raw_coverage_threads']
     benchmark: "benchmark/raw_reads/stat.benchmark.txt"
-    run:
-        shell(
+    conda: PRINCESS_ENV
+    shell:
         """
         python {params.read_stat_script} -i {input} -o {output} -t {threads}
         """
-        )
 
 #### BAM STATISTICS ####
 ########################
@@ -36,11 +35,10 @@ rule bam_stat:
     output:"statitics/{aligner}/data.stat"
     message:"Calculating aligned reads statistics from bam file"
     benchmark: "benchmark/align/{aligner}/stat.benchmark.txt"
-    conda: ALIGN
-    run:
-        shell("""
+    conda: PRINCESS_ENV
+    shell:"""
         samtools stats {input} > {output}
-        """)
+        """
 
 #### SV STATISTICS ####
 #######################
@@ -50,10 +48,10 @@ rule sv_stat:
     output: "statitics/sv/data.stat"
     message: "calculating statistics for structural variant"
     benchmark: "benchmark/sv/stat.benchmark.txt"
-    run:
-        shell("""
-        survivor stats {input} -1 -1 -1  {output}
-        """)
+    conda: PRINCESS_ENV
+    shell:"""
+        SURVIVOR stats {input} -1 -1 -1  {output}
+        """
 
 #### SNPs STATISTICS ####
 #########################
@@ -65,10 +63,10 @@ rule snp_stat:
     output: "statitics/snp/snp.txt",
     message: "Calculate SNPs statistics"
     benchmark: "benchmark/snp/stat.benchmark.txt"
-    run:
-        shell("""
+    conda: PRINCESS_ENV
+    shell:"""
         bcftools stats {input.snp_file} > {output}
-        """)
+        """
 
 
 #### ALL STATISTICS ####

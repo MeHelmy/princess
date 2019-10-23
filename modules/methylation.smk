@@ -18,11 +18,10 @@ rule nano_index:
     params:
         fast5_dir = lambda wildcards: ont_sample_dir[wildcards.sample]
     benchmark: "benchmark/methylation/index.{sample}.benchmark.txt"
-    cond:
-    run:
-        shell("""
+    conda: PRINCESS_ENV
+    shell:"""
             nanopolish index -d {params.fast5_dir} {input.fastq_file}
-            """)
+            """
 
 #### NANOPOLISH METHYLATION ####
 ################################
@@ -39,12 +38,11 @@ rule cal_meth:
     output: "meth/{aligner}/{sample}.methylation_calls.tsv"
     params:
         ref = REFERENCES[ref[0]],
-    benchmark: "benchmark/methylation/call_methylation.{sample}.benchmark.txt"
-    conda:
-    run:
-        shell("""
+    benchmark: "benchmark/methylation/{aligner}/call_methylation.{sample}.benchmark.txt"
+    conda: PRINCESS_ENV
+    shell:"""
         nanopolish call-methylation -t 8 -r {input.fastq_file} -b {input.bam_file} -g {params.ref} > {output}
-        """)
+        """
 
 #### CALL ALL METHYLATION ####
 ##############################
@@ -56,8 +54,6 @@ rule all_methylation:
     input: lambda wildcards: expand("meth/{aligner}/{sample}.methylation_calls.tsv", aligner=wildcards.aligner, sample=[i for i in list(ont_sample_dir.keys())])
     output: "meth/{aligner}/methylation_calls.tsv",
     message: "Collecting all methylation samples {input}"
-    conda:
-    run:
-        shell("""
+    shell:"""
         touch {output}
-        """)
+        """

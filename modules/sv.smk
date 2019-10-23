@@ -1,3 +1,4 @@
+
 ######################
 ###### SV RULES ######
 #####################
@@ -19,14 +20,12 @@ rule sniffles:
     params:
         coverage=config['sniffles_coverage'],
     benchmark: "sv/{aligner}/sniffles.benchmark.txt"
-    conda:
-        SV
+    conda: PRINCESS_ENV
     log: "sv/{aligner}/sniffles.log"
     benchmark: "benchmark/sv/{aligner}/sv.benchmark.txt"
-    run:
-        shell("""
+    shell:"""
         sniffles --min_support {params.coverage} --mapped_reads {input.datain} --vcf {output.dataout} --num_reads_report -1 --genotype --report_seq  > {log} 2>&1
-        """)
+        """
 
 #### HAPLOTYPE SVs ####
 #######################
@@ -43,10 +42,9 @@ rule phase_sv:
     message: "Updating SVs using align/{aligner}/data_hap.tab"
     params:
         update_script = updat_sv
-    run:
-        shell("""
+    shell:"""
         python {params.update_script} {input.sv} {input.bam} {output}
-        """)
+        """
 
 #### SORTING SVs ####
 #####################
@@ -57,11 +55,10 @@ rule vcf_sort:
     """
     input:"{sample}.vcf.gz"
     output:"{sample}.sorted.vcf.gz"
-    conda: ALIGN
-    run:
-        shell("""
+    conda: PRINCESS_ENV
+    shell:"""
         bcftools sort -O z -o {output} {input}
-        """)
+        """
 
 #### BGZIP SVs ####
 ###################
@@ -73,10 +70,9 @@ rule bgzip_file:
     input:"{name}.vcf"
     output:"{name}.vcf.gz"
     threads: config['bgzip_threads']
-    run:
-        shell("""
+    shell:"""
         bgzip -c -@ {threads} {input} > {output}
-        """)
+        """
 
 #### CHANGE SVs SAMPLE NAME ####
 ###############################
@@ -88,11 +84,10 @@ rule change_sample_name:
     """
     input:"{sample}.sorted.vcf.gz"
     output:"{sample}.sorted.namechnage.vcf.gz"
-    conda: ALIGN
-    run:
-        shell("""
+    conda: PRINCESS_ENV
+    shell:"""
         echo SAMPLE > sample.name && bcftools reheader -s sample.name  -o {output} {input} && rm sample.name
-        """)
+        """
 
 #### CONCAT SVs WITH SNPs ####
 ##############################
@@ -111,8 +106,7 @@ rule SV_SNP_compained:
     message: "Concat sv with SNPs"
     log: "sv/{aligner}/sv_snp.log"
     threads: config['samtools_threads']
-    conda: ALIGN
-    run:
-        shell("""
+    conda: PRINCESS_ENV
+    shell:"""
         bcftools concat -a -O {params.extension} -o {output} --threads {threads} {input.sv} {input.snp} > {log} 2>&1
-        """)
+        """

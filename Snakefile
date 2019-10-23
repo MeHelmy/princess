@@ -24,7 +24,7 @@ if len(config) == 0:
 sample_extension = config['sample_extension'] if config['sample_extension'] else "gz"
 
 # GET WORKING DIRECTORY DEFAULT IS CURRENT DIRECTORY
-data_dir = config["data_dir"] if config['data_dir'] else os.getcwd()
+data_dir = config["sample_directory"] if config['sample_directory'] else os.getcwd()
 
 # GET SAMPLES LIST
 sample_list = config['sample_list'] if config['sample_list'] else [ntpath.basename(sample) for sample in glob.glob( data_dir +"/*."+ sample_extension)]
@@ -68,9 +68,8 @@ ont_sample_dir = config['fast5_dir']
 
 # Preparing conda environements.
 ###############################
-ALIGN="envs/align.yaml"
-SV="envs/sv.yaml"
-WHATSHAP="envs/whatshap.yaml"
+PRINCESS_ENV=os.getcwd()+"/envs/princess_env.yaml"
+CLAIR_ENV=os.getcwd()+"/envs/clair.yml"
 #############
 
 
@@ -104,7 +103,7 @@ else:
     sys.exit("Every ONT sample should have corresponding fast5 directory, please correct fast5_dir files in config.yaml")
 
 if config['update_snps'] and config['paternal_snps'] and config['maternal_snps']:
-    final_output.extend(["stat.txt", *expand("assembly/{aligner}/data.spliced.scrubbed.vcf.gz", aligner=config['aligner']),\
+    final_output.extend(["stat.txt", *expand("phased/{aligner}/data_updated.vcf", aligner=config['aligner']),\
     *expand("sv/{aligner}/sniffles_hp_updated.vcf", aligner=config['aligner'])])
 else:
     final_output.extend(["stat.txt", *expand("sv/{aligner}/sv_snp.vcf.gz",  aligner=config['aligner'])])
@@ -124,7 +123,11 @@ rule all:
 ## Success and failure messages
 ## ------------------------------------------------------------------------------------ ##
 onsuccess:
-	shell("cat pictures/success.txt")
+	shell("mkdir -p snake_log &&\
+    find . -maxdepth 1 -name 'snakejob.*' -type f -print0 | xargs -0r mv -t ./snake_log &&\
+    cat pictures/success.txt")
 
 onerror:
-	shell("cat pictures/fail.txt")
+	shell("mkdir -p snake_log &&\
+    find . -maxdepth 1 -name 'snakejob.*' -type f -print0 | xargs -0r mv -t ./snake_log &&\
+    cat pictures/fail.txt")
