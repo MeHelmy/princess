@@ -1,6 +1,6 @@
 # Information about samples
 ###########################
-sample_directory: "/users/mmahmoud/home/projects/princess/samples" # samples by default should exist in this directory unless otherwise.
+sample_directory: "" # samples by default should exist in this directory unless otherwise.
 read_type: "pacbio" # ont or pacbio
 sample_extension: "gz" # please add sample extension ex: fastq , fasta or gz # defaul gz
 # sample list If specified this will overlap the default behavior which is all samples in directory specified above.
@@ -17,7 +17,7 @@ references:
   '37': "/users/mmahmoud/home/public_workplace/scripts/snakefiles/test/hs37d5_mainchr.fa"
   '38': "/users/sedlazec/ccdg_tech/reference/GRCh38-2.1.0/genome_mainchrs.fa"
 chr_list:
-  '37': [] #[1,2,3]
+  '37': [1] #[1,2,3]
   '38': [] #[chr1,chr2]
 ###########################
 
@@ -42,6 +42,7 @@ sniffles_coverage: 3
 
 # Calling Variant Parameters
 ############################
+clair_location: "bin/Clair/clair.py"
 clair_coverage: 2
 clair_threads: 5
 clair_pypy: "/users/mmahmoud/home/source/Clair/pypy3/pypy3.5-7.0.0-linux_x86_64-portable/bin/pypy"
@@ -51,14 +52,14 @@ clair_script: "/users/mmahmoud/home/source/Clair/clair.py"
 
 # Update SNPs
 #############
-update_snps: False
+update_snps: True
 paternal_snps: "/users/mmahmoud/home/projects/pacbio/Data_giab/HG003_NA24149_father/HG003_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X_CHROM1-22_v.3.3.2_highconf.vcf.gz"
 maternal_snps: "/users/mmahmoud/home/projects/pacbio/Data_giab/HG004_NA24143_mother/HG004_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X_CHROM1-22_v.3.3.2_highconf.vcf.gz"
 
 
 # Methylation
 #############
-methylation: True
+methylation: False
 fast5_dir:
   'gm12878.fastq.gz': "/users/mmahmoud/home/projects/ont_philipy/190125_breastPanel_gm12878_FriREDO_f5"  # 'sample': "directory"
 

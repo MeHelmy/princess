@@ -23,7 +23,9 @@ To download same Conda version [here](https://repo.continuum.io/miniconda/Minico
 conda install snakemake=5.7.1
 ~~~
 2. Downloading PRINCESS  
-`git clone git@github.com:MeHelmy/princess.git`
+~~~
+git clone git@github.com:MeHelmy/princess.git
+~~~
 3. Install Clair, Training models, pypy, and intervaltree
 ~~~
 cd princess
@@ -50,3 +52,8 @@ ln -s /home/user/samples/sample12.fasta ./
 As you can see the files extensions in the previous step was `fasta` Now we will update the field  
 `sample_extension` in the `config.yaml` instead of `gz` which is the default to be `fasta` the end result will be: `sample_extension: "fasta"`  
 same step if it was `fastq, fa, fq etc...`
+
+Time to run princess
+
+
+## Output
