@@ -1,0 +1,48 @@
+__default__:
+    "account"   : "proj_CCDG"
+    "queue"     : "analysis"
+    "nCPUs"     : "16"
+    "memory"    : 20000
+    "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
+    "name"      : "JOBNAME.{rule}.{wildcards}"
+    "output"    : "{rule}.{wildcards}.out"
+    "error"     : "{rule}.{wildcards}.err"
+    "time"      : "07:00:00:00"
+
+minimap2:
+  time: "72:00:00"
+  nCPUs: "20"
+  memory: 30G
+
+index_bam:
+  time: "02:00:00"
+  nCPUs: "20"
+  memory: 10G
+
+merge_align:
+  time: "24:00:00"
+
+sniffles:
+  time: "72:00:00"
+  nCPUs: "20"
+  memory: 30G
+
+call_snps:
+  time: "07:00:00:00"
+  nCPUs: "8"
+  memory: 50G
+
+gt:
+  nCPUs: "1"
+  memory: 50G
+  time: "72:00:00"
+
+phasing:
+  nCPUs: "1"
+  memory: 50G
+  time: "05:00:00:00"
+
+assembly:
+  time: "04:00:00:00"
+  nCPUs: "1"
+  memory: 50G
