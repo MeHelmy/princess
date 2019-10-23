@@ -1,5 +1,5 @@
 # Princess
-![princess](./pictures/leia.png=150x)
+![princess](./pictures/leia.png)
 
 ## What it can do
 
