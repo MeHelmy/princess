@@ -31,19 +31,19 @@ rule call_snps:
     Calling SNPs using clair
     """
     input:
-        bam="align/{aligner}/data.bam",
-        data_index="align/{aligner}/data.bam.bai",
+        bam=data_dir + "/align/{aligner}/data.bam",
+        data_index=data_dir + "/align/{aligner}/data.bam.bai",
         reference=REFERENCES[ref[0]],
     output:
-        "snp/{aligner}/data.{chr}.vcf"
+        data_dir + "/snp/{aligner}/data.{chr}.vcf"
     params:
         train_data=training_data,
         minCoverage=config['clair_coverage'],
         clair_location=CLAIR,
         # process_script=process_clar,
-        temp_out="{chr}_vcf.tmp",
+        temp_out=data_dir + "/{chr}_vcf.tmp",
         mypypy=config['clair_pypy'],
-    benchmark: "benchmark/snp/{aligner}/{chr}.benchmark.txt"
+    benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
     conda: CLAIR_ENV
     threads: config['clair_threads']
     shell:
@@ -68,8 +68,8 @@ rule update_header:
     Result: phased/aligner/data_update_header.vcf
     Will be used in merge_parental_snps
     """
-    input:"{sample}.vcf"
-    output:"{sample}_update_header.vcf"
+    input:data_dir + "/{sample}.vcf"
+    output:data_dir + "/{sample}_update_header.vcf"
     message:"Update header file to change from float to string"
     shell:"""
         sed 's/ID=PS,Number=1,Type=Integer,Descri/ID=PS,Number=1,Type=String,Descri/' {input} > {output}
@@ -101,8 +101,8 @@ rule vcf_index:
     """
     Index VCF file.
     """
-    input: "{sample}.vcf.gz"
-    output: "{sample}.vcf.gz.tbi"
+    input: data_dir + "/{sample}.vcf.gz"
+    output: data_dir + "/{sample}.vcf.gz.tbi"
     message: "Indexing phacsed vcf file"
     conda: PRINCESS_ENV
     shell:"""
@@ -119,13 +119,13 @@ rule merge_parental_snps:
     bgzip_vcf and vcf_index respectively.
     """
     input:
-        sample_snps = "phased/{aligner}/data_update_header.vcf.gz",
-        sample_snps_index = "phased/{aligner}/data_update_header.vcf.gz.tbi",
+        sample_snps = data_dir + "/phased/{aligner}/data_update_header.vcf.gz",
+        sample_snps_index = data_dir + "/phased/{aligner}/data_update_header.vcf.gz.tbi",
         maternal_snps = config['maternal_snps'],
         paternal_snps = config['paternal_snps'],
-    output: "phased/{aligner}/data_paternal_maternal.vcf.gz"
-    message: "merging vcf from samplepaternal and maternal respectively"
-    benchmark: "benchmark/snp/{aligner}/merge_parental.benchmark.txt"
+    output: data_dir + "/phased/{aligner}/data_paternal_maternal.vcf.gz"
+    message: data_dir + "/merging vcf from samplepaternal and maternal respectively"
+    benchmark: data_dir + "/benchmark/snp/{aligner}/merge_parental.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
         bcftools merge {input.sample_snps} {input.paternal_snps} {input.maternal_snps} | bgzip > {output}
@@ -138,15 +138,15 @@ rule update_snps:
     """
     Here we shall take the input from merge_parental_snps but we need to unzip it first.
     """
-    input: "phased/{aligner}/data_paternal_maternal.vcf.gz"
+    input: data_dir + "/phased/{aligner}/data_paternal_maternal.vcf.gz"
     output:
-        updated_vcf = "phased/{aligner}/data_updated.vcf",
+        updated_vcf = data_dir + "/phased/{aligner}/data_updated.vcf",
     message: "Running update SNPs"
     params:
         update_script = config['updat_snps_script'],
-        phased_stat = "statitics/phased/phasing_stat.txt",
-        block_tsv = "statitics/phased/blocks.tsv",
-    benchmark: "benchmark/snp/{aligner}/update_snps.benchmark.txt"
+        phased_stat = data_dir + "/statitics/phased/phasing_stat.txt",
+        block_tsv = data_dir + "/statitics/phased/blocks.tsv",
+    benchmark: data_dir + "/benchmark/snp/{aligner}/update_snps.benchmark.txt"
     shell:"""
         mkdir -p statitics/phased  &&
         python {params.update_script} -i {input} -u {output.updated_vcf} -o {params.block_tsv} -s {params.phased_stat}

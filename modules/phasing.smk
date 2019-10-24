@@ -13,17 +13,17 @@ rule gt:
     Genotype SNPs one chromosome per time.
     """
     input:
-        bam="align/{aligner}/data.bam",
-        bam_index="align/{aligner}/data.bam.bai",
-        snps="snp/{aligner}/data.{chr}.vcf",
+        bam=data_dir + "/align/{aligner}/data.bam",
+        bam_index=data_dir + "/align/{aligner}/data.bam.bai",
+        snps=data_dir + "/np/{aligner}/data.{chr}.vcf",
     output:
-        temp("gt/{aligner}/data.{chr}.vcf")
+        temp(data_dir + "/gt/{aligner}/data.{chr}.vcf")
     params:
         reference=REFERENCES[ref[0]],
     conda: PRINCESS_ENV
     log:
-        "gt/{aligner}/data.{chr}.log"
-    benchmark: "benchmark/gt/{aligner}/{chr}.benchmark.txt"
+        data_dir + "/gt/{aligner}/data.{chr}.log"
+    benchmark: data_dir + "/benchmark/gt/{aligner}/{chr}.benchmark.txt"
     shell:"""
         whatshap genotype --reference {params.reference} \
                       --ignore-read-groups \
@@ -38,18 +38,18 @@ rule phasing:
     Phase SNPs one chromosome per time
     """
     input:
-        bam="align/{aligner}/data.bam",
-        bam_index="align/{aligner}/data.bam.bai",
-        snps="gt/{aligner}/data.{chr}.vcf",
+        bam=data_dir + "/align/{aligner}/data.bam",
+        bam_index=data_dir + "align/{aligner}/data.bam.bai",
+        snps=data_dir + "/gt/{aligner}/data.{chr}.vcf",
     output:
-        phased=temp("phased/{aligner}/data.{chr}.vcf"),
+        phased=temp(data_dir + "/phased/{aligner}/data.{chr}.vcf"),
     params:
         reference=REFERENCES[ref[0]],
-        read_list="phased/{aligner}/data.{chr}.reads",
+        read_list=data_dir + "/phased/{aligner}/data.{chr}.reads",
     log:
-        "phased/{aligner}/data.{chr}.log"
+        data_dir + "/phased/{aligner}/data.{chr}.log"
     conda: PRINCESS_ENV
-    benchmark: "benchmark/phase/{aligner}/{chr}.benchmark.txt"
+    benchmark: data_dir + "/benchmark/phase/{aligner}/{chr}.benchmark.txt"
     shell:"""
         whatshap phase --reference {params.reference} \
                      --output {output.phased} {input.snps} {input.bam} \
@@ -65,10 +65,10 @@ rule all_phased:
     """
     Concat all the phased SNPs into one file.
     """
-    input:lambda wildcards: expand("phased/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list[ref[0]]),
-    output: "phased/{aligner}/data.vcf"
+    input:lambda wildcards: expand(data_dir + "phased/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list[ref[0]]),
+    output: data_dir + "/phased/{aligner}/data.vcf"
     conda: PRINCESS_ENV
-    benchmark: "benchmark/phase/{aligner}/concat_phased.benchmark.txt"
+    benchmark: data_dir + "/benchmark/phase/{aligner}/concat_phased.benchmark.txt"
     shell:"""
         vcfcat {input} | vcfstreamsort > {output}
         """
@@ -82,13 +82,13 @@ rule partion_bam:
     It will use the updated SNPs if the parental SNPs were provided.
     """
     input:
-        bam = lambda wildcards: "align/{aligner}/data_rg.bam" if wildcards.aligner == "minimap" else "align/{aligner}/data.bam",  # SM filed myst be set to the sample name in vcf file
-        bam_index = lambda wildcards: "align/{aligner}/data_rg.bam.bai" if wildcards.aligner == "minimap" else "align/{aligner}/data.bam.bai",
-        snp = lambda wildcards: "phased/{aligner}/data_updated.vcf.gz" if config['update_snps'] else "phased/{aligner}/data.vcf.gz",
-        snp_index = lambda wildcards: "phased/{aligner}/data_updated.vcf.gz.tbi" if config['update_snps'] else "phased/{aligner}/data.vcf.gz.tbi",
+        bam = lambda wildcards: data_dir + "/align/{aligner}/data_rg.bam" if wildcards.aligner == "minimap" else data_dir + "/align/{aligner}/data.bam",  # SM filed myst be set to the sample name in vcf file
+        bam_index = lambda wildcards: data_dir + "/align/{aligner}/data_rg.bam.bai" if wildcards.aligner == "minimap" else data_dir + "/align/{aligner}/data.bam.bai",
+        snp = lambda wildcards: data_dir + "/phased/{aligner}/data_updated.vcf.gz" if config['update_snps'] else data_dir + "/phased/{aligner}/data.vcf.gz",
+        snp_index = lambda wildcards: data_dir + "/phased/{aligner}/data_updated.vcf.gz.tbi" if config['update_snps'] else data_dir + "/phased/{aligner}/data.vcf.gz.tbi",
         #"phased/{aligner}/data_updated.vcf.gz" if config['update_snps'] else "phased/{aligner}/data.vcf.gz
     output:
-        hap_bam = "align/{aligner}/data_hap.bam"
+        hap_bam = data_dir + "align/{aligner}/data_hap.bam"
     message: "Partioning bam file"
     conda: PRINCESS_ENV
     params:

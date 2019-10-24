@@ -36,7 +36,7 @@ def get_args():
         parser.print_help()
 
 def run_princess(args, unknownargs):
-    if args.command.lower() == "test":
+    if args.command.lower() == "overview":
         subprocess.run(['snakemake', '-n', '-p', '-r', *unknownargs], check=True, universal_newlines=True)
     elif args.command.lower() == "all":
         subprocess.run(['snakemake', '-n', '-p', '-r'], check=True, universal_newlines=True)

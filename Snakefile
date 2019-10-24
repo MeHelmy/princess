@@ -9,13 +9,12 @@ from pyfaidx import Fasta
 
 # Config File
 #############
-if len(config) == 0:
-  if os.path.isfile("./config.yaml"):
+# if len(config) == 0:
+if os.path.isfile("./config.yaml"):
     configfile: "./config.yaml"
-  else:
+else:
     sys.exit("Looks like there is no config.yaml file in " + os.getcwd() + " make sure there is one or at least specify one with the --configfile commandline parameter.")
 #############
-
 
 
 # Listing samples
@@ -24,12 +23,11 @@ if len(config) == 0:
 sample_extension = config['sample_extension'] if config['sample_extension'] else "gz"
 
 # GET WORKING DIRECTORY DEFAULT IS CURRENT DIRECTORY
-data_dir = config["sample_directory"] if config['sample_directory'] else os.getcwd()
+data_dir =  config["sample_directory"] if config['sample_directory'] else os.getcwd()
 
 # GET SAMPLES LIST
 sample_list = config['sample_list'] if config['sample_list'] else [ntpath.basename(sample) for sample in glob.glob( data_dir +"/*."+ sample_extension)]
 #############
-
 
 
 # Config reference and chromosomes list

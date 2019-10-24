@@ -25,9 +25,9 @@ rule minimap2:
     Using Minimap2 to align reads
     """
     input:
-        datain="{sample}"
+        datain=data_dir + "/{sample}"
     output:
-        dataout="align/minimap/{sample}.bam"
+        dataout=data_dir + "/align/minimap/{sample}.bam"
     params:
         reference=REFERENCES[ref[0]],
         platform=config["read_type"],
@@ -36,11 +36,11 @@ rule minimap2:
         x = x_param,
         # rg = "@RG\\tSM:SAMPLE\\tID:LONG", shuld be used like -R {params.rg}
     log:
-        "align/minimap/{sample}.log"
+        data_dir + "/align/minimap/{sample}.log"
     message:
         "Running minimap2 , sample is: {wildcards.sample}"
     threads: config['aligner_threads']
-    benchmark: "benchmark/align/minimap/{sample}.benchmark.txt"
+    benchmark: data_dir + "/benchmark/align/minimap/{sample}.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
             minimap2  {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" | samtools sort -@ {threads} - > "{output.dataout}"
@@ -54,18 +54,18 @@ rule ngmlr:
     Using ngmlr to align reads
     """
     input:
-        datain="{sample}"
+        datain=data_dir + "/{sample}"
     output:
-        dataout=temp("align/ngmlr/{sample}.sam")
+        dataout=temp(data_dir + "/align/ngmlr/{sample}.sam")
     params:
         reference=REFERENCES[ref[0]],
         platform=config["read_type"]
     log:
-        "align/ngmlr/{sample}.log"
+        data_dir + "/align/ngmlr/{sample}.log"
     message:
         "Running ngmlr , sample is: {wildcards.sample}"
     threads: config['aligner_threads']
-    benchmark: "benchmark/align/ngmlr/{sample}.benchmark.txt"
+    benchmark: data_dir + "/benchmark/align/ngmlr/{sample}.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
             ngmlr -r "{params.reference}" -q "{input.datain}" --rg-sm SAMPLE -o "{output.dataout}" -t "{threads}" -x "{params.platform}" --bam-fix > {log} 2>&1
@@ -75,11 +75,11 @@ rule ngmlr:
 ################
 
 rule sam2bam:
-    input: "{sample}.sam"
-    output: "{sample}.bam"
+    input: data_dir + "/align/ngmlr/{sample}.sam"
+    output: data_dir + "/align/ngmlr/{sample}.bam"
     message: "Covert SAM to sorted BAM"
     threads: config['aligner_threads']
-    benchmark: "benchmark/align/{sample}.sam2bam.benchmark.txt"
+    benchmark: data_dir + "/benchmark/align/{sample}.sam2bam.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
         samtools view -bhS {input} | samtools sort -@ {threads} - > {output}
@@ -93,10 +93,10 @@ rule index_bam:
     Indexing bam file.
     """
     input:
-        "{sample}.bam"
+        data_dir + "/{sample}.bam"
     output:
-        "{sample}.bam.bai"
-    benchmark: "benchmark/align/ngmlr/{sample}.benchmark.txt"
+        data_dir + "/{sample}.bam.bai"
+    benchmark: data_dir + "/benchmark/align/ngmlr/{sample}.benchmark.txt"
     message: "Indexing {input}"
     conda: PRINCESS_ENV
     shell:
@@ -107,13 +107,13 @@ rule index_bam:
 
 rule merge_align:
     input:
-        bams=lambda wildcards: expand("align/{aligner}/{sample}.bam", aligner=wildcards.aligner, sample=sample_list),
-        index_bams=lambda wildcards: expand("align/{aligner}/{sample}.bam.bai", aligner=wildcards.aligner, sample=sample_list),
+        bams=lambda wildcards: expand(data_dir + "/align/{aligner}/{sample}.bam", aligner=wildcards.aligner, sample=sample_list),
+        index_bams=lambda wildcards: expand(data_dir + "/align/{aligner}/{sample}.bam.bai", aligner=wildcards.aligner, sample=sample_list),
     output:
-        file_name="align/{aligner}/data.bam"
+        file_name=data_dir + "/align/{aligner}/data.bam"
     message:"Mergeing data"
     threads: config['samtools_threads']
-    benchmark: "benchmark/align/{aligner}/merging.benchmark.txt"
+    benchmark: data_dir + "/benchmark/align/{aligner}/merging.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
         samtools merge {output} {input.bams}
@@ -123,8 +123,8 @@ rule merge_align:
 ############################
 
 rule add_rg:
-    input:"{sample}.bam"
-    output:"{sample}_rg.bam"
+    input:data_dir + "/{sample}.bam"
+    output:data_dir + "/{sample}_rg.bam"
     params:
         rg = "@RG\\tSM:SAMPLE\\tID:LONG",
     conda: PRINCESS_ENV
@@ -141,11 +141,11 @@ rule bam_2_tab:
     """
     This rules takes bam file and extract to tab delimeted file: reads   HP  PS.
     """
-    input: "align/{aligner}/data_hap.bam",
-    output: "align/{aligner}/data_hap.tab",
+    input: data_dir + "/align/{aligner}/data_hap.bam",
+    output: data_dir + "/align/{aligner}/data_hap.tab",
     message: "Extracting read hp and ps info from tagged bam file."
     conda: PRINCESS_ENV
-    benchmark: "benchmark/align/{aligner}/bam2tab.benchmark.txt"
+    benchmark: data_dir + "/benchmark/align/{aligner}/bam2tab.benchmark.txt"
     shell:"""
         samtools view  {input} |  grep  "PS:i:" |  awk 'BEGIN{{OFS="\\t";}}{{print $1,$(NF-2), $(NF)}}'  > {output}
         """

@@ -11,13 +11,13 @@ rule reads_stat:
     """
     Input is the reads in directory output is info about reads
     """
-    input: expand("{sample}", sample=sample_list)
-    output:"statitics/raw_reads/reads_stat.txt",
+    input: expand(data_dir + "/{sample}", sample=sample_list)
+    output:data_dir + "/statitics/raw_reads/reads_stat.txt",
     message: "Calculating read coverage statitics for: {input}",
     params:
         read_stat_script = rawcoverage_script,
     threads: config['read_raw_coverage_threads']
-    benchmark: "benchmark/raw_reads/stat.benchmark.txt"
+    benchmark: data_dir + "/benchmark/raw_reads/stat.benchmark.txt"
     conda: PRINCESS_ENV
     shell:
         """
@@ -31,10 +31,10 @@ rule bam_stat:
     """
     Calculate statistics from merged bam file
     """
-    input:"align/{aligner}/data.bam"
-    output:"statitics/{aligner}/data.stat"
+    input:data_dir + "/align/{aligner}/data.bam"
+    output:data_dir + "/statitics/{aligner}/data.stat"
     message:"Calculating aligned reads statistics from bam file"
-    benchmark: "benchmark/align/{aligner}/stat.benchmark.txt"
+    benchmark: data_dir + "/benchmark/align/{aligner}/stat.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
         samtools stats {input} > {output}
@@ -44,10 +44,10 @@ rule bam_stat:
 #######################
 
 rule sv_stat:
-    input: expand("sv/{aligner}/sniffles.vcf", aligner=config['aligner'])
-    output: "statitics/sv/data.stat"
+    input: expand(data_dir + "/sv/{aligner}/sniffles.vcf", aligner=config['aligner'])
+    output: data_dir + "/statitics/sv/data.stat"
     message: "calculating statistics for structural variant"
-    benchmark: "benchmark/sv/stat.benchmark.txt"
+    benchmark: data_dir + "/benchmark/sv/stat.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
         SURVIVOR stats {input} -1 -1 -1  {output}
@@ -58,11 +58,11 @@ rule sv_stat:
 
 rule snp_stat:
     input:
-        snp_file = expand("phased/{aligner}/data.vcf.gz", aligner=config['aligner']) ,
-        snp_file_index = expand("phased/{aligner}/data.vcf.gz.tbi", aligner=config['aligner']) ,
-    output: "statitics/snp/snp.txt",
+        snp_file = expand(data_dir + "/phased/{aligner}/data.vcf.gz", aligner=config['aligner']) ,
+        snp_file_index = expand(data_dir + "/phased/{aligner}/data.vcf.gz.tbi", aligner=config['aligner']) ,
+    output: data_dir + "/statitics/snp/snp.txt",
     message: "Calculate SNPs statistics"
-    benchmark: "benchmark/snp/stat.benchmark.txt"
+    benchmark: data_dir + "/benchmark/snp/stat.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
         bcftools stats {input.snp_file} > {output}
@@ -74,9 +74,9 @@ rule snp_stat:
 
 rule stat:
     input:
-        expand("statitics/{aligner}/data.stat", aligner=config['aligner']),
-        "statitics/raw_reads/reads_stat.txt",\
-        "statitics/sv/data.stat",\
-        "statitics/snp/snp.txt",
-    output: "stat.txt"
+        expand(data_dir + "/statitics/{aligner}/data.stat", aligner=config['aligner']),
+        data_dir + "/statitics/raw_reads/reads_stat.txt",\
+        data_dir + "/statitics/sv/data.stat",\
+        data_dir + "/statitics/snp/snp.txt",
+    output: data_dir + "/stat.txt"
     shell: "touch {output}"
