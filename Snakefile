@@ -17,6 +17,7 @@ else:
 #############
 
 
+
 # Listing samples
 #################
 # GET SAMPLES EXTENSION
@@ -26,8 +27,11 @@ sample_extension = config['sample_extension'] if config['sample_extension'] else
 data_dir =  config["sample_directory"] if config['sample_directory'] else os.getcwd()
 
 # GET SAMPLES LIST
-sample_list = config['sample_list'] if config['sample_list'] else [ntpath.basename(sample) for sample in glob.glob( data_dir +"/*."+ sample_extension)]
+sample_list = config['sample_list']
+if not isinstance(sample_list, list):
+    sample_list = sample_list.split()
 #############
+
 
 
 # Config reference and chromosomes list
@@ -96,15 +100,15 @@ final_output = []
 if not config['methylation']:
     pass
 elif config['methylation'] and all(value  for value in ont_sample_dir.values()):
-    final_output.append("meth/"+ aligner + "/methylation_calls.tsv")
+    final_output.append(data_dir + "/meth/"+ aligner + "/methylation_calls.tsv")
 else:
     sys.exit("Every ONT sample should have corresponding fast5 directory, please correct fast5_dir files in config.yaml")
 
 if config['update_snps'] and config['paternal_snps'] and config['maternal_snps']:
-    final_output.extend(["stat.txt", *expand("phased/{aligner}/data_updated.vcf", aligner=config['aligner']),\
-    *expand("sv/{aligner}/sniffles_hp_updated.vcf", aligner=config['aligner'])])
+    final_output.extend([data_dir + "/stat.txt", *expand(data_dir + "/phased/{aligner}/data_updated.vcf", aligner=config['aligner']),\
+    *expand(data_dir + "/sv/{aligner}/sniffles_hp_updated.vcf", aligner=config['aligner'])])
 else:
-    final_output.extend(["stat.txt", *expand("sv/{aligner}/sv_snp.vcf.gz",  aligner=config['aligner'])])
+    final_output.extend([data_dir + "/stat.txt", *expand(data_dir + "/sv/{aligner}/sv_snp.vcf.gz",  aligner=config['aligner'])])
 ###################################
 
 
@@ -120,11 +124,11 @@ rule all:
 ## Success and failure messages
 ## ------------------------------------------------------------------------------------ ##
 onsuccess:
-	shell("mkdir -p snake_log &&\
-    find . -maxdepth 1 -name 'snakejob.*' -type f -print0 | xargs -0r mv -t ./snake_log &&\
+	shell("mkdir -p {data_dir}/snake_log &&\
+    find . -maxdepth 1 -name 'snakejob.*' -type f -print0 | xargs -0r mv -t {data_dir}/snake_log &&\
     cat pictures/success.txt")
 
 onerror:
-	shell("mkdir -p snake_log &&\
-    find . -maxdepth 1 -name 'snakejob.*' -type f -print0 | xargs -0r mv -t ./snake_log &&\
+	shell("mkdir -p {data_dir}/snake_log &&\
+    find . -maxdepth 1 -name 'snakejob.*' -type f -print0 | xargs -0r mv -t {data_dir}/snake_log &&\
     cat pictures/fail.txt")

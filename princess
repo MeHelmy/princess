@@ -4,7 +4,7 @@
 Snakemake file waraper for princess.
 """
 import argparse
-import sys, os, subprocess
+import sys, os, subprocess, ntpath
 
 # TODO: read the config.yaml file to know the aligner
 
@@ -16,6 +16,9 @@ def get_args():
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.01')
 
     parser.add_argument('-c', '--command', default="all", nargs='?', choices=['all', 'align', 'sv', 'phasing', 'overview'], help='Princess running command.')
+    parser.add_argument('-s', '--samples_files', dest="samples_files", metavar= "sampleFiles" ,  nargs='+',  help='list of fatsa, fastq, or gz files.', required=True)
+    parser.add_argument('-d', '--directory', help='Working directory.', metavar='Working directory', required=True)
+
 
 
 
@@ -36,16 +39,36 @@ def get_args():
         parser.print_help()
 
 def run_princess(args, unknownargs):
+    work_dir = args.directory
+    samples = args.samples_files
+    samples_names = ""
+    # creating DIRECTORY
+    print(work_dir)
+    if not os.path.exists(work_dir):
+        os.makedirs(work_dir)
+    for sample in samples:
+        absolute_name = ntpath.basename(sample)
+        os.symlink(sample, os.path.join(work_dir, absolute_name))
+        if  samples_names:
+            samples_names += " " + absolute_name
+        else:
+            samples_names += absolute_name
+    # soft link samples in the created directory
+    sample_dir = 'sample_directory=' + work_dir
+    sample_names = 'sample_list=' + samples_names
     if args.command.lower() == "overview":
-        subprocess.run(['snakemake', '-n', '-p', '-r', *unknownargs], check=True, universal_newlines=True)
+        subprocess.run(['snakemake', '-n', '-p', '-r', '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
     elif args.command.lower() == "all":
-        subprocess.run(['snakemake', '-n', '-p', '-r'], check=True, universal_newlines=True)
+        subprocess.run(['snakemake', '-n', '-p', '-r', '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
     elif args.command.lower() == "align":
-        subprocess.run(['snakemake', '-n', '-p', '-r', 'align/minimap/data.bam'], check=True, universal_newlines=True)
+        result = os.path.join(work_dir, 'align/minimap/data.bam')
+        subprocess.run(['snakemake', '-n', '-p', '-r', result, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
     elif args.command.lower() == "sv":
-        subprocess.run(['snakemake', '-n', '-p', '-r', 'sv/minimap/sniffles.vcf'], check=True, universal_newlines=True)
+        result = os.path.join(work_dir, 'sv/minimap/sniffles.vcf')
+        subprocess.run(['snakemake', '-n', '-p', '-r', result, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
     elif args.command.lower() == "phasing":
-        subprocess.run(['snakemake', '-n', '-p', '-r', 'phased/minimap/data.vcf'], check=True, universal_newlines=True)
+        result = os.path.join(work_dir, 'phased/minimap/data.vcf')
+        subprocess.run(['snakemake', '-n', '-p', '-r', result, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
 
 def main():
     args = get_args()

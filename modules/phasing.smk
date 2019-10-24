@@ -15,7 +15,7 @@ rule gt:
     input:
         bam=data_dir + "/align/{aligner}/data.bam",
         bam_index=data_dir + "/align/{aligner}/data.bam.bai",
-        snps=data_dir + "/np/{aligner}/data.{chr}.vcf",
+        snps=data_dir + "/snp/{aligner}/data.{chr}.vcf",
     output:
         temp(data_dir + "/gt/{aligner}/data.{chr}.vcf")
     params:
@@ -39,7 +39,7 @@ rule phasing:
     """
     input:
         bam=data_dir + "/align/{aligner}/data.bam",
-        bam_index=data_dir + "align/{aligner}/data.bam.bai",
+        bam_index=data_dir + "/align/{aligner}/data.bam.bai",
         snps=data_dir + "/gt/{aligner}/data.{chr}.vcf",
     output:
         phased=temp(data_dir + "/phased/{aligner}/data.{chr}.vcf"),
@@ -65,7 +65,7 @@ rule all_phased:
     """
     Concat all the phased SNPs into one file.
     """
-    input:lambda wildcards: expand(data_dir + "phased/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list[ref[0]]),
+    input:lambda wildcards: expand(data_dir + "/phased/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list[ref[0]]),
     output: data_dir + "/phased/{aligner}/data.vcf"
     conda: PRINCESS_ENV
     benchmark: data_dir + "/benchmark/phase/{aligner}/concat_phased.benchmark.txt"
@@ -88,7 +88,7 @@ rule partion_bam:
         snp_index = lambda wildcards: data_dir + "/phased/{aligner}/data_updated.vcf.gz.tbi" if config['update_snps'] else data_dir + "/phased/{aligner}/data.vcf.gz.tbi",
         #"phased/{aligner}/data_updated.vcf.gz" if config['update_snps'] else "phased/{aligner}/data.vcf.gz
     output:
-        hap_bam = data_dir + "align/{aligner}/data_hap.bam"
+        hap_bam = data_dir + "/align/{aligner}/data_hap.bam"
     message: "Partioning bam file"
     conda: PRINCESS_ENV
     params:
