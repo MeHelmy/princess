@@ -5,6 +5,7 @@ Snakemake file waraper for princess.
 """
 import argparse
 import sys, os, subprocess, ntpath
+from distutils.dir_util import copy_tree
 
 # TODO: read the config.yaml file to know the aligner
 
@@ -21,7 +22,7 @@ def get_args():
 
     parser.set_defaults(func=run_princess)
 
-    if not argument print help.
+    #if not argument print help.
     if len(sys.argv) == 1:
          parser.print_help(sys.stderr)
          sys.exit(1)
@@ -35,25 +36,35 @@ def get_args():
         parser.print_help()
 
 def run_princess(args, unknownargs):
-    work_dir = args.directory
-    samples = args.samples_files
+    running_file = os.path.dirname(os.path.realpath(__file__))
+    work_dir = os.path.abspath(args.directory)
+    samples = [os.path.abspath(i) for i in args.samples_files]
     samples_names = ""
+
     # creating DIRECTORY
-    print(work_dir)
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
+
+    # get samples names and soft link them in the new directory
     for sample in samples:
         absolute_name = ntpath.basename(sample)
-        os.symlink(sample, os.path.join(work_dir, absolute_name))
+        if not os.path.islink(os.path.join(work_dir, absolute_name)):
+            os.symlink(sample, os.path.join(work_dir, absolute_name))
         if  samples_names:
             samples_names += " " + absolute_name
         else:
             samples_names += absolute_name
-    # soft link samples in the created directory
+
     sample_dir = 'sample_directory=' + work_dir
     sample_names = 'sample_list=' + samples_names
+    snake_full_path = os.path.join(running_file, "Snakefile")
+    copy_tree(running_file, work_dir)
+    os.chdir(work_dir)
+    print(os.getcwd())
+    
     if args.command.lower() == "overview":
-        subprocess.run(['snakemake', '-n', '-p', '-r', '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+        print(" ".join(['snakemake','-n', '-p', '-r', '--config', sample_dir, sample_names, *unknownargs]))
+        subprocess.run(['snakemake', '-n', '-p', '-r', '--config',  sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
     elif args.command.lower() == "all":
         subprocess.run(['snakemake', '-n', '-p', '-r', '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
     elif args.command.lower() == "align":

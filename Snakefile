@@ -9,13 +9,12 @@ from pyfaidx import Fasta
 
 # Config File
 #############
-# if len(config) == 0:
-if os.path.isfile("./config.yaml"):
-    configfile: "./config.yaml"
+# # if len(config) == 0:
+if os.path.isfile("config.yaml"):
+    configfile: "config.yaml"
 else:
     sys.exit("Looks like there is no config.yaml file in " + os.getcwd() + " make sure there is one or at least specify one with the --configfile commandline parameter.")
 #############
-
 
 
 # Listing samples
