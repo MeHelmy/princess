@@ -6,6 +6,7 @@ Snakemake file waraper for princess.
 import argparse
 import sys, os, subprocess, ntpath
 from distutils.dir_util import copy_tree
+import filecmp, shutil
 
 # TODO: read the config.yaml file to know the aligner
 
@@ -36,6 +37,7 @@ def get_args():
         parser.print_help()
 
 def run_princess(args, unknownargs):
+    current_dir = os.getcwd()
     running_file = os.path.dirname(os.path.realpath(__file__))
     work_dir = os.path.abspath(args.directory)
     samples = [os.path.abspath(i) for i in args.samples_files]
@@ -58,10 +60,13 @@ def run_princess(args, unknownargs):
     sample_dir = 'sample_directory=' + work_dir
     sample_names = 'sample_list=' + samples_names
     snake_full_path = os.path.join(running_file, "Snakefile")
+    compare_dir = filecmp.dircmp(running_file, work_dir)
+    # print(compare_dir.left_only or compare_dir.right_only)
+    # if compare_dir.left_only or compare_dir.right_only:
     copy_tree(running_file, work_dir)
     os.chdir(work_dir)
-    print(os.getcwd())
-    
+    # print(os.getcwd())
+
     if args.command.lower() == "overview":
         print(" ".join(['snakemake','-n', '-p', '-r', '--config', sample_dir, sample_names, *unknownargs]))
         subprocess.run(['snakemake', '-n', '-p', '-r', '--config',  sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
@@ -69,13 +74,26 @@ def run_princess(args, unknownargs):
         subprocess.run(['snakemake', '-n', '-p', '-r', '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
     elif args.command.lower() == "align":
         result = os.path.join(work_dir, 'align/minimap/data.bam')
-        subprocess.run(['snakemake', '-n', '-p', '-r', result, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+        subprocess.run(['snakemake', '-p', result, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
     elif args.command.lower() == "sv":
         result = os.path.join(work_dir, 'sv/minimap/sniffles.vcf')
-        subprocess.run(['snakemake', '-n', '-p', '-r', result, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+        subprocess.run(['snakemake',  '-p', result, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
     elif args.command.lower() == "phasing":
         result = os.path.join(work_dir, 'phased/minimap/data.vcf')
         subprocess.run(['snakemake', '-n', '-p', '-r', result, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+    clean(running_file, samples_names)
+    os.chdir(current_dir)
+
+def clean(source_dir, samples_names):
+    file_list = os.listdir(source_dir)
+    for f in samples_names.split(): os.remove(f)
+    for f in file_list:
+        if os.path.isfile(f):
+            os.remove(f)
+        else:
+            shutil.rmtree(f)
+
+
 
 def main():
     args = get_args()
