@@ -1,7 +1,7 @@
 # Princess
 ![princess](./pictures/leia.jpg)
 
-## What it can do
+## Princess
 
 * __Mapping__:  NGMLR or Minimap2
 * __SNVs__: Clair (successor of Clairvoyante)
@@ -32,7 +32,7 @@ cd princess
 chmod +x install.sh
 ./install.sh
 ~~~
-### __Done__
+
 
 ## Tutorial
 Example: assume we are working on two files in `/home/user/samples` and this directory contains two samples `sampl1.fasta` and `sample2.fatsa`  
@@ -45,14 +45,14 @@ Assume the Princess in directory `/home/user/tools/princess`
 
 
 ## Output
-~~~
+
 Princess will create this directories:
-- align   contains directory [minimap or ngmlr] based on the aligner that was running then the aligned file data.bam ex: align/minimap/data.bam
-- sv      contains the structural variant file sv/minimap/sniffles.vcf
-- snp     contains variant calls per chromosomes
-- phased  contains phased variant
-- stat    contains Statistics
-- meth    contains methylation info (if user chose to run methylation)      
-~~~
+> - align   contains directory [minimap or ngmlr] based on the aligner that was running then the aligned file data.bam ex: align/minimap/data.bam
+> - sv      contains the structural variant file sv/minimap/sniffles.vcf
+> - snp     contains variant calls per chromosomes
+> - phased  contains phased variant
+> - stat    contains Statistics
+> - meth    contains methylation info (if user chose to run methylation)      
+
 
 ## Advanced options
