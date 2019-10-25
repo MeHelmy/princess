@@ -85,7 +85,7 @@ def update_vcf(args):
                 line_split = line.split()
                 if line_split[-1].split(":", 1)[0] == "1/1" or line_split[-1].split(":", 1)[0] == "0/0":  # no gt to phase
                     data_out.write("{}\n".format("\t".join(line_split)))
-                else:
+                elif line_split[-1].split(":", 1)[0] == "0/1":
                     reads = line_split[7].split(";")[10].split(",") #info field -> reads
                     reads[0] = reads[0].split("=")[-1]
                     myvalues = list(map(hp_dic.get, reads))  # list of lists first element id hp second is ps or Nonn on case there are no reads with hp and ps to support this sv
@@ -113,6 +113,7 @@ def update_vcf(args):
                             data_out.write("{}\n".format("\t".join(line_split)))
                     else: # all are none
                         line_split[7] = "{info};CONFLICT=2".format(info=line_split[7])
+                        data_out.write("{}\n".format("\t".join(line_split)))
 
 
 def categorize_ps(myvalues):
