@@ -10,11 +10,11 @@ from collections import Counter
 
 # Python program to print
 # green text with red background
-
-from colorama import init
-from termcolor import colored
-
-init()
+#
+# from colorama import init
+# from termcolor import colored
+#
+# init()
 
 
 
@@ -68,7 +68,8 @@ def update_vcf(args):
     with args.hp as hp_in:
         for line in hp_in:
             id, hp, ps = line.split()
-            hp_dic[id] = [hp.rsplit(":", 1)[-1], ps.rsplit(":", 1)[-1]]
+            hp_dic[id] = [hp.rsplit(":", 1)[-1], ps.rsplit(":", 1)[-1]] # read hp, ps
+
 
     with myfile as data_in, args.output as data_out:
         for line in data_in:
@@ -85,7 +86,7 @@ def update_vcf(args):
                 if line_split[-1].split(":", 1)[0] == "1/1" or line_split[-1].split(":", 1)[0] == "0/0":  # no gt to phase
                     data_out.write("{}\n".format("\t".join(line_split)))
                 else:
-                    reads = line_split[7].split(";")[10].split(",")
+                    reads = line_split[7].split(";")[10].split(",") #info field -> reads
                     reads[0] = reads[0].split("=")[-1]
                     myvalues = list(map(hp_dic.get, reads))  # list of lists first element id hp second is ps or Nonn on case there are no reads with hp and ps to support this sv
 
@@ -100,8 +101,15 @@ def update_vcf(args):
                         else: # update the gt field and ps to sv
                             line_split[7] = "{info};CONFLICT={conflict}".format(info=line_split[7], conflict=0)
                             line_split[-2] = "{}:{}".format(line_split[-2], "PS")
-                            line_split[-1] = line_split[-1].replace("/", "|")
-                            line_split[-1] = "{}:{}".format(line_split[-1], ",".join(ps_dict.keys()))
+                            # if values are negative then it is hp=1 1|0 else it is hp2 0|1
+                            # line_split[-1] = line_split[-1].replace("/", "|")
+                            hp_new_value = line_split[-1].split(':')
+                            if list(ps_dict.values())[0] < 1: # haplotype 1
+                                hp_new_value[0] = "1|0"
+                            else:
+                                hp_new_value[0] = "0|1"
+                            hp_new_value = ":".join(hp_new_value)
+                            line_split[-1] = "{}:{}".format(hp_new_value, ",".join(ps_dict.keys()))
                             data_out.write("{}\n".format("\t".join(line_split)))
                     else: # all are none
                         line_split[7] = "{info};CONFLICT=2".format(info=line_split[7])
@@ -111,10 +119,10 @@ def categorize_ps(myvalues):
     myvalues = [i for i in myvalues if i is not None] # remove None
     ps_dict = {}
     for i in myvalues:
-        ps = (i[1])
+        ps = i[1]
         hp = int(i[0])
         if ps in ps_dict:
-            if int(hp) == 1:
+            if hp == 1:
                 if ps_dict[ps] < 0 :
                     ps_dict[ps] = ps_dict[ps] - 1
                 else: #conflict
@@ -126,7 +134,7 @@ def categorize_ps(myvalues):
                 else: #conflict
                     ps_dict[ps] = 0
         else:
-            if int(hp) == 1:
+            if hp == 1:
                 ps_dict[ps] = -1
             else:
                 ps_dict[ps] = 1

@@ -47,12 +47,12 @@ Assume the Princess in directory `/home/user/tools/princess`
 ## Output
 
 Princess will create this directories:
-- align   contains directory [minimap or ngmlr] based on the aligner that was running then the aligned file data.bam ex: align/minimap/data.bam
-- sv      contains the structural variant file sv/minimap/sniffles.vcf
-- snp     contains variant calls per chromosomes
-- phased  contains phased variant
-- stat    contains Statistics
-- meth    contains methylation info (if user chose to run methylation)      
+- align   > contains directory [minimap or ngmlr] based on the aligner that was running then the aligned file data.bam ex: align/minimap/data.bam
+- sv      > contains the structural variant file sv/minimap/sniffles.vcf
+- snp     > contains variant calls per chromosomes
+- phased  > contains phased variant
+- stat    > contains Statistics
+- meth    > contains methylation info (if user chose to run methylation)      
 
 
 ## Advanced options
