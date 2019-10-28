@@ -42,7 +42,10 @@ phasing:
   memory: 50G
   time: "05:00:00:00"
 
-assembly:
-  time: "04:00:00:00"
-  nCPUs: "1"
-  memory: 50G
+ nano_index:
+     nCPUs: "5"
+     memory: 50G
+
+ cal_meth:
+     nCPUs: "8"
+     memory: 50G

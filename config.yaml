@@ -52,7 +52,7 @@ clair_script: "/users/mmahmoud/home/source/Clair/clair.py"
 
 # Update SNPs
 #############
-update_snps: True
+update_snps: False
 paternal_snps: "/users/mmahmoud/home/projects/pacbio/Data_giab/HG003_NA24149_father/HG003_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X_CHROM1-22_v.3.3.2_highconf.vcf.gz"
 maternal_snps: "/users/mmahmoud/home/projects/pacbio/Data_giab/HG004_NA24143_mother/HG004_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X_CHROM1-22_v.3.3.2_highconf.vcf.gz"
 
@@ -76,3 +76,8 @@ read_raw_coverage_threads: 5
 
 updat_snps_script: "scripts/phasing_report_update_vcf.py"
 updat_sv: "scripts/update_sv_hp_ps.py"
+
+
+# Cluster
+##########
+cluster_jobs: 200

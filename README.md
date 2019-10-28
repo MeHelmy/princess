@@ -42,7 +42,22 @@ Assume the Princess in directory `/home/user/tools/princess`
 /home/user/tools/princess/princess -c all -d /home/user/result -s /home/user/samples/sampl1.fasta  /home/user/samples/sampl2.fasta
 ~~~
 
-
+### **Requirements**
+In the `config.yaml` file please update these fields to suit your run:
+~~~
+ref: ['37']   # set it to the reference you want to run against either 37 or 38
+references:   
+  '37': "/home/user/reference/RCh37.fa"    # location of the indexed reference ex: /home/user/reference/RCh38.fa in the same directory you can use samtools faidx <ref.fasta>
+  '38': "/home/user/reference/RCh38.fa"
+~~~
+If you will use cluster please define how many jobs should run in filed:
+~~~
+cluster_jobs: 200 # default 200 change it to what you see convenient
+~~~
+Define your read sequence instrument
+~~~
+read_type: "pacbio" # chose from ont or pacbio
+~~~
 
 ## Output
 
