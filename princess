@@ -62,25 +62,36 @@ def run_princess(args, unknownargs):
     snake_full_path = os.path.join(running_file, "Snakefile")
     compare_dir = filecmp.dircmp(running_file, work_dir)
     # print(compare_dir.left_only or compare_dir.right_only)
+
     # if compare_dir.left_only or compare_dir.right_only:
     copy_tree(running_file, work_dir)
+
     os.chdir(work_dir)
-    # print(os.getcwd())
+    cluster_config = os.path.join(work_dir, "cluster_config.yaml")
+    # myqsub = shutil.which("qsub")
+    cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+    # cluster = cluster.split()
+    # cluster = """ "{} -A {cluster.account}  -l walltime={cluster.time} -q {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}" """.format(myqsub)
 
     if args.command.lower() == "overview":
         print(" ".join(['snakemake','-n', '-p', '-r', '--config', sample_dir, sample_names, *unknownargs]))
         subprocess.run(['snakemake', '-n', '-p', '-r', '--config',  sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+
     elif args.command.lower() == "all":
         subprocess.run(['snakemake', '-n', '-p', '-r', '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+
     elif args.command.lower() == "align":
         result = os.path.join(work_dir, 'align/minimap/data.bam')
         subprocess.run(['snakemake', '-p', result, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+
     elif args.command.lower() == "sv":
         result = os.path.join(work_dir, 'sv/minimap/sniffles.vcf')
-        subprocess.run(['snakemake',  '-p', result, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+        subprocess.run(['snakemake',  '-p', result, '-j 200', '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+
     elif args.command.lower() == "phasing":
         result = os.path.join(work_dir, 'phased/minimap/data.vcf')
         subprocess.run(['snakemake', '-n', '-p', '-r', result, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+
     clean(running_file, samples_names)
     os.chdir(current_dir)
 
