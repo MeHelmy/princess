@@ -58,7 +58,13 @@ Define your read sequence instrument
 ~~~
 read_type: "pacbio" # chose from ont or pacbio
 ~~~
-
+If you want to work on specific chromosomes, please declare them in this variable remember to use the chromosomes names as it is in your reference file  
+so If they are named 1,2 ... use this values other wise use chr1 chr2 ..:
+~~~
+chr_list:
+  '37': [] # If I want to work on chromosomes 1 , 2 and 3 I shall update this field to be: [1,2,3]
+  '38': [] #[chr1,chr2]
+~~~
 ## Output
 
 Princess will create this directories:
