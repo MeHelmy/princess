@@ -49,6 +49,10 @@ def run_princess(args, unknownargs):
 
     # get samples names and soft link them in the new directory
     for sample in samples:
+        if not os.path.isfile(sample):
+            print("This sample {} does not exist".format(sample))
+            shutil.rmtree(work_dir)
+            exit(1)
         absolute_name = ntpath.basename(sample)
         if not os.path.islink(os.path.join(work_dir, absolute_name)):
             os.symlink(sample, os.path.join(work_dir, absolute_name))
@@ -62,9 +66,13 @@ def run_princess(args, unknownargs):
     snake_full_path = os.path.join(running_file, "Snakefile")
     compare_dir = filecmp.dircmp(running_file, work_dir)
     # print(compare_dir.left_only or compare_dir.right_only)
-
     # if compare_dir.left_only or compare_dir.right_only:
-    copy_tree(running_file, work_dir)
+
+    # if we are already in main princess directory do nothing
+    if os.path.samefile(running_file, work_dir):
+        pass
+    else:
+        copy_tree(running_file, work_dir)
 
     os.chdir(work_dir)
 
@@ -74,14 +82,20 @@ def run_princess(args, unknownargs):
     conf_yaml = ""
     with open(os.path.join(work_dir, "config.yaml"), 'r') as myyaml:
         conf_yaml = yaml.safe_load(myyaml)
+    # for param in conf_yaml:
+    #     if param["name"] == "sample_directory":
+    #         param["value"] = work_dir
+    #     if param["name"] == "sample_list":
+    #         param["value"] = samples_names.split()
+    conf_yaml['sample_directory'] = work_dir
+    conf_yaml['sample_list'] = samples_names.split()
+    with open(os.path.join(work_dir, "config.yaml"), 'w') as myyaml:
+        conf_yaml = yaml.dump(conf_yaml, myyaml)
 
     number_of_jobs = conf_yaml['cluster_jobs']
     aligner = conf_yaml['aligner']
 
-    # myqsub = shutil.which("qsub")
     cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-    # cluster = cluster.split()
-    # cluster = """ "{} -A {cluster.account}  -l walltime={cluster.time} -q {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}" """.format(myqsub)
 
     if args.command.lower() == "overview":
         print(" ".join(['snakemake','-n', '-p', '-r', '--config', sample_dir, sample_names, *unknownargs]))
