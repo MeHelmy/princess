@@ -42,10 +42,10 @@ phasing:
   memory: 50G
   time: "05:00:00:00"
 
- nano_index:
+nano_index:
      nCPUs: "5"
      memory: 50G
 
- cal_meth:
+cal_meth:
      nCPUs: "8"
      memory: 50G

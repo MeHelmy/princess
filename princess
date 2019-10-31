@@ -54,7 +54,7 @@ def run_princess(args, unknownargs):
             shutil.rmtree(work_dir)
             exit(1)
         absolute_name = ntpath.basename(sample)
-        if not os.path.islink(os.path.join(work_dir, absolute_name)):
+        if not os.path.islink(os.path.join(work_dir, absolute_name)) and not os.path.isfile(os.path.join(work_dir, absolute_name)):
             os.symlink(sample, os.path.join(work_dir, absolute_name))
         if  samples_names:
             samples_names += " " + absolute_name
@@ -87,13 +87,13 @@ def run_princess(args, unknownargs):
     #         param["value"] = work_dir
     #     if param["name"] == "sample_list":
     #         param["value"] = samples_names.split()
-    conf_yaml['sample_directory'] = work_dir
-    conf_yaml['sample_list'] = samples_names.split()
-    with open(os.path.join(work_dir, "config.yaml"), 'w') as myyaml:
-        conf_yaml = yaml.dump(conf_yaml, myyaml)
+    # conf_yaml['sample_directory'] = work_dir
+    # conf_yaml['sample_list'] = samples_names.split()
+    # with open(os.path.join(work_dir, "config.yaml"), 'w') as myyaml:
+    #     conf_yaml = yaml.dump(conf_yaml, myyaml)
 
-    number_of_jobs = conf_yaml['cluster_jobs']
-    aligner = conf_yaml['aligner']
+    number_of_jobs = str(conf_yaml['cluster_jobs'])
+    aligner = str(conf_yaml['aligner'])
 
     cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
 
@@ -109,11 +109,11 @@ def run_princess(args, unknownargs):
         subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
 
     elif args.command.lower() == "sv":
-        result = os.path.join(work_dir, 'sv/minimap/sniffles.vcf')
+        result = os.path.join(work_dir, 'sv/'+ aligner +'/sniffles.vcf')
         subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
 
     elif args.command.lower() == "phasing":
-        result = os.path.join(work_dir, 'phased/minimap/data.vcf')
+        result = os.path.join(work_dir, 'phased/'+ aligner +'/data.vcf')
         subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
 
     clean(running_file, samples_names)
