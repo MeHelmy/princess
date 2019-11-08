@@ -1,5 +1,5 @@
 # Princess (beta version)
-Princess is a fast and scalable framework to detect and report haplotype resolved Single Nucleotide Variants (SNV) amd Structural Variations (SVs) at scale. It can leverage your cluster enviroment to speed up the detection which starts with one or many fasta or fastq files. 
+Princess is a fast and scalable framework to detect and report haplotype resolved Single Nucleotide Variants (SNV) and Structural Variations (SVs) at scale. It can leverage your cluster environment to speed up the detection which starts with one or many fasta or fastq files. 
 
 ![princess](./pictures/leia.jpg)
 
@@ -36,7 +36,7 @@ chmod +x install.sh
 
 
 ## Tutorial
-Example: assume we are working on two files in `/home/user/samples` and this directory contains two fasta files `sampl1.fasta` and `sample2.fatsa`  
+Example: assume we are working on two files in `/home/user/samples` and this directory contains two fasta files `sample1.fasta` and `sample2.fasta`  
 also we want the output in the directory `/home/user/result`.
 Assume the Princess is installed in directory `/home/user/tools/princess`
 ~~~
