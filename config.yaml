@@ -30,7 +30,7 @@ samtools_threads: 5
 
 # Aligner
 #########
-aligner: "ngmlr" # minimap or ngmlr
+aligner: "minimap" # minimap or ngmlr
 aligner_threads: 5
 #########
 
