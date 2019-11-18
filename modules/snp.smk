@@ -48,8 +48,8 @@ rule call_snps:
     threads: config['clair_threads']
     shell:
         """
-        export PATH=$PWD/bin/pypy-7.2.0-linux_x86_64-portable/bin:$PATH && \
-        python {params.clair_location} callVarBam \
+        export PATH=$PWD/bin/pypy3.5-7.0.0-linux_x86_64-portable/bin:$PATH && \
+        clair.py callVarBam \
             --chkpnt_fn {params.train_data} \
             --bam_fn {input.bam} \
             --ref_fn {input.reference} \

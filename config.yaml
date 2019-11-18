@@ -46,8 +46,8 @@ clair_location: "bin/Clair/clair.py"
 clair_coverage: 2
 clair_threads: 5
 clair_pypy: "/users/mmahmoud/home/source/Clair/pypy3/pypy3.5-7.0.0-linux_x86_64-portable/bin/pypy"
-training_data_pacbio: "/users/mmahmoud/home/source/Clair/training_data/pacbio/rsii/model"
-training_data_ont: "/users/mmahmoud/home/source/Clair/training_data/ont/r94/model"
+training_data_pacbio: "/users/mmahmoud/home/projects/princess/bin/modules3/pacbio/model" #"/users/mmahmoud/home/source/Clair/training_data/pacbio/rsii/model"
+training_data_ont: "/users/mmahmoud/home/projects/princess/bin/modules3/ont/model" #"/users/mmahmoud/home/source/Clair/training_data/ont/r94/model"
 clair_script: "/users/mmahmoud/home/source/Clair/clair.py"
 
 # Update SNPs

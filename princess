@@ -19,8 +19,9 @@ def get_args():
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.01')
 
     parser.add_argument('-c', '--command', default="all", nargs='?', choices=['all', 'align', 'sv', 'snp', 'phasing', 'overview'], help='Princess running command.')
-    parser.add_argument('-s', '--samples_files', dest="samples_files", metavar= "sampleFiles" ,  nargs='+',  help='list of fatsa, fastq, or gz files.', required=True)
+    parser.add_argument('-s', '--samplesFiles', dest="samples_files", metavar= "sampleFiles" ,  nargs='+',  help='list of fatsa, fastq, or gz files.')
     parser.add_argument('-d', '--directory', help='Working directory.', metavar='Working directory', required=True)
+    parser.add_argument('-l', '--removeFiles', dest='remove_source', help='remove princess source script after running', action='store_true')
 
     parser.set_defaults(func=run_princess)
 
@@ -41,6 +42,25 @@ def run_princess(args, unknownargs):
     current_dir = os.getcwd()
     running_file = os.path.dirname(os.path.realpath(__file__))
     work_dir = os.path.abspath(args.directory)
+
+    # loading info from yaml file (configfile)
+    conf_yaml = ""
+    with open(os.path.join(work_dir, "config.yaml"), 'r') as myyaml:
+        conf_yaml = yaml.safe_load(myyaml)
+    aligner = str(conf_yaml['aligner'])
+    sample_list_from_config = conf_yaml['sample_list']
+
+    # Check if both args.samples_files and sample list from config file empty
+    # and not subcommand
+
+    if args.command in ['all', 'align'] and (not args.samples_files or not sample_list_from_config):
+        print("You need to support read files either by using -c parameter or throug sample_list filed in config.yaml file")
+        exit(1)
+    elif args.command in ['snp', 'phasing', 'sv'] and ( not os.path.exists(os.path.join(work_dir, aligner, "data.bam")) and  not args.samples_files and  not sample_list_from_config):
+        print("Please if you want run {} command there should be aligned file like {} otherwise use -c command or sample_list filed in config.yaml file to support Princess with the files to align".\
+        format(args.command, os.path.join(work_dir, aligner, "data.bam")))
+        exit(1)
+
     samples = [os.path.abspath(i) for i in args.samples_files]
     samples_names = ""
 
@@ -66,36 +86,17 @@ def run_princess(args, unknownargs):
     sample_names = 'sample_list=' + samples_names
     snake_full_path = os.path.join(running_file, "Snakefile")
 
-    # listing the files in the source directory.
-    source_files = os.listdir(running_file)
-    print(source_files)
-    for file in source_files:
-        print("current file {}".format(file))
-        if not Path(os.path.join(work_dir, file)).exists():
-            if os.path.isdir(os.path.join(running_file, file)):
-                shutil.copytree(os.path.join(running_file, file), work_dir)
-            else:
-                shutil.copy(os.path.join(running_file, file), work_dir)
-    exit(1)
-
-    # compare_dir = filecmp.dircmp(running_file, work_dir)
-    # print(compare_dir.left_only or compare_dir.right_only)
-    # if compare_dir.left_only or compare_dir.right_only:
-
     # if we are already in main princess directory do nothing
     if os.path.samefile(running_file, work_dir):
         pass
     else:
-        copy_tree(running_file, work_dir)
+        copy_tree(running_file, work_dir, update=1)
 
     os.chdir(work_dir)
 
     cluster_config = os.path.join(work_dir, "cluster_config.yaml")
 
-    # loading info from yaml file (configfile)
-    conf_yaml = ""
-    with open(os.path.join(work_dir, "config.yaml"), 'r') as myyaml:
-        conf_yaml = yaml.safe_load(myyaml)
+
     # for param in conf_yaml:
     #     if param["name"] == "sample_directory":
     #         param["value"] = work_dir
@@ -107,7 +108,6 @@ def run_princess(args, unknownargs):
     #     conf_yaml = yaml.dump(conf_yaml, myyaml)
 
     number_of_jobs = str(conf_yaml['cluster_jobs'])
-    aligner = str(conf_yaml['aligner'])
 
     cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
 
@@ -133,8 +133,10 @@ def run_princess(args, unknownargs):
     elif args.command.lower() == "snp":
         result = os.path.join(work_dir, 'snp/'+ aligner +'/data.vcf')
         subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
-        
-    clean(running_file, samples_names)
+
+    if args.remove_source:
+        clean(running_file, samples_names)
+
     os.chdir(current_dir)
 
 def clean(source_dir, samples_names):

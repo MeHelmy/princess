@@ -2,9 +2,14 @@
 ############
 import os, glob, ntpath
 from pyfaidx import Fasta
-
+from snakemake.utils import min_version
 
 ############################
+
+# Snake Version
+###############
+min_version("5.7.1")
+
 
 
 # Config File
@@ -15,6 +20,7 @@ if os.path.isfile("config.yaml"):
 else:
     sys.exit("Looks like there is no config.yaml file in " + os.getcwd() + " make sure there is one or at least specify one with the --configfile commandline parameter.")
 #############
+
 
 
 # Listing samples
@@ -70,7 +76,7 @@ ont_sample_dir = config['fast5_dir']
 # Preparing conda environements.
 ###############################
 PRINCESS_ENV=os.getcwd()+"/envs/princess_env.yaml"
-CLAIR_ENV=os.getcwd()+"/envs/clair.yml"
+CLAIR_ENV=os.getcwd()+"/envs/clair_env.yaml"
 #############
 
 
