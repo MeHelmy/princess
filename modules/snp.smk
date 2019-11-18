@@ -151,3 +151,20 @@ rule update_snps:
         mkdir -p statitics/phased  &&
         python {params.update_script} -i {input} -u {output.updated_vcf} -o {params.block_tsv} -s {params.phased_stat}
         """
+
+
+#### CONCAT SNPs ########
+#########################
+rule concact_snps:
+    """
+    Rule to concat the identifed SNPs this will only be called by the user
+    in case if he wanted to have only SNPs
+    """
+    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list[ref[0]]),
+    output: data_dir + "/snp/{aligner}/data.vcf"
+    message: "Concat SNP files"
+    benchmark: data_dir + "/benchmark/snp/{aligner}/concat_snp.vcf"
+    conda: PRINCESS_ENV
+    shell:"""
+        vcfcat {input} | vcfstreamsort > {output}
+        """

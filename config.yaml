@@ -17,7 +17,7 @@ references:
   '37': "/users/mmahmoud/home/public_workplace/scripts/snakefiles/test/hs37d5_mainchr.fa"
   '38': "/users/sedlazec/ccdg_tech/reference/GRCh38-2.1.0/genome_mainchrs.fa"
 chr_list:
-  '37': [1] #[1,2,3]
+  '37': [] #[1,2,3]
   '38': [] #[chr1,chr2]
 ###########################
 

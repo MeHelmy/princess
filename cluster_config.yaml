@@ -29,7 +29,7 @@ sniffles:
 
 call_snps:
   time: "07:00:00:00"
-  nCPUs: "8"
+  nCPUs: "5"
   memory: 50G
 
 gt:

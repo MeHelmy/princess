@@ -19,7 +19,7 @@ rule sniffles:
     message: "Running Sniffles"
     params:
         coverage=config['sniffles_coverage'],
-    benchmark: data_dir + "/sv/{aligner}/sniffles.benchmark.txt"
+    # benchmark: data_dir + "/sv/{aligner}/sniffles.benchmark.txt"
     conda: PRINCESS_ENV
     log: data_dir + "/sv/{aligner}/sniffles.log"
     benchmark: data_dir + "/benchmark/sv/{aligner}/sv.benchmark.txt"
