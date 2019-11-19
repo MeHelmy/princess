@@ -55,7 +55,7 @@ def run_princess(args, unknownargs):
     # creating DIRECTORY
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
-        
+
     # loading info from yaml file (configfile)
     conf_yaml = ""
     if not os.path.exists(os.path.join(work_dir, "config.yaml")): shutil.copy(os.path.join(running_file, "config.yaml"), work_dir)
@@ -69,7 +69,7 @@ def run_princess(args, unknownargs):
     # Check if both args.samples_files and sample list from config file empty
     # and not subcommand
 
-    if args.command in ['all', 'align'] and (not args.samples_files or not sample_list_from_config):
+    if args.command in ['all', 'align'] and (not args.samples_files and not sample_list_from_config):
         print("You need to support read files either by using -c parameter or throug sample_list filed in config.yaml file")
         exit(1)
     elif args.command in ['snp', 'phasing', 'sv'] and ( not os.path.exists(os.path.join(work_dir, 'align', aligner, "data.bam")) and  not args.samples_files and  not sample_list_from_config):
