@@ -52,6 +52,10 @@ def run_princess(args, unknownargs):
     running_file = os.path.dirname(os.path.realpath(__file__))
     work_dir = os.path.abspath(args.directory)
 
+    # creating DIRECTORY
+    if not os.path.exists(work_dir):
+        os.makedirs(work_dir)
+        
     # loading info from yaml file (configfile)
     conf_yaml = ""
     if not os.path.exists(os.path.join(work_dir, "config.yaml")): shutil.copy(os.path.join(running_file, "config.yaml"), work_dir)
