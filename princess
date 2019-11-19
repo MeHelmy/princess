@@ -82,6 +82,7 @@ def run_princess(args, unknownargs):
         os.makedirs(work_dir)
 
     sample_names = ""
+    samples_names = ""
     if args.samples_files or sample_list_from_config:
         samples = [os.path.abspath(i) for i in args.samples_files] if args.samples_files else sample_list_from_config
 
