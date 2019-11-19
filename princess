@@ -34,10 +34,13 @@ def get_args():
 
     args, unknownargs = parser.parse_known_args()
 
+    # To follow directly the param --config
+    if args.aligner:
+        unknownargs.insert(0,"aligner={}".format(args.aligner))
+    # add othe snakemake params at the tail of the list
     if args.use_conda:
         unknownargs.append("--use-conda")
-    if args.aligner:
-        unknownargs.append("aligner={}".format(args.aligner))
+
 
     if 'func' in args:
         args.func(args, unknownargs)
