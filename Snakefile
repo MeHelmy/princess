@@ -1,6 +1,6 @@
 # import Lib
 ############
-import os, glob, ntpath
+import os, glob, ntpath, math
 from pyfaidx import Fasta
 from snakemake.utils import min_version
 
@@ -55,6 +55,22 @@ else:
     for reference in ref:
         f = Fasta(config["references"][reference])
         chr_list[reference] = [chr_name for chr_name in f.keys()]
+
+# chromosomes List splited to chunks
+chr_split = config['chr_split'] if config['chr_split'] and (config['chr_split'] > 0) else 10
+ref_index_file = REFERENCES[ref[0]]+".fai"
+chr_range = {}
+with open(ref_index_file, 'r') as data_in:
+    for line in data_in:
+        chr, length = line.split()[0:2]
+        step_value = int(length)//chr_split
+        ranges = list(range(0, int(length), step_value))
+        if len(ranges) == chr_split + 1:
+            ranges[-1] = int(length)
+        else:
+            ranges.append(int(length))
+        ranges[0] = 1
+        chr_range[chr] = ranges
 #############
 
 

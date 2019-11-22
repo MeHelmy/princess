@@ -12,7 +12,7 @@
 ##################
 
 # CLAIR Parameters
-#====================
+#=================
 
 CLAIR=config["clair_location"]
 TRAINING_DATA = config["training_data_pacbio"]
@@ -26,7 +26,45 @@ else:
     print("Unknow data type {} supported format are: ont and pacbio".format(config['read_type']))
     exit()
 
-rule call_snps:
+# CLAIR RULE
+#===========
+
+# rule call_snps:
+#     """
+#     Calling SNPs using clair
+#     """
+#     input:
+#         bam=data_dir + "/align/{aligner}/data.bam",
+#         data_index=data_dir + "/align/{aligner}/data.bam.bai",
+#         reference=REFERENCES[ref[0]],
+#     output:
+#         data_dir + "/snp/{aligner}/data.{chr}.vcf"
+#     params:
+#         train_data=training_data,
+#         minCoverage=config['clair_coverage'],
+#         clair_location=CLAIR,
+#         # process_script=process_clar,
+#         temp_out=data_dir + "/{chr}_vcf.tmp",
+#         mypypy=config['clair_pypy'],
+#     benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
+#     conda: CLAIR_ENV
+#     threads: config['clair_threads']
+#     shell:
+#         """
+#         export PATH=$PWD/bin/pypy3.5-7.0.0-linux_x86_64-portable/bin:$PATH && \
+#         clair.py callVarBam \
+#             --chkpnt_fn {params.train_data} \
+#             --bam_fn {input.bam} \
+#             --ref_fn {input.reference} \
+#             --minCoverage {params.minCoverage} \
+#             --ctgName {wildcards.chr} \
+#             --threads {threads} --call_fn {output}
+#         """
+
+# CLAIR CHUNK RULE
+#=================
+
+rule call_snps_chunk:
     """
     Calling SNPs using clair
     """
@@ -35,15 +73,13 @@ rule call_snps:
         data_index=data_dir + "/align/{aligner}/data.bam.bai",
         reference=REFERENCES[ref[0]],
     output:
-        data_dir + "/snp/{aligner}/data.{chr}.vcf"
+        data_dir + "/snp/{aligner}/data.{chr}_{region}.vcf"
     params:
-        train_data=training_data,
-        minCoverage=config['clair_coverage'],
-        clair_location=CLAIR,
-        # process_script=process_clar,
-        temp_out=data_dir + "/{chr}_vcf.tmp",
-        mypypy=config['clair_pypy'],
-    benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
+        train_data = training_data,
+        minCoverage = config['clair_coverage'],
+        start = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region)],
+        end = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region) + 1]
+    benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}_{region}.benchmark.txt"
     conda: CLAIR_ENV
     threads: config['clair_threads']
     shell:
@@ -55,7 +91,25 @@ rule call_snps:
             --ref_fn {input.reference} \
             --minCoverage {params.minCoverage} \
             --ctgName {wildcards.chr} \
+            --ctgStart {params.start} \
+            --ctgEnd {params.end} \
             --threads {threads} --call_fn {output}
+        """
+
+#### CALL VARINAT BY CHUNKS #######
+###################################
+
+rule concat_chromosome:
+    """
+    Concat splited chromomsomes regions
+    """
+    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}_{region}.vcf", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
+    output: data_dir + "/snp/{aligner}/data.{chr}.vcf"
+    message: "Concat variant split per chromomsome"
+    conda: PRINCESS_ENV
+    benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
+    shell:"""
+        vcfcat {input} | vcfstreamsort > {output}
         """
 
 #### UPDATE HEADER #######

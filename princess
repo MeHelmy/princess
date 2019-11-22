@@ -9,7 +9,6 @@ from distutils.dir_util import copy_tree
 import filecmp, shutil
 from pathlib import Path
 
-# TODO: read the config.yaml file to know the aligner
 
 def get_args():
     parser = argparse.ArgumentParser(epilog="%(prog)s version 0.01. use command -h for info.",

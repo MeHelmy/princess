@@ -27,10 +27,20 @@ sniffles:
   nCPUs: "20"
   memory: 30G
 
-call_snps:
+concat_chromosome:
+  time: "01:00:00:00"
+  nCPUs: "2"
+  memory: 40G
+
+concat_snps:
+  time: "01:00:00:00"
+  nCPUs: "2"
+  memory: 40G
+
+call_snps_chunk:
   time: "07:00:00:00"
   nCPUs: "5"
-  memory: 50G
+  memory: 60G
 
 gt:
   nCPUs: "1"
