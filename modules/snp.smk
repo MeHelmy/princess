@@ -73,7 +73,7 @@ rule call_snps_chunk:
         data_index=data_dir + "/align/{aligner}/data.bam.bai",
         reference=REFERENCES[ref[0]],
     output:
-        data_dir + "/snp/{aligner}/data.{chr}_{region}.vcf"
+        data_dir + "/snp/{aligner}/data.{chr}_split_{region}.vcf"
     params:
         train_data = training_data,
         minCoverage = config['clair_coverage'],
@@ -103,7 +103,7 @@ rule concat_chromosome:
     """
     Concat splited chromomsomes regions
     """
-    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}_{region}.vcf", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
+    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}_split_{region}.vcf", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
     output: data_dir + "/snp/{aligner}/data.{chr}.vcf"
     message: "Concat variant split per chromomsome"
     conda: PRINCESS_ENV
