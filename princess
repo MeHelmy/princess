@@ -23,6 +23,8 @@ def get_args():
     parser.add_argument('-l', '--removeFiles', dest='remove_source', help='remove princess source script after running', action='store_true')
     parser.add_argument('-u', '--DoNotUseConda', dest='use_conda', help='DO NOT use conda for running', action='store_false')
     parser.add_argument('-a', '--Aligner', dest="aligner", choices=['minimap', 'ngmlr'], help='In case if you want to choose specific aligner otherwise default will be used')
+    parser.add_argument('-r', '--ReadType', dest="read_type", choices=['ont', 'clr', 'ccs'], help='Read techonlogy', required=True)
+
 
     parser.set_defaults(func=run_princess)
 
@@ -36,6 +38,12 @@ def get_args():
     # To follow directly the param --config
     if args.aligner:
         unknownargs.insert(0,"aligner={}".format(args.aligner))
+
+    if args.read_type == "ont":
+        unknownargs.insert(0,"read_type={}".format(args.read_type))
+    elif args.read_type in ['clr', 'ccs']:
+        unknownargs.insert(0,"read_type={}".format("pacbio"))
+
     # add othe snakemake params at the tail of the list
     if args.use_conda:
         unknownargs.append("--use-conda")

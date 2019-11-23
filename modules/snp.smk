@@ -73,7 +73,7 @@ rule call_snps_chunk:
         data_index=data_dir + "/align/{aligner}/data.bam.bai",
         reference=REFERENCES[ref[0]],
     output:
-        data_dir + "/snp/{aligner}/data.{chr}_split_{region}.vcf"
+        temp(data_dir + "/snp/{aligner}/data.{chr}_split_{region}.vcf")
     params:
         train_data = training_data,
         minCoverage = config['clair_coverage'],
