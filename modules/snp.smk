@@ -104,7 +104,7 @@ rule concat_chromosome:
     Concat splited chromomsomes regions
     """
     input: lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}_split_{region}.vcf", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
-    output: data_dir + "/snp/{aligner}/data.{chr}.vcf"
+    output: data_dir + "/snp/{aligner}/data.{chr,[A-Za-z0-9]+}.vcf"
     message: "Concat variant split per chromomsome"
     conda: PRINCESS_ENV
     benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
