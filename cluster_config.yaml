@@ -30,17 +30,17 @@ sniffles:
 concat_chromosome:
   time: "01:00:00:00"
   nCPUs: "2"
-  memory: 40G
+  memory: 10G
 
 concat_snps:
   time: "01:00:00:00"
   nCPUs: "2"
-  memory: 40G
+  memory: 10G
 
 call_snps_chunk:
   time: "07:00:00:00"
   nCPUs: "5"
-  memory: 60G
+  memory: 50G
 
 gt:
   nCPUs: "1"

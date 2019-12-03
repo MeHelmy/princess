@@ -77,7 +77,7 @@ def run_princess(args, unknownargs):
     # and not subcommand
 
     if args.command in ['all', 'align'] and (not args.samples_files and not sample_list_from_config):
-        print("You need to support read files either by using -c parameter or throug sample_list filed in config.yaml file")
+        print("You need to support sequence read file/s either by using -s parameter or through sample_list filed in config.yaml file")
         exit(1)
     elif args.command in ['snp', 'phasing', 'sv'] and ( not os.path.exists(os.path.join(work_dir, 'align', aligner, "data.bam")) and  not args.samples_files and  not sample_list_from_config):
         print("Please if you want run {} command there should be aligned file like {} otherwise use -c command or sample_list filed in config.yaml file to support Princess with the files to align".\

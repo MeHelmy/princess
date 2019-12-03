@@ -57,20 +57,25 @@ else:
         chr_list[reference] = [chr_name for chr_name in f.keys()]
 
 # chromosomes List splited to chunks
-chr_split = config['chr_split'] if config['chr_split'] and (config['chr_split'] > 0) else 10
+split_size = config['chr_split'] if config['chr_split'] and (config['chr_split'] >= 1000000) else 1000000
 ref_index_file = REFERENCES[ref[0]]+".fai"
 chr_range = {}
 with open(ref_index_file, 'r') as data_in:
     for line in data_in:
         chr, length = line.split()[0:2]
-        step_value = int(length)//chr_split
-        ranges = list(range(0, int(length), step_value))
-        if len(ranges) == chr_split + 1:
-            ranges[-1] = int(length)
-        else:
-            ranges.append(int(length))
-        ranges[0] = 1
-        chr_range[chr] = ranges
+        if chr in chr_list[ref[0]]:
+            # Identify number of splits
+            chr_split = int(length) // split_size
+            chr_split = chr_split if chr_split > 1 else 1
+            # step_value = int(length)//chr_split if chr_split > 0 else int(length)
+            step_value = int(length)//chr_split
+            ranges = list(range(0, int(length), step_value))
+            if len(ranges) == chr_split + 1:
+                ranges[-1] = int(length)
+            else:
+                ranges.append(int(length))
+            ranges[0] = 1
+            chr_range[chr] = ranges
 #############
 
 
