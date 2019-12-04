@@ -84,7 +84,7 @@ rule call_snps_chunk:
     threads: config['clair_threads']
     shell:
         """
-        export PATH=$PWD/bin/pypy3.5-7.0.0-linux_x86_64-portable/bin:$PATH && \
+        export PATH=$PWD/bin/pypy/bin:$PATH && \
         clair.py callVarBam \
             --chkpnt_fn {params.train_data} \
             --bam_fn {input.bam} \
