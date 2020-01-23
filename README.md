@@ -1,5 +1,5 @@
 # Princess (beta version)
-Princess is a fast and scalable framework to detect and report haplotype resolved Single Nucleotide Variants (SNV) and Structural Variations (SVs) at scale. It can leverage your cluster environment to speed up the detection which starts with one or many fasta or fastq files. 
+Princess is a fast and scalable framework to detect and report haplotype resolved Single Nucleotide Variants (SNV) and Structural Variations (SVs) at scale. It can leverage your cluster environment to speed up the detection which starts with one or many fasta or fastq files.
 
 ![princess](./pictures/leia.jpg)
 
@@ -25,7 +25,7 @@ conda install snakemake=5.7.1
 ~~~
 2. Downloading PRINCESS  
 ~~~
-git clone git@github.com:MeHelmy/princess.git
+git clone https://github.com/MeHelmy/princess.git
 ~~~
 3. Install Clair, Training models, pypy, and intervaltree
 ~~~
@@ -57,7 +57,7 @@ cluster_jobs: 200 # default 200 change it to what you see convenient
 ~~~
 Define your sequencing technology PacBio or ONT:
 ~~~
-read_type: "pacbio" # chose from ont or pacbio
+read_type: "pacbio" # choose from ont or pacbio
 ~~~
 If you want to work on specific chromosomes, declare them in this variable remember to use the chromosomes names as it is in your reference file so If they are named 1,2 ... use this values other wise use chr1 chr2 ..:
 ~~~
@@ -73,5 +73,4 @@ Princess will create these directories:
 - snp     contains single nucleotide variant calls per chromosomes
 - phased  contains phased variant
 - stat    contains Statistics
-- meth    contains methylation info (if user chose to run methylation)      
-
+- meth    contains methylation info (if user choose to run methylation)      
