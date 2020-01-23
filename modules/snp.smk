@@ -14,16 +14,14 @@
 # CLAIR Parameters
 #=================
 
-CLAIR=config["clair_location"]
-TRAINING_DATA = config["training_data_pacbio"]
-TRAINING_DATA_ONT = config["training_data_ont"]
-CLAIR=config["clair_script"]
-if config['read_type'] == "pacbio":
-    training_data=config["training_data_pacbio"]
+if config['read_type'] == "ccs":
+    training_data=config["training_data_ccs"]
 elif config['read_type'] == "ont":
     training_data=config["training_data_ont"]
+elif config['read_type'] == "clr":
+    training_data=config["training_data_clr"]
 else:
-    print("Unknow data type {} supported format are: ont and pacbio".format(config['read_type']))
+    print("Unknow data type {} supported format are: ont, ccs, and clr".format(config['read_type']))
     exit()
 
 # CLAIR RULE
@@ -89,6 +87,7 @@ rule call_snps_chunk:
             --chkpnt_fn {params.train_data} \
             --bam_fn {input.bam} \
             --ref_fn {input.reference} \
+            --threshold 0.2 \
             --minCoverage {params.minCoverage} \
             --ctgName {wildcards.chr} \
             --ctgStart {params.start} \

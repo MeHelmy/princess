@@ -1,7 +1,7 @@
 # Information about samples
 ###########################
 sample_directory: "" # samples by default should exist in this directory unless otherwise.
-read_type: "pacbio" # ont or pacbio
+read_type: "ont" # ont,clr or ccs
 sample_extension: "gz" # please add sample extension ex: fastq , fasta or gz # defaul gz
 # sample list If specified this will overlap the default behavior which is all samples in directory specified above.
 # If you leave empty the input will be all the samples in directory.
@@ -17,7 +17,7 @@ references:
   '37': "/users/mmahmoud/home/public_workplace/scripts/snakefiles/test/hs37d5_mainchr.fa"
   '38': "/users/sedlazec/ccdg_tech/reference/GRCh38-2.1.0/genome_mainchrs.fa"
 chr_list:
-  '37': [] #[1,2,3]
+  '37': [] #['1','2','3']
   '38': [] #[chr1,chr2]
 ###########################
 
@@ -37,18 +37,19 @@ aligner_threads: 5
 
 # Structural Variant Parameters
 ###############################
-sniffles_coverage: 3
+sniffles_coverage: 2
 
 
 # Calling Variant Parameters
 ############################
-clair_location: "bin/Clair/clair.py"
+clair_location: "bin/Clair/clair.py" # not used anymore
 clair_coverage: 2
 clair_threads: 5
 chr_split: 24925062
 clair_pypy: "/users/mmahmoud/home/source/Clair/pypy3/pypy3.5-7.0.0-linux_x86_64-portable/bin/pypy"
-training_data_pacbio: "/users/mmahmoud/home/projects/princess/bin/modules3/pacbio/model" #"/users/mmahmoud/home/source/Clair/training_data/pacbio/rsii/model"
+training_data_ccs: "/users/mmahmoud/home/projects/princess/bin/modules3/pacbio/model" #"/users/mmahmoud/home/source/Clair/training_data/pacbio/rsii/model"
 training_data_ont: "/users/mmahmoud/home/projects/princess/bin/modules3/ont/model" #"/users/mmahmoud/home/source/Clair/training_data/ont/r94/model"
+training_data_clr: "/users/mmahmoud/home/projects/princess/bin/modules/clr/model-000008"
 clair_script: "/users/mmahmoud/home/source/Clair/clair.py"
 
 # Update SNPs
@@ -60,7 +61,7 @@ maternal_snps: "/users/mmahmoud/home/projects/pacbio/Data_giab/HG004_NA24143_mot
 
 # Methylation
 #############
-methylation: True
+methylation: False
 fast5_dir:
   'HS1011.fastq.gz': "/users/mmahmoud/home/projects/ont_HS1011_prometh_sara/seq"  # 'sample': "directory"
 

@@ -10,7 +10,7 @@
 # Minimap2 Parameters
 #====================
 
-if config["read_type"].lower() == "pacbio":
+if config["read_type"].lower() in ["clr", "ccs"]:
     minimap2_read_type = "-H"
     x_param = "-ax map-pb"
 elif config["read_type"].lower() == "ont":
@@ -30,7 +30,6 @@ rule minimap2:
         dataout=data_dir + "/align/minimap/{sample}.bam"
     params:
         reference=REFERENCES[ref[0]],
-        platform=config["read_type"],
         h = minimap2_read_type,
         md = "--MD",
         x = x_param,
@@ -59,7 +58,7 @@ rule ngmlr:
         dataout=temp(data_dir + "/align/ngmlr/{sample}.sam")
     params:
         reference=REFERENCES[ref[0]],
-        platform=config["read_type"]
+        platform="pacbio" if config["read_type"] in ["clr", "ccs"] else "ont" if config["read_type"] == "ont" else ""
     log:
         data_dir + "/align/ngmlr/{sample}.log"
     message:

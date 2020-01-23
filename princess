@@ -39,10 +39,8 @@ def get_args():
     if args.aligner:
         unknownargs.insert(0,"aligner={}".format(args.aligner))
 
-    if args.read_type == "ont":
+    if args.read_type:
         unknownargs.insert(0,"read_type={}".format(args.read_type))
-    elif args.read_type in ['clr', 'ccs']:
-        unknownargs.insert(0,"read_type={}".format("pacbio"))
 
     # add othe snakemake params at the tail of the list
     if args.use_conda:
@@ -143,14 +141,14 @@ def run_princess(args, unknownargs):
         if sample_names:
             subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
         else:
-            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, *unknownargs], check=True, universal_newlines=True)
 
     elif args.command.lower() == "phasing":
         result = os.path.join(work_dir, 'phased/'+ aligner +'/data.vcf')
         if sample_names:
             subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
         else:
-            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir,  *unknownargs], check=True, universal_newlines=True)
 
     elif args.command.lower() == "snp":
         result = os.path.join(work_dir, 'snp/'+ aligner +'/data.vcf')

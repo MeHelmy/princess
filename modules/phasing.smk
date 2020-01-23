@@ -17,7 +17,7 @@ rule gt:
         bam_index=data_dir + "/align/{aligner}/data.bam.bai",
         snps=data_dir + "/snp/{aligner}/data.{chr}.vcf",
     output:
-        temp(data_dir + "/gt/{aligner}/data.{chr}.vcf")
+        data_dir + "/gt/{aligner}/data.{chr}.vcf"
     params:
         reference=REFERENCES[ref[0]],
     conda: PRINCESS_ENV
@@ -42,7 +42,7 @@ rule phasing:
         bam_index=data_dir + "/align/{aligner}/data.bam.bai",
         snps=data_dir + "/gt/{aligner}/data.{chr}.vcf",
     output:
-        phased=temp(data_dir + "/phased/{aligner}/data.{chr}.vcf"),
+        phased=data_dir + "/phased/{aligner}/data.{chr}.vcf",
     params:
         reference=REFERENCES[ref[0]],
         read_list=data_dir + "/phased/{aligner}/data.{chr}.reads",
