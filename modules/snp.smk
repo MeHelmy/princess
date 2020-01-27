@@ -87,7 +87,6 @@ rule call_snps_chunk:
             --chkpnt_fn {params.train_data} \
             --bam_fn {input.bam} \
             --ref_fn {input.reference} \
-            --threshold 0.2 \
             --minCoverage {params.minCoverage} \
             --ctgName {wildcards.chr} \
             --ctgStart {params.start} \
@@ -107,8 +106,15 @@ rule concat_chromosome:
     message: "Concat variant split per chromomsome"
     conda: PRINCESS_ENV
     benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
+    params:
+        temp_chr=data_dir + "/snp/{aligner}/data.{chr,[A-Za-z0-9]+}_temp.vcf"
     shell:"""
-        vcfcat {input} | vcfstreamsort > {output}
+        filsn () {{
+        grep -v "#" $1 |  cut -f 6  | awk '$1 > 20 && $1 < 900 {{print}}' | sort -n | uniq -c  | sort -k1,2 -V  | head -n 1 | awk '{{print $2}}'
+        }};
+        vcfcat {input} | vcfstreamsort > {params.temp_chr}\
+        && threshold=$(filsn {params.temp_chr})\
+        && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} > {output} && rm {params.temp_chr}
         """
 
 #### UPDATE HEADER #######
