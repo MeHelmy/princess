@@ -132,15 +132,17 @@ def run_princess(args, unknownargs):
         subprocess.run(['snakemake', '-n', '-p', '-r', '--config',  sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
 
     elif args.command.lower() == "all":
-        if is_cluster:
+        if args.is_cluster:
             subprocess.run(['snakemake',  '-p', '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
         else:
             subprocess.run(['snakemake',  '-p', '-j', number_of_jobs, '--cluster-config', cluster_config, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
 
     elif args.command.lower() == "align":
         result = os.path.join(work_dir, 'align/'+ aligner +'/data.bam')
-        subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
-
+        if args.is_cluster:
+            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+        else:
+            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config,  '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
     elif args.command.lower() == "sv":
         result = os.path.join(work_dir, 'sv/'+ aligner +'/sniffles.vcf')
         if sample_names:
