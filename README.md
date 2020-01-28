@@ -40,7 +40,9 @@ Example: assume we are working on two files in `/home/user/samples` and this dir
 also we want the output in the directory `/home/user/result`.
 Assume the Princess is installed in directory `/home/user/tools/princess`
 ~~~
-/home/user/tools/princess/princess -c all -d /home/user/result -s /home/user/samples/sampl1.fasta  /home/user/samples/sampl2.fasta
+/home/user/tools/princess/princess -c all -d /home/user/result -s /home/user/samples/sampl1.fasta  /home/user/samples/sampl2.fasta -r ont
+
+# -r could be ont, clr, or ccs
 ~~~
 
 ### **Requirements**
