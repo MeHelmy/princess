@@ -94,6 +94,7 @@ rule call_snps_chunk:
             --threads {threads} --call_fn {output}
         """
 
+
 #### CALL VARINAT BY CHUNKS #######
 ###################################
 
@@ -110,7 +111,7 @@ rule concat_chromosome:
         temp_chr=data_dir + "/snp/{aligner}/data.{chr,[A-Za-z0-9]+}_temp.vcf"
     shell:"""
         filsn () {{
-        grep -v "#" $1 |  cut -f 6  | awk '$1 > 20 && $1 < 900 {{print}}' | sort -n | uniq -c  | sort -k1,2 -V  | head -n 1 | awk '{{print $2}}'
+        grep -v "#" $1 |  cut -f 6  | awk '$1 > 20 && $1 < 900 {{print}}' | sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -b -k2V -k1V | head -n1 | awk '{{print $1}}'
         }};
         vcfcat {input} | vcfstreamsort > {params.temp_chr}\
         && threshold=$(filsn {params.temp_chr})\

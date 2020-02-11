@@ -21,8 +21,8 @@ cd ../
 
 # download pretrained model (for PacBio CCS)
 mkdir ccs && cd ccs
-wget http://www.bio8.cs.hku.hk/clair_models/pacbio/ccs/trained_models.tar
-tar -xf trained_models.tar
+wget http://www.bio8.cs.hku.hk/clair_models/pacbio/ccs/15.tar
+tar -xf 15.tar
 cd ../
 
 # download pretrained model (for PacBio CLR)
@@ -31,11 +31,10 @@ wget http://www.bio8.cs.hku.hk/clair_models/pacbio/clr/1234567.tar
 tar -xf 1234567.tar
 cd ../
 
-
 # download pretrained model (for ONT)
 mkdir ont && cd ont
-wget http://www.bio8.cs.hku.hk/clair_models/ont/trained_models.tar
-tar -xf trained_models.tar
+wget http://www.bio8.cs.hku.hk/clair_models/ont/1234.tar
+tar -xf 1234.tar
 cd ../
 # wget -v -r  --no-parent --reject "index.html*" http://www.bio8.cs.hku.hk/clair/models/
 # mv  www.bio8.cs.hku.hk/clair/models/* ./
