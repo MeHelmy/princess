@@ -53,6 +53,7 @@ export PATH=$clair_dir/pypy/bin:$PATH
 wget https://bootstrap.pypa.io/get-pip.py
 python get-pip.py
 pypy3 -m ensurepip
-pypy3 -m pip install --no-cache-dir intervaltree blosc
+#pypy3 -m pip install --no-cache-dir intervaltree blosc
+pypy3 -m pip install --no-cache-dir intervaltree
 
 echo "Done"
