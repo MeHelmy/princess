@@ -21,8 +21,8 @@ elif config['read_type'] == "ont":
 elif config['read_type'] == "clr":
     training_data=config["training_data_clr"]
 else:
-    print("Unknow data type {} supported format are: ont, ccs, and clr".format(config['read_type']))
-    exit()
+    print("Unknow data type, supported format are: ont, ccs, and clr")
+    exit(1)
 
 # CLAIR RULE
 #===========

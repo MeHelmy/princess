@@ -17,13 +17,13 @@ def get_args():
                                      add_help=True, )
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.01')
 
-    parser.add_argument('-c', '--command', default="all", nargs='?', choices=['all', 'align', 'sv', 'snp', 'phasing', 'overview'], help='Princess running command.')
+    parser.add_argument('-c', '--command', default="all", type=str.lower, nargs='?', choices=['all', 'align', 'sv', 'snp', 'sv_snp', 'phasing', 'overview'], help='Princess running command.')
     parser.add_argument('-s', '--samplesFiles', dest="samples_files", metavar= "sampleFiles" ,  nargs='+',  help='list of fatsa, fastq, or gz files.')
     parser.add_argument('-d', '--directory', help='Working directory.', metavar='Working directory', required=True)
     parser.add_argument('-l', '--removeFiles', dest='remove_source', help='remove princess source script after running', action='store_true')
     parser.add_argument('-u', '--DoNotUseConda', dest='use_conda', help='DO NOT use conda for running', action='store_false')
     parser.add_argument('-a', '--Aligner', dest="aligner", choices=['minimap', 'ngmlr'], help='In case if you want to choose specific aligner otherwise default will be used')
-    parser.add_argument('-r', '--ReadType', dest="read_type", choices=['ont', 'clr', 'ccs'], help='Read techonlogy', required=True)
+    parser.add_argument('-r', '--ReadType', dest="read_type",type=str.lower, choices=['ont', 'clr', 'ccs'], help='Read techonlogy', required=True)
     parser.add_argument('-e', '--NoCluster', dest='is_cluster', help='Do not use cluster while runing', action='store_false')
 
 
@@ -126,43 +126,51 @@ def run_princess(args, unknownargs):
     number_of_jobs = str(conf_yaml['cluster_jobs'])
 
     cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+    try:
+        if args.command.lower() == "overview":
+            print(" ".join(['snakemake','-n', '-p', '-r', '--config', sample_dir, sample_names, *unknownargs]))
+            subprocess.run(['snakemake', '-n', '-p', '-r', '--config',  sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
 
-    if args.command.lower() == "overview":
-        print(" ".join(['snakemake','-n', '-p', '-r', '--config', sample_dir, sample_names, *unknownargs]))
-        subprocess.run(['snakemake', '-n', '-p', '-r', '--config',  sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+        elif args.command.lower() == "all":
+            if args.is_cluster:
+                subprocess.run(['snakemake',  '-p', '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+            else:
+                subprocess.run(['snakemake',  '-p', '-j', number_of_jobs, '--cluster-config', cluster_config, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
 
-    elif args.command.lower() == "all":
-        if args.is_cluster:
-            subprocess.run(['snakemake',  '-p', '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
-        else:
-            subprocess.run(['snakemake',  '-p', '-j', number_of_jobs, '--cluster-config', cluster_config, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+        elif args.command.lower() == "align":
+            result = os.path.join(work_dir, 'align/'+ aligner +'/data.bam')
+            if args.is_cluster:
+                subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+            else:
+                subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config,  '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+        elif args.command.lower() == "sv":
+            result = os.path.join(work_dir, 'sv/'+ aligner +'/sniffles.vcf')
+            if sample_names:
+                subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+            else:
+                subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, *unknownargs], check=True, universal_newlines=True)
 
-    elif args.command.lower() == "align":
-        result = os.path.join(work_dir, 'align/'+ aligner +'/data.bam')
-        if args.is_cluster:
-            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
-        else:
-            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config,  '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
-    elif args.command.lower() == "sv":
-        result = os.path.join(work_dir, 'sv/'+ aligner +'/sniffles.vcf')
-        if sample_names:
-            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
-        else:
-            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, *unknownargs], check=True, universal_newlines=True)
+        elif args.command.lower() == "phasing":
+            result = os.path.join(work_dir, 'phased/'+ aligner +'/data.vcf')
+            if sample_names:
+                subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+            else:
+                subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir,  *unknownargs], check=True, universal_newlines=True)
 
-    elif args.command.lower() == "phasing":
-        result = os.path.join(work_dir, 'phased/'+ aligner +'/data.vcf')
-        if sample_names:
-            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
-        else:
-            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir,  *unknownargs], check=True, universal_newlines=True)
-
-    elif args.command.lower() == "snp":
-        result = os.path.join(work_dir, 'snp/'+ aligner +'/data.vcf')
-        if sample_names:
-            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
-        else:
-            subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, *unknownargs], check=True, universal_newlines=True)
+        elif args.command.lower() == "snp":
+            result = os.path.join(work_dir, 'snp/'+ aligner +'/data.vcf')
+            if sample_names:
+                subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+            else:
+                subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, *unknownargs], check=True, universal_newlines=True)
+        # elif args.command.lower() == "sv_snp":
+        #     result = [os.path.join(work_dir, 'snp/'+ aligner +'/data.vcf'), os.path.join(work_dir, 'sv/'+ aligner +'/sniffles.vcf')]
+        #     if sample_names:
+        #         subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, sample_names, *unknownargs], check=True, universal_newlines=True)
+        #     else:
+        #         subprocess.run(['snakemake',  '-p', result, '-j', number_of_jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, *unknownargs], check=True, universal_newlines=True)
+    except subprocess.CalledProcessError as e:
+        print("Error in subprocess:\n{}".format(e.returncode), file=sys.stderr)
 
     if args.remove_source:
         clean(running_file, samples_names)
