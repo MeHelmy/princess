@@ -2,7 +2,7 @@
 ###########################
 sample_directory: "" # samples by default should exist in this directory unless otherwise.
 read_type: "ont" # ont,clr or ccs
-sample_extension: "gz" # please add sample extension ex: fastq , fasta or gz # defaul gz
+sample_extension: "gz" # please add sample extension ex: fastq , fasta or gz # default gz
 # sample list If specified this will overlap the default behavior which is all samples in directory specified above.
 # If you leave empty the input will be all the samples in directory.
 sample_list: []
