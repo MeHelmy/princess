@@ -79,6 +79,7 @@ rule call_snps_chunk:
         end = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region) + 1]
     benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}_{region}.benchmark.txt"
     conda: CLAIR_ENV
+    log: data_dir + "/snp/{aligner}/data.split.{chr}_{region}.log"
     threads: config['clair_threads']
     shell:
         """
@@ -91,7 +92,7 @@ rule call_snps_chunk:
             --ctgName {wildcards.chr} \
             --ctgStart {params.start} \
             --ctgEnd {params.end} \
-            --threads {threads} --call_fn {output}
+            --threads {threads} --call_fn {output}  > {log} 2>&1
         """
 
 
