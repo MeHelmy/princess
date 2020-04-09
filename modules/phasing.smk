@@ -19,7 +19,7 @@ rule gt:
     output:
         data_dir + "/gt/{aligner}/data.{chr}.vcf"
     params:
-        reference=REFERENCES[ref[0]],
+        reference=REFERENCES,
     conda: PRINCESS_ENV
     log:
         data_dir + "/gt/{aligner}/data.{chr}.log"
@@ -40,11 +40,11 @@ rule phasing:
     input:
         bam=data_dir + "/align/{aligner}/data.bam",
         bam_index=data_dir + "/align/{aligner}/data.bam.bai",
-        snps=data_dir + "/gt/{aligner}/data.{chr}.vcf",
+        snps=data_dir + "/snp/{aligner}/data.{chr}.vcf",
     output:
         phased=data_dir + "/phased/{aligner}/data.{chr}.vcf",
     params:
-        reference=REFERENCES[ref[0]],
+        reference=REFERENCES,
         read_list=data_dir + "/phased/{aligner}/data.{chr}.reads",
     log:
         data_dir + "/phased/{aligner}/data.{chr}.log"
@@ -53,7 +53,6 @@ rule phasing:
     shell:"""
         whatshap phase --reference {params.reference} \
                      --output {output.phased} {input.snps} {input.bam} \
-                     --distrust-genotypes \
                      --ignore-read-groups \
                      --output-read-list {params.read_list} > {log} 2>&1
         """
@@ -61,11 +60,11 @@ rule phasing:
 #### CONCAT PHASING ####
 ########################
 
-rule all_phased:
+rule allPhased:
     """
     Concat all the phased SNPs into one file.
     """
-    input:lambda wildcards: expand(data_dir + "/phased/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list[ref[0]]),
+    input:lambda wildcards: expand(data_dir + "/phased/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list),
     output: data_dir + "/phased/{aligner}/data.vcf"
     conda: PRINCESS_ENV
     benchmark: data_dir + "/benchmark/phase/{aligner}/concat_phased.benchmark.txt"
@@ -76,7 +75,7 @@ rule all_phased:
 #### HAPLOTYPE BAM FILE ####
 ############################
 
-rule partion_bam:
+rule partionBam:
     """
     Partion a bam file based on the phased SNPs,
     It will use the updated SNPs if the parental SNPs were provided.
@@ -92,7 +91,7 @@ rule partion_bam:
     message: "Partioning bam file"
     conda: PRINCESS_ENV
     params:
-        ref = REFERENCES[ref[0]]
+        ref = REFERENCES
     shell:"""
         whatshap haplotag -o {output.hap_bam} -r {params.ref} {input.snp} {input.bam}
         """

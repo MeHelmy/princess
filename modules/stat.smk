@@ -7,7 +7,7 @@
 #### RAW READS STATISTICS ####
 ##############################
 
-rule reads_stat:
+rule readsStat:
     """
     Input is the reads in directory output is info about reads
     """
@@ -27,7 +27,7 @@ rule reads_stat:
 #### BAM STATISTICS ####
 ########################
 
-rule bam_stat:
+rule bamStatstics:
     """
     Calculate statistics from merged bam file
     """
@@ -43,7 +43,7 @@ rule bam_stat:
 #### SV STATISTICS ####
 #######################
 
-rule sv_stat:
+rule svStat:
     input: expand(data_dir + "/sv/{aligner}/sniffles.vcf", aligner=config['aligner'])
     output: data_dir + "/statitics/sv/data.stat"
     message: "calculating statistics for structural variant"
@@ -56,7 +56,7 @@ rule sv_stat:
 #### SNPs STATISTICS ####
 #########################
 
-rule snp_stat:
+rule snpStat:
     input:
         snp_file = expand(data_dir + "/phased/{aligner}/data.vcf.gz", aligner=config['aligner']) ,
         snp_file_index = expand(data_dir + "/phased/{aligner}/data.vcf.gz.tbi", aligner=config['aligner']) ,

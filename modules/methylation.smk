@@ -7,7 +7,7 @@
 #### NANOPOLISH INDEX ####
 ##########################
 
-rule nano_index:
+rule nanoIndex:
     """
     Preparing index to links read ids with their signal-level data in the FAST5 files
     """
@@ -26,7 +26,7 @@ rule nano_index:
 #### NANOPOLISH METHYLATION ####
 ################################
 
-rule cal_meth:
+rule callMeth:
     """
     Calling Methylation
     """
@@ -37,7 +37,7 @@ rule cal_meth:
         fastq_index=data_dir + "/{sample}.index.readdb",
     output: data_dir + "/meth/{aligner}/{sample}.methylation_calls.tsv"
     params:
-        ref = REFERENCES[ref[0]],
+        ref = REFERENCES,
     benchmark: data_dir + "/benchmark/methylation/{aligner}/call_methylation.{sample}.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
@@ -47,7 +47,7 @@ rule cal_meth:
 #### CALL ALL METHYLATION ####
 ##############################
 
-rule all_methylation:
+rule allMethylation:
     """
     Call all methylation samples.
     """

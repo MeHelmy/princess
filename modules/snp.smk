@@ -62,14 +62,14 @@ else:
 # CLAIR CHUNK RULE
 #=================
 # TODO: add samtools to clair-env environement
-rule call_snps_chunk:
+rule callSNVsChunk:
     """
     Calling SNPs using clair
     """
     input:
         bam=data_dir + "/align/{aligner}/data.bam",
         data_index=data_dir + "/align/{aligner}/data.bam.bai",
-        reference=REFERENCES[ref[0]],
+        reference=REFERENCES,
     output:
         temp(data_dir + "/snp/{aligner}/data.split.{chr}_{region}.vcf")
     params:
@@ -77,9 +77,10 @@ rule call_snps_chunk:
         minCoverage = config['clair_coverage'],
         start = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region)],
         end = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region) + 1]
-    benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}_{region}.benchmark.txt"
+    benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}_{region,\d+}.benchmark.txt"
     conda: CLAIR_ENV
-    log: data_dir + "/snp/{aligner}/data.split.{chr}_{region}.log"
+    log: data_dir + "/snp/{aligner}/data.split.{chr}_{region,}.log"
+    # log: data_dir + "/snp/{aligner}/data.split.{chr,[A-Za-z0-9]+}_{region}.log"
     threads: config['clair_threads']
     shell:
         """
@@ -99,30 +100,67 @@ rule call_snps_chunk:
 #### CALL VARINAT BY CHUNKS #######
 ###################################
 
-rule concat_chromosome:
+rule concatChromosome:
     """
     Concat splited chromomsomes regions
     """
     input: lambda wildcards: expand(data_dir + "/snp/{aligner}/data.split.{chr}_{region}.vcf", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
-    output: data_dir + "/snp/{aligner}/data.{chr,[A-Za-z0-9]+}.vcf"
+    output: data_dir + "/snp/{aligner}/data.{chr}.vcf"
     message: "Concat variant split per chromomsome"
     conda: PRINCESS_ENV
     benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
     params:
-        temp_chr=data_dir + "/snp/{aligner}/data.{chr,[A-Za-z0-9]+}_temp.vcf"
+        temp_chr=data_dir + "/snp/{aligner}/data.{chr,[A-Za-z0-9_.]+}_filtered.vcf",
+        filter=config['filter_chrs'],
+        read_type=config['read_type']
     shell:"""
-        filsn () {{
-        grep -v "#" $1 |  cut -f 6  | awk '$1 > 20 && $1 < 900 {{print}}' | sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -b -k2V -k1V | head -n1 | awk '{{print $1}}'
-        }};
-        vcfcat {input} | vcfstreamsort > {params.temp_chr}\
-        && threshold=$(filsn {params.temp_chr})\
-        && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} > {output} && rm {params.temp_chr}
+        if [ {params.filter} == "True" ]; then
+            find_max(){{
+              filename=$(basename -- "$1")
+              extension="${{1##*.}}"
+              if [ "${{2}}" == "ont" ] || [ "${{2}}" == "clr" ]; then
+                if [ "${{extension}}" == "gz" ]; then
+                  zgrep -v "#" $1 | cut -f 6 | awk '$1 > 0 && $1 < 200 {{print}}' | sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -nr -k2,2 -k1,1 -t $'\t' | head -n1 |  awk '{{print $1}}'
+                else
+                  grep -v "#" $1 | cut -f 6 | awk '$1 > 0 && $1 < 200 {{print}}' | sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -nr -k2,2 -k1,1 -t $'\t' | head -n1 |  awk '{{print $1}}'
+                fi
+              elif [ "${{2}}" == "ccs" ]; then
+                if [ "${{extension}}" == "gz" ]; then
+                  zgrep -v "#" $1 | cut -f 6 | awk '$1 > 0 && $1 < 60 {{print}}' | sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -nr -k2,2 -k1,1 -t $'\t' | head -n1 |  awk '{{print $1}}'
+                else
+                  grep -v "#" $1 | cut -f 6 | awk '$1 > 0 && $1 < 60 {{print}}' | sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -nr -k2,2 -k1,1 -t $'\t' | head -n1 |  awk '{{print $1}}'
+                fi
+              else
+                echo -e "Unknown technology ${{2}}"
+              fi
+
+            }}
+
+            filsn () {{
+            filename=$(basename -- "$1")
+            extension="${{1##*.}}"
+            if [ "${{extension}}" == "gz" ]; then
+                zgrep -v "#" $1 |  cut -f 6  | awk -v min=$2 '$1 > min && $1 < 900 {{print}}'| sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -b -k2V -k1V | head -n1 | awk '{{print $1}}'
+              else
+                grep -v "#" $1 |  cut -f 6  | awk -v min=$2 '$1 > min && $1 < 900 {{print}}'| sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -b -k2V -k1V | head -n1 | awk '{{print $1}}'
+            fi
+            }}
+            vcfcat {input} | vcfstreamsort > {params.temp_chr}\
+            && first_max=$(find_max {params.temp_chr} {params.read_type})\
+            && threshold=$(filsn {params.temp_chr} $first_max)\
+            && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} > {output} 
+        elif [ {params.filter} == "False" ]; then
+            vcfcat {input} | vcfstreamsort > {output}
+        else
+            echo "Unknow option {params.filter}"
+            exit 1
+        fi
         """
 
 #### UPDATE HEADER #######
 ##########################
 
-rule update_header:
+rule updateHeader:
     """
     Update the phased SNPs in phased/aligner/data.vcf
     Where the PS in header defined as Integer where it should be String.
@@ -158,7 +196,7 @@ rule update_header:
 #### INDEXING VCF FILE ########
 ###############################
 
-rule vcf_index:
+rule vcfIndex:
     """
     Index VCF file.
     """
@@ -173,7 +211,7 @@ rule vcf_index:
 #### MERGING PHASED VCF FILE WITH PARENTAL SNPs ########
 ########################################################
 
-rule merge_parental_snps:
+rule mergeParentalSNPs:
     """
     If the user wanted to update identifed SNVs this will be the first rule in sequence,
     Input: phased SNVs after updating header using update_header the bgzip and index it using
@@ -195,7 +233,7 @@ rule merge_parental_snps:
 #### UPDATING PHASED SNPs ########
 ##################################
 
-rule update_snps:
+rule updateSNPs:
     """
     Here we shall take the input from merge_parental_snps but we need to unzip it first.
     """
@@ -216,12 +254,12 @@ rule update_snps:
 
 #### CONCAT SNPs ########
 #########################
-rule concact_snps:
+rule concactSNPs:
     """
     Rule to concat the identifed SNPs this will only be called by the user
     in case if he wanted to have only SNPs
     """
-    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list[ref[0]]),
+    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list),
     output: data_dir + "/snp/{aligner}/data.vcf"
     message: "Concat SNP files"
     benchmark: data_dir + "/benchmark/snp/{aligner}/concat_snp.vcf"

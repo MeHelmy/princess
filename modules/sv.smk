@@ -31,7 +31,7 @@ rule sniffles:
 #######################
 
 # TODO: rule is not finished script needs to be updated to change hp filed according to whashap results
-rule phase_sv:
+rule phaseSVs:
     """
     This rules takes as input a taged tabed bam file from whatshap and vcf file contains SVs and update the SVs to add haplotype HP and phase blocks PS.
     """
@@ -49,7 +49,7 @@ rule phase_sv:
 #### SORTING SVs ####
 #####################
 
-rule vcf_sort:
+rule vcfSort:
     """
     To concat the haplotype SVs with SNVs, SVs needs to be sorted first.
     """
@@ -63,7 +63,7 @@ rule vcf_sort:
 #### BGZIP SVs ####
 ###################
 
-rule bgzip_file:
+rule bgzipFile:
     """
     General rule to bgzip files
     """
@@ -77,7 +77,7 @@ rule bgzip_file:
 #### CHANGE SVs SAMPLE NAME ####
 ###############################
 
-rule change_sample_name:
+rule changeSampleName:
     """
     Sniffles name the sample as the bam, but Clair call it SAMPLE
     This rule will change the sample name in the SV file.
@@ -92,7 +92,7 @@ rule change_sample_name:
 #### CONCAT SVs WITH SNPs ####
 ##############################
 
-rule SV_SNP_compained:
+rule SVsSNPsCompained:
     """
     Concat haplotyped SNPs with haplotyped and Genotyped SVs.
     """

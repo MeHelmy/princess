@@ -29,7 +29,7 @@ rule minimap2:
     output:
         dataout=data_dir + "/align/minimap/{sample}.bam"
     params:
-        reference=REFERENCES[ref[0]],
+        reference=REFERENCES,
         h = minimap2_read_type,
         md = "--MD",
         x = x_param,
@@ -57,7 +57,7 @@ rule ngmlr:
     output:
         dataout=temp(data_dir + "/align/ngmlr/{sample}.sam")
     params:
-        reference=REFERENCES[ref[0]],
+        reference=REFERENCES,
         platform="pacbio" if config["read_type"] in ["clr", "ccs"] else "ont" if config["read_type"] == "ont" else ""
     log:
         data_dir + "/align/ngmlr/{sample}.log"
@@ -87,7 +87,7 @@ rule sam2bam:
 #### INDEX BAM ####
 ###################
 
-rule index_bam:
+rule indexBam:
     """
     Indexing bam file.
     """
@@ -104,7 +104,7 @@ rule index_bam:
 #### MERGE BAM FILES ####
 ########################
 
-rule merge_align:
+rule mergeAlign:
     input:
         bams=lambda wildcards: expand(data_dir + "/align/{aligner}/{sample}.bam", aligner=wildcards.aligner, sample=sample_list),
         index_bams=lambda wildcards: expand(data_dir + "/align/{aligner}/{sample}.bam.bai", aligner=wildcards.aligner, sample=sample_list),
@@ -113,15 +113,18 @@ rule merge_align:
     message:"Mergeing data"
     threads: config['samtools_threads']
     benchmark: data_dir + "/benchmark/align/{aligner}/merging.benchmark.txt"
+    log:
+        data_dir + "/align/{aligner}/merge.log"
     conda: PRINCESS_ENV
+    threads: config['aligner_threads']
     shell:"""
-        samtools merge {output} {input.bams}
+        samtools merge -@ {threads} {output} {input.bams} > {log} 2>&1
         """
 
 #### ADD RG TO BAM FILE ####
 ############################
 
-rule add_rg:
+rule addRG:
     input:data_dir + "/{sample}.bam"
     output:data_dir + "/{sample}_rg.bam"
     params:
@@ -136,7 +139,7 @@ rule add_rg:
 #### CONVER BAM FILE TO TAB ####
 ################################
 
-rule bam_2_tab:
+rule bam2tab:
     """
     This rules takes bam file and extract to tab delimeted file: reads   HP  PS.
     """

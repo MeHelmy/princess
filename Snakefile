@@ -1,3 +1,4 @@
+
 # import Lib
 ############
 import os, glob, ntpath, math
@@ -40,35 +41,36 @@ if not isinstance(sample_list, list):
 
 # Config reference and chromosomes list
 #######################################
-REFERENCES = config["references"]
-ref = config["ref"]
-chr_list = {}
-
-if  config["chr_list"] and ref:
-    for reference in ref:
-        if reference in config["chr_list"] and config["chr_list"][reference]:
-            chr_list[reference] = config["chr_list"][reference]
-        else:
-            if os.path.isfile(REFERENCES[reference]+".fai"):
-                chr_names = []
-                with open(REFERENCES[reference]+".fai", 'r') as data_in:
-                    for line in data_in:
-                        chr_names.append(str(line.split()[0]))
-            else:
-                print("Please make sure that {ref}.fai exists.\nOtherwise run:\nsamtools faidx {ref}".format(ref=REFERENCES[reference]))
-                exit(1)
-            # f = Fasta(REFERENCES[reference])
-            # chr_list[reference] = [chr_name for chr_name in f.keys()]
-            chr_list[reference] = chr_names
+REFERENCES = config["reference"]
+chr_list = config['chrs']
+# ref = config["ref"]
+# chr_list = {}
+#
+# if  config["chr_list"] and ref:
+#     for reference in ref:
+#         if reference in config["chr_list"] and config["chr_list"][reference]:
+#             chr_list[reference] = config["chr_list"][reference]
+#         else:
+#             if os.path.isfile(REFERENCES[reference]+".fai"):
+#                 chr_names = []
+#                 with open(REFERENCES[reference]+".fai", 'r') as data_in:
+#                     for line in data_in:
+#                         chr_names.append(str(line.split()[0]))
+#             else:
+#                 print("Please make sure that {ref}.fai exists.\nOtherwise run:\nsamtools faidx {ref}".format(ref=REFERENCES[reference]))
+#                 exit(1)
+#             # f = Fasta(REFERENCES[reference])
+#             # chr_list[reference] = [chr_name for chr_name in f.keys()]
+#             chr_list[reference] = chr_names
 
 # chromosomes List splited to chunks
 split_size = config['chr_split'] if config['chr_split'] and (config['chr_split'] >= 1000000) else 1000000
-ref_index_file = REFERENCES[ref[0]]+".fai"
+ref_index_file = REFERENCES+".fai"
 chr_range = {}
 with open(ref_index_file, 'r') as data_in:
     for line in data_in:
         chr, length = line.split()[0:2]
-        if chr in chr_list[ref[0]]:
+        if chr in chr_list:
             # Identify number of splits
             chr_split = int(length) // split_size
             chr_split = chr_split if chr_split > 1 else 1
