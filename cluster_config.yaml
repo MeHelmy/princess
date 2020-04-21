@@ -1,7 +1,8 @@
 ---
 __default__:
     "account"   : "proj_CCDG"
-    "queue"     : "analysis"
+#    "queue"     : "analysis"
+    "queue"     : "ill-prod"
     "nCPUs"     : "16"
     "memory"    : 20000
     "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
@@ -17,7 +18,7 @@ __default__:
 
 minimap2:
   time: "72:00:00"
-  nCPUs: "20"
+  nCPUs: "12"
   memory: 30G
 
 indexBam:
@@ -208,3 +209,5 @@ stat:
   memory: 1G
 
 #<*><*><*><*><*><*><*><*><*>
+
+...

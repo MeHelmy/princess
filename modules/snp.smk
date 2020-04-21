@@ -71,15 +71,15 @@ rule callSNVsChunk:
         data_index=data_dir + "/align/{aligner}/data.bam.bai",
         reference=REFERENCES,
     output:
-        temp(data_dir + "/snp/{aligner}/chrsplit/data.split.{chr}_{region,\d+}.vcf")
+        temp(data_dir + "/snp/{aligner}/{chrsplit}/chr.split.{chr}_{region,\d+}.vcf")
     params:
         train_data = training_data,
         minCoverage = config['clair_coverage'],
         start = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region)],
         end = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region) + 1]
-    benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}_{region,\d+}.benchmark.txt"
+    benchmark: data_dir + "/benchmark/snp/{aligner}/{chrsplit}/{chr}_{region,\d+}.benchmark.txt"
     conda: CLAIR_ENV
-    log: data_dir + "/snp/{aligner}/data.split.{chr}_{region}.log"
+    log: data_dir + "/snp/{aligner}/{chrsplit}/data.split.{chr}_{region}.log"
     # log: data_dir + "/snp/{aligner}/data.split.{chr,[A-Za-z0-9]+}_{region}.log"
     threads: config['clair_threads']
     shell:
@@ -105,7 +105,7 @@ rule concatChromosome:
     """
     Concat splited chromomsomes regions
     """
-    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/chrsplit/data.split.{chr}_{region}.vcf", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
+    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/chrsplit/chr.split.{chr}_{region}.vcf", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
     output: data_dir + "/snp/{aligner}/data.{chr}.vcf"
     message: "Concat variant split per chromomsome"
     conda: PRINCESS_ENV
