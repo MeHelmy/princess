@@ -36,37 +36,33 @@ chmod +x install.sh
 
 
 ## Tutorial
-Example: assume we are working on two files in `/home/user/samples` and this directory contains two fasta files `sample1.fasta` and `sample2.fasta`  
-also we want the output in the directory `/home/user/result`.
-Assume the Princess is installed in directory `/home/user/tools/princess`
-~~~
-/home/user/tools/princess/princess -c all -d /home/user/result -s /home/user/samples/sampl1.fasta  /home/user/samples/sampl2.fasta -r ont
+To have an overview about princess write command `princess -h`.
+You will have the following list of commands that we can use in princess.
+![Start](./pictures/start.png)
 
-# -r could be ont, clr, or ccs
+
+Assume that we want only to run `snv` command, to know more about its option:
+
+`princess snv -h`
+
+![Snv](./pictures/snv.png)
+
+So let's assume that we want to run all the analysis the comand shall be:
+
+~~~
+princess all  -d ./princess_all -r ont -s reads.split00.fastq.gz reads.split01.fastq.gz  -f hs37d5_mainchr.fa
 ~~~
 
-### **Requirements**
-You will need to adopt the `config.yaml` to suit your run. Especially:
-~~~
-ref: ['37']   # set it to the reference you want to run against either 37 or 38
-references:   
-  '37': "/home/user/reference/RCh37.fa"    # location of the indexed reference ex: /home/user/reference/RCh38.fa in the same directory you can use samtools faidx <ref.fasta>
-  '38': "/home/user/reference/RCh38.fa"
-~~~
-If you want to use your cluster please define how many jobs should run:
-~~~
-cluster_jobs: 200 # default 200 change it to what you see convenient
-~~~
-Define your sequencing technology PacBio or ONT:
-~~~
-read_type: "pacbio" # choose from ont or pacbio
-~~~
-If you want to work on specific chromosomes, declare them in this variable remember to use the chromosomes names as it is in your reference file so If they are named 1,2 ... use this values other wise use chr1 chr2 ..:
-~~~
-chr_list:
-  '37': [] # If I want to work on chromosomes 1 , 2 and 3 I shall update this field to be: [1,2,3]
-  '38': [] #[chr1,chr2]
-~~~
+`-r` defines the reads type.  
+`-s` samples that we would like to analyze.  
+`-f` **full path** to the reference.  
+
+*__Note__*  
+I am assuming that the reference file is indexed, if not please use the following command.  
+`samtools faidx hs37d5_mainchr.fa` as a result you will have `hs37d5_mainchr.fa.fai`.
+
+Done!!
+
 ## Output
 
 Princess will create these directories:
