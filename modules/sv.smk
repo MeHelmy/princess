@@ -21,6 +21,7 @@ rule sniffles:
         coverage=config['sniffles_coverage'],
     # benchmark: data_dir + "/sv/{aligner}/sniffles.benchmark.txt"
     conda: PRINCESS_ENV
+    priority: 1
     log: data_dir + "/sv/{aligner}/sniffles.log"
     benchmark: data_dir + "/benchmark/sv/{aligner}/sv.benchmark.txt"
     shell:"""
