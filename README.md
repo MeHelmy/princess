@@ -37,6 +37,9 @@ chmod +x install.sh
 
 ## Tutorial
 
+To have an overview about princess write command `princess -h`.
+You will have the following list of commands that we can use in princess.
+
 ~~~
 usage: princess [-h] {all,align,sv,snv,variant,phase,overview} ...
 
@@ -67,18 +70,46 @@ Sub-commands:
 
 princess version 0.01. use command -h for info.
 ~~~
-To have an overview about princess write command `princess -h`.
-You will have the following list of commands that we can use in princess.
-![Start](./pictures/start.png)
 
 
 Assume that we want only to run `snv` command, to know more about its option:
 
 `princess snv -h`
 
-![Snv](./pictures/snv.png)
 
-So let's assume that we want to run all the analysis the comand shall be:
+~~~
+usage: princess snv [-h] [-v] -d Working directory -r {ont,clr,ccs} [-l] [-u]
+                    [-e] [-a {minimap,ngmlr}]
+                    [-s sampleFiles [sampleFiles ...]] -f REF [-j JOBS]
+                    [-g LOG_FILE] [-c CHRS [CHRS ...]] [-t]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
+  -d Working directory, --directory Working directory
+                        Working directory.
+  -r {ont,clr,ccs}, --ReadType {ont,clr,ccs}
+                        Read techonlogy
+  -l, --removeFiles     remove princess source script after running default:
+                        False)
+  -u, --UseConda        Use conda for running default: True)
+  -e, --Cluster         Use cluster while runing default: True)
+  -a {minimap,ngmlr}, --Aligner {minimap,ngmlr}
+                        In case if you want to choose specific aligner
+                        otherwise default will be used default: minimap)
+  -s sampleFiles [sampleFiles ...], --samplesFiles sampleFiles [sampleFiles ...]
+                        list of fatsa, fastq, or gz files.
+  -f REF, --ref REF     The reference file will be used to align reads to.
+  -j JOBS, --jobs JOBS  Number of running jobs default: 200 )
+  -g LOG_FILE, --log LOG_FILE
+                        Log file: PrincessLog.txt )
+  -c CHRS [CHRS ...], --chr CHRS [CHRS ...]
+                        Chromosomes list, if not specified we will use all
+                        Chromosomes.
+  -t, --filter          Filter identified SNVs using Princess algorithm
+                        default: True)
+~~~
+
 
 ~~~
 princess all  -d ./princess_all -r ont -s reads.split00.fastq.gz reads.split01.fastq.gz  -f hs37d5_mainchr.fa
