@@ -36,6 +36,37 @@ chmod +x install.sh
 
 
 ## Tutorial
+
+~~~
+usage: princess [-h] {all,align,sv,snv,variant,phase,overview} ...
+
+Princess A framework for long-reads analysis.
+
+optional arguments:
+  -h, --help            show this help message and exit
+
+Sub-commands:
+  Valid sub-commands
+
+  {all,align,sv,snv,variant,phase,overview}
+    all                 This command will run the following: Align the reads.
+                        Identify SVs Identify SNVs Phase both SNVs and SVs
+    align               This command will use the input sequence files and
+                        align them against the reference using either Minimap2
+                        or NGMLR use -a to choose aligner otherwise Minimap2
+                        will be used by default.
+    sv                  This command will use bam file to identify SV using
+                        Sniffles.
+    snv                 This command will use bam file to identify SNVs usin
+                        Clair.
+    variant             This command will use bam file to identify SVs and
+                        SNVs.
+    phase               This command will use use reads to identify SNVs by
+                        Clair and Phase them.
+    overview            This command will show what steps will run.
+
+princess version 0.01. use command -h for info.
+~~~
 To have an overview about princess write command `princess -h`.
 You will have the following list of commands that we can use in princess.
 ![Start](./pictures/start.png)
