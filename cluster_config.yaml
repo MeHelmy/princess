@@ -9,39 +9,149 @@ __default__:
     "error"     : "{rule}.{wildcards}.err"
     "time"      : "07:00:00:00"
 
+
+##########################
+######  ALIGN RULES ######
+#########################
+
 minimap2:
   time: "72:00:00"
   nCPUs: "20"
   memory: 30G
 
-index_bam:
+indexBam:
   time: "02:00:00"
-  nCPUs: "20"
+  nCPUs: "4"
   memory: 10G
 
-merge_align:
+mmergeAlign:
   time: "24:00:00"
+  nCPUs: "8"
   memory: 50G
+
+sam2bam:
+  time: "01:00:00:00"
+  nCPUs: "2"
+  memory: 10G
+
+addRG:
+  time: "01:00:00:00"
+  nCPUs: "2"
+  memory: 10G
+
+bam2tab:
+  time: "01:00:00:00"
+  nCPUs: "2"
+  memory: 10G
+
+#<*><*><*><*><*><*><*><*><*>
+
+
+######################
+###### SV RULES ######
+#####################
 
 sniffles:
   time: "72:00:00"
-  nCPUs: "20"
+  nCPUs: "16"
   memory: 30G
 
-concat_chromosome:
+phaseSVs:
+  time: "24:00:00"
+  nCPUs: "8"
+  memory: 20G
+
+vcfSort:
+  time: "24:00:00"
+  nCPUs: "8"
+  memory: 20G
+
+bgzipFile:
   time: "01:00:00:00"
   nCPUs: "2"
   memory: 10G
 
-concat_snps:
+changeSampleName:
   time: "01:00:00:00"
   nCPUs: "2"
   memory: 10G
 
-call_snps_chunk:
+SVsSNPsCompained:
+  time: "01:00:00:00"
+  nCPUs: "8"
+  memory: 10G
+
+#<*><*><*><*><*><*><*><*><*>
+
+
+
+#########################
+######  SNPs RULES ######
+#########################
+
+concatChromosome:
+  time: "01:00:00:00"
+  nCPUs: "2"
+  memory: 10G
+
+concactSNPs:
+  time: "01:00:00:00"
+  nCPUs: "2"
+  memory: 10G
+
+callSNVsChunk:
   time: "07:00:00:00"
   nCPUs: "5"
   memory: 50G
+
+updateHeader:
+  time: "01:00:00:00"
+  nCPUs: "2"
+  memory: 4G
+
+vcfIndex:
+  time: "01:00:00:00"
+  nCPUs: "2"
+  memory: 4G
+
+mergeParentalSNPs:
+  time: "01:00:00:00"
+  nCPUs: "8"
+  memory: 16G
+
+updateSNPs:
+  time: "01:00:00:00"
+  nCPUs: "4"
+  memory: 20G
+
+#<*><*><*><*><*><*><*><*><*>
+
+
+
+#################################
+######  METHYLATION RULES #######
+#################################
+
+nanoIndex:
+     nCPUs: "5"
+     memory: 50G
+
+callMeth:
+     nCPUs: "8"
+     memory: 50G
+
+allMethylation:
+  nCPUs: "1"
+  memory: 2G
+  time: "00:40:00"
+
+#<*><*><*><*><*><*><*><*><*>
+
+
+
+############################
+######  PHASNIG RULES ######
+###########################
 
 gt:
   nCPUs: "1"
@@ -49,14 +159,51 @@ gt:
   time: "72:00:00"
 
 phasing:
-  nCPUs: "1"
+  nCPUs: "4"
   memory: 50G
   time: "05:00:00:00"
 
-nano_index:
-     nCPUs: "5"
-     memory: 50G
+allPhased:
+  time: "01:00:00:00"
+  nCPUs: "2"
+  memory: 10G
 
-cal_meth:
-     nCPUs: "8"
-     memory: 50G
+partionBam:
+  nCPUs: "4"
+  memory: 50G
+  time: "05:00:00:00"
+
+#<*><*><*><*><*><*><*><*><*>
+
+
+
+###############################
+######  STATISTICS RULES ######
+###############################
+
+readsStat:
+  nCPUs: "8"
+  memory: 20G
+  time: "05:00:00:00"
+
+bamStatstics:
+  time: "01:00:00:00"
+  nCPUs: "4"
+  memory: 10G
+
+svStat:
+  time: "01:00:00:00"
+  nCPUs: "4"
+  memory: 10G
+
+snpStat:
+  time: "01:00:00:00"
+  nCPUs: "4"
+  memory: 10G
+
+stat:
+  time: "00:00:10:00"
+  nCPUs: "1"
+  memory: 1G
+
+#<*><*><*><*><*><*><*><*><*>
