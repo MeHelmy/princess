@@ -107,7 +107,7 @@ rule concatChromosome:
     """
     input: lambda wildcards: expand(data_dir + "/snp/{aligner}/chrsplit/chr.split.{chr}_{region}.vcf", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
     output: data_dir + "/snp/{aligner}/data.{chr}.vcf"
-    message: "Concat variant split per chromomsome"
+    message: "Concat variant split per Chromosome"
     conda: PRINCESS_ENV
     benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
     params:
@@ -158,7 +158,7 @@ rule concatChromosome:
         elif [ {params.filter} == "False" ]; then
             vcfcat {input} | vcfstreamsort > {output}
         else
-            echo "Unknow option {params.filter}"
+            echo "Unknown option {params.filter}"
             exit 1
         fi
         """

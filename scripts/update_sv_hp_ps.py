@@ -78,14 +78,14 @@ def update_vcf(args):
                 data_out.write(line)
             elif line.startswith("#"):
                 # data_out.write("##INFO=<ID=HP,Number=1,Type=Integer,Description=\"Haplotype identifier\">\n")
-                data_out.write("##INFO=<ID=CONFLICT,Number=1,Type=Integer,Description=\"The Phase is conflict or not\">\n")
-                data_out.write("##FORMAT=<ID=PS,Number=1,Type=Integer,Description=\"Phase set identifier\">\n")
+                data_out.write("##INFO=<ID=CONFLICT,Number=.,Type=Integer,Description=\"The Phase is conflict or not\">\n")
+                data_out.write("##FORMAT=<ID=PS,Number=.,Type=Integer,Description=\"Phase set identifier\">\n")
                 data_out.write(line)
             else:
                 line_split = line.split()
                 if line_split[-1].split(":", 1)[0] == "1/1" or line_split[-1].split(":", 1)[0] == "0/0":  # no gt to phase
                     data_out.write("{}\n".format("\t".join(line_split)))
-                elif line_split[-1].split(":", 1)[0] == "0/1":
+                elif line_split[-1].split(":", 1)[0] == "0/1" or line_split[-1].split(":", 1)[0] == "1/0":
                     reads = line_split[7].split(";")[10].split(",") #info field -> reads
                     reads[0] = reads[0].split("=")[-1]
                     myvalues = list(map(hp_dic.get, reads))  # list of lists first element id hp second is ps or Nonn on case there are no reads with hp and ps to support this sv

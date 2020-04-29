@@ -96,7 +96,7 @@ aligner = config["aligner"]
 
 # Metytlation variables
 #######################
-ont_sample_dir = config['fast5_dir']
+# ont_sample_dir = config['fast5_dir']
 #############
 
 
@@ -133,10 +133,11 @@ final_output = []
 
 if not config['methylation']:
     pass
-elif config['methylation'] and all(value  for value in ont_sample_dir.values()):
+# elif config['methylation'] and all(value  for value in ont_sample_dir.values()):
+elif config['methylation'] and  config['fast5_dir']:
     final_output.append(data_dir + "/meth/"+ aligner + "/methylation_calls.tsv")
 else:
-    sys.exit("Every ONT sample should have corresponding fast5 directory, please correct fast5_dir files in config.yaml")
+    sys.exit("Every ONT sample should have corresponding fast5 directory, please correct fast5_dir files in config.yaml or use -md option")
 
 if config['update_snps'] and config['paternal_snps'] and config['maternal_snps']:
     final_output.extend([data_dir + "/stat.txt", *expand(data_dir + "/phased/{aligner}/data_updated.vcf", aligner=config['aligner']),\

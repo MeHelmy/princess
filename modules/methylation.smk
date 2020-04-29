@@ -16,7 +16,7 @@ rule nanoIndex:
     output: data_dir + "/{sample}.index.readdb"
     message: "Input file is {wildcards.sample}"
     params:
-        fast5_dir = lambda wildcards: ont_sample_dir[wildcards.sample]
+        fast5_dir = config['fast5_dir']#lambda wildcards: ont_sample_dir[wildcards.sample]
     benchmark: data_dir + "/benchmark/methylation/index.{sample}.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
@@ -38,6 +38,7 @@ rule callMeth:
     output: data_dir + "/meth/{aligner}/{sample}.methylation_calls.tsv"
     params:
         ref = REFERENCES,
+    threads: config['methylation_threads']
     benchmark: data_dir + "/benchmark/methylation/{aligner}/call_methylation.{sample}.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
@@ -51,7 +52,7 @@ rule allMethylation:
     """
     Call all methylation samples.
     """
-    input: lambda wildcards: expand(data_dir + "/meth/{aligner}/{sample}.methylation_calls.tsv", aligner=wildcards.aligner, sample=[i for i in list(ont_sample_dir.keys())])
+    input: lambda wildcards: expand(data_dir + "/meth/{aligner}/{sample}.methylation_calls.tsv", aligner=wildcards.aligner, sample=config['sample_list'].split())
     output: data_dir + "/meth/{aligner}/methylation_calls.tsv",
     message: "Collecting all methylation samples {input}"
     shell:"""

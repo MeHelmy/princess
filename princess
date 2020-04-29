@@ -50,6 +50,11 @@ def get_args():
      if not specified we will use all Chromosomes.', nargs='+', default=[])
     all_subparser.add_argument('-t', '--filter', dest='filter', help='Filter identified SNVs using Princess algorithm\
     default: %(default)s)', action='store_false')
+    all_subparser.add_argument('-m', '--methylation', dest='detect_methylation', help='Identify methylation, mutually inclusinve with -md default: %(default)s)', action='store_true')
+    all_subparser.add_argument('-md', '--methylationDirectory',metavar="Fast5 Directory",  dest='methylation_dir', help='Fast5 directory will be used to identify\
+     methylation mutually inclusinve with option -m default: %(default)s)', default="")
+    # all_subparser.add_argument('-md', '--methylationDirectory',metavar="Fast5 Directory", type=dir_path, dest='methylation_dir', help='Fast5 directory will be used to identify\
+    #  methylation mutually inclusinve with option -m default: %(default)s)', default=None)
     all_subparser.set_defaults(func=all)
 
 
@@ -350,6 +355,14 @@ def all(args, unknownargs, main_vars):
         format(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")))
         exit(1)
 
+    if args.detect_methylation and not args.methylation_dir and dir_path(args.methylation_dir):
+        logger.error("Option -m and -md is mututally inclusinve")
+        exit(1)
+
+    # Methylation option and directory
+    methylation_option = "methylation="+str(args.detect_methylation)
+    meth_dir = "fast5_dir=" + str(args.methylation_dir)
+
     # check if the user gave existing chromosomes.
     chr_list = args.chrs if args.chrs else main_vars.conf_yaml['chrs']
     is_valid_chrs(chr_list, args.ref)
@@ -379,16 +392,16 @@ def all(args, unknownargs, main_vars):
         if args.is_cluster:
             cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
     else:
         if args.is_cluster:
             cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, *unknownargs]
     log_chrs = " ".join(chr_list) if chr_list else "All Chromsomes"
     logger.info("{}{}".format("Chromsomes that will be analysized: ", log_chrs))
     logger.info("SNVs will be filtered: {}".format(str(args.filter)))
@@ -396,8 +409,10 @@ def all(args, unknownargs, main_vars):
     logger.info("Reference: {}".format(args.ref))
     logger.info("Aligner: {}".format(main_vars.aligner))
     logger.info("Cluster Will be used: {}".format(args.is_cluster))
+    logger.info("Methylation will be detected: {}".format(args.detect_methylation))
+    logger.info("Fast5 directory for Methylation: {}".format(args.methylation_dir))
     logger.info("Sampels:\n{}".format("\n".join(samples_names)))
-    logger.info("Running command:\n{}".format("\n".join(cmd)))
+    logger.info("Running command:\n{}".format((str(cmd))))
     run_cmd(cmd)
     # Bita
     if args.remove_source:
@@ -562,6 +577,8 @@ def clean(source_dir, samples_names):
         else:
             shutil.rmtree(f)
 
+def dir_path(path):
+    return True if os.path.isdir(path) else False
 
 
 def main():
