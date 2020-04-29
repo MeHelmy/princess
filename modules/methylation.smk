@@ -82,7 +82,7 @@ rule allMethylation:
 #### CALL ALL METHYLATION PHASED & HAPLOTYPED ####
 #################################################
 
-rule allMethylation:
+rule allMethylationHap:
     """
     Call all methylation samples phased.
     """
