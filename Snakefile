@@ -135,7 +135,7 @@ if not config['methylation']:
     pass
 # elif config['methylation'] and all(value  for value in ont_sample_dir.values()):
 elif config['methylation'] and  config['fast5_dir']:
-    final_output.append(data_dir + "/meth/"+ aligner + "/methylation_calls.tsv")
+    final_output.append(data_dir + "/meth/"+ aligner + "/methylation_calls_hap.tsv")
 else:
     sys.exit("Every ONT sample should have corresponding fast5 directory, please correct fast5_dir files in config.yaml or use -md option")
 

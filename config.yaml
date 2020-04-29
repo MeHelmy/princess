@@ -74,6 +74,7 @@ read_raw_coverage_threads: 5
 
 updat_snps_script: "scripts/phasing_report_update_vcf.py"
 updat_sv: "scripts/update_sv_hp_ps.py"
+hap_methylation: "scripts/update_meth_hp_ps.py"
 
 
 # Cluster
