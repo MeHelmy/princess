@@ -34,7 +34,9 @@ rule sniffles:
 # TODO: rule is not finished script needs to be updated to change hp filed according to whashap results
 rule phaseSVs:
     """
-    This rules takes as input a taged tabed bam file from whatshap and vcf file contains SVs and update the SVs to add haplotype HP and phase blocks PS.
+    This rules takes as input a taged tabed bam file
+    from whatshap and vcf file contains SVs and update
+    the SVs to add haplotype HP and phase blocks PS.
     """
     input:
         bam = data_dir + "/align/{aligner}/data_hap.tab",

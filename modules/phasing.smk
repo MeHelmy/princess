@@ -81,7 +81,7 @@ rule partionBam:
     It will use the updated SNPs if the parental SNPs were provided.
     """
     input:
-        bam = lambda wildcards: data_dir + "/align/{aligner}/data_rg.bam" if wildcards.aligner == "minimap" else data_dir + "/align/{aligner}/data.bam",  # SM filed myst be set to the sample name in vcf file
+        bam = lambda wildcards: data_dir + "/align/{aligner}/data_rg.bam" if wildcards.aligner == "minimap" else data_dir + "/align/{aligner}/data.bam",  # SM filed must be set to the sample name in vcf file
         bam_index = lambda wildcards: data_dir + "/align/{aligner}/data_rg.bam.bai" if wildcards.aligner == "minimap" else data_dir + "/align/{aligner}/data.bam.bai",
         snp = lambda wildcards: data_dir + "/phased/{aligner}/data_updated.vcf.gz" if config['update_snps'] else data_dir + "/phased/{aligner}/data.vcf.gz",
         snp_index = lambda wildcards: data_dir + "/phased/{aligner}/data_updated.vcf.gz.tbi" if config['update_snps'] else data_dir + "/phased/{aligner}/data.vcf.gz.tbi",

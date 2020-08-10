@@ -171,7 +171,7 @@ rule updateHeader:
     Update the phased SNPs in phased/aligner/data.vcf
     Where the PS in header defined as Integer where it should be String.
     Result: phased/aligner/data_update_header.vcf
-    Will be used in merge_parental_snps
+    Will be used in mergeParentalSNPs rule later
     """
     input:data_dir + "/{sample}.vcf"
     output:data_dir + "/{sample}_update_header.vcf"
@@ -241,7 +241,7 @@ rule mergeParentalSNPs:
 
 rule updateSNPs:
     """
-    Here we shall take the input from merge_parental_snps but we need to unzip it first.
+    Here we shall take the input from mergeParentalSNPs but we need to unzip it first.
     """
     input: data_dir + "/phased/{aligner}/data_paternal_maternal.vcf.gz"
     output:

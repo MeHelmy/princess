@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-bamtools merge should be used before this script. where the vcf file should be merged with both maternal and paternal.
+bamtools merge should be used before this script. where the vcf file should be merged with both paternal and maternal, respectively.
 """
 import argparse
 import sys, re

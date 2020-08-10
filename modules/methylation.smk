@@ -39,7 +39,7 @@ rule callMeth:
     params:
         ref = REFERENCES,
     threads: config['methylation_threads']
-    message: "Calling Methylation for sample: {sample}"
+    message: "Calling Methylation for sample: {wildcards.sample}"
     benchmark: data_dir + "/benchmark/methylation/{aligner}/call_methylation.{sample}.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
@@ -54,12 +54,12 @@ rule callMethHap:
     Haplotype Methylation
     """
     input:
-        meth = data_dir + "/meth/{aligner}/{sample}.methylation_calls.tsv"
+        meth = data_dir + "/meth/{aligner}/{sample}.methylation_calls.tsv",
         bam = data_dir + "/align/{aligner}/data_hap.tab",
-    output: data_dir + "/meth/{aligner}/{sample}.methylation_calls_hap.tsv.tsv"
+    output: data_dir + "/meth/{aligner}/{sample}.methylation_calls_hap.tsv"
     params:
         update_script = config['hap_methylation'],
-    message: "Updating Methylation for {sample} using align/{aligner}/data_hap.tab"
+    message: "Updating Methylation for {wildcards.sample} using align/{wildcards.aligner}/data_hap.tab"
     benchmark: data_dir + "/benchmark/methylation/{aligner}/call_methylation.{sample}.hap.benchmark.txt"
     shell:"""
         python {params.update_script} {input.meth} {input.bam} {output}
