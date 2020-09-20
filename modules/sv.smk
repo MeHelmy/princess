@@ -25,7 +25,7 @@ rule sniffles:
     log: data_dir + "/sv/{aligner}/sniffles.log"
     benchmark: data_dir + "/benchmark/sv/{aligner}/sv.benchmark.txt"
     shell:"""
-        sniffles --min_support {params.coverage} --mapped_reads {input.datain} --vcf {output.dataout} --num_reads_report -1 --genotype --report_seq  > {log} 2>&1
+        sniffles --min_support {params.coverage} --mapped_reads {input.datain} --vcf {output.dataout} --num_reads_report -1 --genotype  > {log} 2>&1
         """
 
 #### HAPLOTYPE SVs ####
