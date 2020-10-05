@@ -151,20 +151,14 @@ rule concatChromosome:
                 grep -v "#" $1 |  cut -f 6  | awk -v min=$min_qulaity '$1 > min && $1 < 900 {{print}}'| sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -b -k2V -k1V | head -n1 | awk '{{print $1}}'
             fi
             }}
-            if [ $(grep -q -v "#" {input}) ] ; then
-                vcfcat {input} | vcfstreamsort > {params.temp_chr}\
-                && first_max=$(find_max {params.temp_chr} {params.read_type})\
-                && threshold=$(filsn {params.temp_chr} $first_max)\
-                && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} > {output}
-            else
-                touch {output}
-            fi
+
+            vcfcat {input} | vcfstreamsort > {params.temp_chr}\
+            && first_max=$(find_max {params.temp_chr} {params.read_type})\
+            && threshold=$(filsn {params.temp_chr} $first_max)\
+            && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} > {output}
+
         elif [ {params.filter} == "False" ]; then
-            if [ $(grep -q -v "#" {input}) ] ; then
-                vcfcat {input} | vcfstreamsort > {output}
-            else
-                touch {output}
-            fi
+            vcfcat {input} | vcfstreamsort > {output}
         else
             >&2 echo "Unknown option {params.filter}"
             exit 1

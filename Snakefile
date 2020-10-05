@@ -1,7 +1,7 @@
 
 # import Lib
 ############
-import os, glob, ntpath, math
+import os, glob, ntpath, math, shutil
 from snakemake.utils import min_version
 
 ############################
@@ -159,9 +159,14 @@ rule all:
 ## Success and failure messages
 ## ------------------------------------------------------------------------------------ ##
 onsuccess:
+    if os.path.exists(os.path.join(data_dir, ".snakemake")):
+        import shutil
+        shutil.rmtree(os.path.join(data_dir, ".snakemake"), ignore_errors=True)
 	shell("mkdir -p {data_dir}/snake_log &&\
     find . -maxdepth 1 -name 'snakejob.*' -type f -print0 | xargs -0r mv -t {data_dir}/snake_log &&\
     cat pictures/success.txt")
+    # shutil.rmtree(".snakemake")
+
 
 onerror:
 	shell("mkdir -p {data_dir}/snake_log &&\

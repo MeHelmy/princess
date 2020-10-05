@@ -112,9 +112,9 @@ def get_args():
     unknownargs = sort_params(args, unknownargs)
 
     if 'func' in args:
-        current_dir, running_file, work_dir, conf_yaml, aligner, sample_list_from_config, number_of_jobs = required_vars(args, unknownargs)
-        Main_vars = namedtuple('Main_vars', 'current_dir, running_file, work_dir, conf_yaml, aligner, sample_list_from_config, number_of_jobs')
-        main_vars = Main_vars(current_dir, running_file, work_dir, conf_yaml, aligner, sample_list_from_config, number_of_jobs)
+        current_dir, running_file, work_dir, conf_yaml, aligner, sample_list_from_config, number_of_jobs, number_of_tries = required_vars(args, unknownargs)
+        Main_vars = namedtuple('Main_vars', 'current_dir, running_file, work_dir, conf_yaml, aligner, sample_list_from_config, number_of_jobs, number_of_tries')
+        main_vars = Main_vars(current_dir, running_file, work_dir, conf_yaml, aligner, sample_list_from_config, number_of_jobs, number_of_tries)
         log_dir = os.path.join(work_dir, args.log_file)
         global f_handler
         f_handler = logging.FileHandler(log_dir)
@@ -263,6 +263,7 @@ def snv(args, unknownargs, main_vars):
     sample_dir = 'sample_directory=' + main_vars.work_dir
     reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
     samples_names = args.samples_files if args.samples_files else main_vars.sample_list_from_config
+    reset_times = main_vars.number_of_tries
     chr_log = " ".join(chr_list) if chr_list else "All Chromosomes"
     logger.info("Analyzied Chromsomes: ".format(chr_log))
     if samples_names:
@@ -270,16 +271,16 @@ def snv(args, unknownargs, main_vars):
         if args.is_cluster:
             cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
     else:
         if args.is_cluster:
             cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--cluster', cluster, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
     run_cmd(cmd)
 
     # Bita
@@ -317,22 +318,23 @@ def varinat(args, unknownargs, main_vars):
     result2 = os.path.join(main_vars.work_dir, 'sv', main_vars.aligner, 'sniffles.vcf')
     sample_dir = 'sample_directory=' + main_vars.work_dir
     reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
+    reset_times = main_vars.number_of_tries
 
     if samples_names:
         samples, samples_names_str = get_sample_names(args, main_vars)
         if args.is_cluster:
             cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', result1, result2, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', result1, result2, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', result1, result2, '-j', args.jobs, '--cluster-config', cluster_config, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', result1, result2, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
     else:
         if args.is_cluster:
             cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', result1, result2, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', result1, result2, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', result1, result2, '-j', args.jobs, '--cluster-config', cluster_config, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', result1, result2, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
     log_chrs = " ".join(chr_list) if chr_list else "All Chromsomes"
     logger.info("{}{}".format("Chromsomes that will be analysized: ", log_chrs))
     logger.info("SNVs will be filtered: {}".format(str(args.filter)))
@@ -386,22 +388,23 @@ def all(args, unknownargs, main_vars):
     cluster_config = os.path.join(main_vars.work_dir, "cluster_config.yaml")
     sample_dir = 'sample_directory=' + main_vars.work_dir
     reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
+    reset_times = main_vars.number_of_tries
 
     if samples_names:
         samples, samples_names_str = get_sample_names(args, main_vars)
         if args.is_cluster:
             cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
     else:
         if args.is_cluster:
             cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--nolock', '--restart-times', reset_times, '--config', methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, *unknownargs]
     log_chrs = " ".join(chr_list) if chr_list else "All Chromsomes"
     logger.info("{}{}".format("Chromsomes that will be analysized: ", log_chrs))
     logger.info("SNVs will be filtered: {}".format(str(args.filter)))
@@ -448,21 +451,23 @@ def phase(args, unknownargs, main_vars):
     sample_dir = 'sample_directory=' + main_vars.work_dir
     reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
     samples_names = args.samples_files if args.samples_files else main_vars.sample_list_from_config
+    reset_times = main_vars.number_of_tries
+
     if samples_names:
         samples, samples_names_str = get_sample_names(args, main_vars)
         if args.is_cluster:
             cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, *unknownargs]
     else:
         if args.is_cluster:
             cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, *unknownargs]
     log_chrs = " ".join(chr_list) if chr_list else "All Chromsomes"
     logger.info("{}{}".format("Chromsomes that will be analysized: ", log_chrs))
     logger.info("SNVs will be filtered: {}".format(str(args.filter)))
@@ -472,7 +477,8 @@ def phase(args, unknownargs, main_vars):
     logger.info("Cluster Will be used: {}".format(args.is_cluster))
     logger.info("Sampels:\n{}".format("\n".join(samples_names)))
     logger.info("Sampels:\n{}".format("\n".join(samples_names)))
-    logger.info("Results:\t{}".format(result))
+    logger.info("Results:\n{}".format(result))
+    logger.info("running command\n{}".format("\t".join(cmd)))
 
     run_cmd(cmd)
     # Bita
@@ -515,8 +521,9 @@ def required_vars(args, unknownargs):
     # TODO: you shall create this variable by cheking first if it was passed as argument else use config file.
     sample_list_from_config = conf_yaml['sample_list']
     number_of_jobs = str(conf_yaml['cluster_jobs'])
+    number_of_tries = str(conf_yaml['number_of_tries'])
 
-    return current_dir, running_file, work_dir, conf_yaml, aligner, sample_list_from_config, number_of_jobs
+    return current_dir, running_file, work_dir, conf_yaml, aligner, sample_list_from_config, number_of_jobs, number_of_tries
 
 def get_sample_names(args, main_vars):
     final_samples = ""
