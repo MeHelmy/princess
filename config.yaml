@@ -12,7 +12,7 @@ sample_list: []
 
 # Information about reference
 ###############################
-reference: "/users/sedlazec/ccdg_tech/reference/GRCh38-2.1.0/genome_mainchrs.fa"
+reference: ""
 chrs: []
 
 

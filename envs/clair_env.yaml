@@ -66,5 +66,4 @@ dependencies:
   - wheel=0.33.6=py37_0
   - xz=5.2.4=h14c3975_1001
   - zlib=1.2.11=h516909a_1006
-prefix: /users/mmahmoud/home/public_workplace/conda3_64/envs/clair-env
 
