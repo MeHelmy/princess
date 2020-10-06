@@ -183,10 +183,11 @@ def align(args, unknownargs, main_vars):
     cluster_config = os.path.join(main_vars.work_dir, "cluster_config.yaml")
     result = os.path.join(main_vars.work_dir, 'align', main_vars.aligner, 'data.bam')
     if args.is_cluster:
-        cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
-        {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-        cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config,\
-         '--cluster', cluster, '--config', sample_dir, samples, reference, *unknownargs]
+        # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+        # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+        # cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config,\
+        #  '--cluster', cluster, '--config', sample_dir, samples, reference, *unknownargs]
+        cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--config', sample_dir, samples, reference, *unknownargs]
     else:
         cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config,\
           '--config', sample_dir, samples, reference, *unknownargs]
@@ -217,9 +218,10 @@ def sv(args, unknownargs, main_vars):
     if samples_names:
         samples, samples_names_str = get_sample_names(args, main_vars)
         if args.is_cluster:
-            cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
-            {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, samples, reference, *unknownargs]
+            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+            # cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, samples, reference, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--config', sample_dir, samples, reference, *unknownargs]
         else:
             cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--config', sample_dir, samples, reference, *unknownargs]
     else:
