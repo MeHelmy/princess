@@ -23,7 +23,7 @@ from collections import Counter
 def get_args():
     parser = argparse.ArgumentParser(epilog="%(prog)s version 0.01. use command -h for info.",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     description='Produce phasing report',
+                                     description='Phase SVs Using haplotyped reads in tab format',
                                      add_help=True, )
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.01')
     # parser.add_argument('input', help='Input file', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
@@ -64,12 +64,12 @@ def update_vcf(args):
     else:
         myfile = args.input
 
-    # read the SV file as dictionary
+    # read the Haplotyped reads file as dictionary
     hp_dic = {}
     with args.hp as hp_in:
         for line in hp_in:
             id, hp, ps = line.split()
-            hp_dic[id] = [hp.rsplit(":", 1)[-1], ps.rsplit(":", 1)[-1]] # read hp, ps
+            hp_dic[id] = [hp.rsplit(":", 1)[-1], ps.rsplit(":", 1)[-1]] # read -> [hp, ps]
 
 
     with myfile as data_in, args.output as data_out:
