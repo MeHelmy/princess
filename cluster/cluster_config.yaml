@@ -1,0 +1,214 @@
+
+---
+__default__:
+    "account"   : "proj_CCDG"
+#    "queue"     : "ill-prod"
+    "queue"     : "analysis"
+    "nCPUs"     : "16"
+    "mem"    : 20000
+#    "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
+    "name"      : "JOBNAME.{rule}.{wildcards}"
+    # "output"    : "log/{rule}.PBS_JOBID.out"
+    # "error"     : "log/{rule}.PBS_JOBID.err"
+    "time"      : "168"
+
+
+##########################
+######  ALIGN RULES ######
+#########################
+
+minimap2:
+  time: "72:00:00"
+  nCPUs: "12"
+  memory: 30G
+
+indexBam:
+  time: "02:00:00"
+  nCPUs: "4"
+  mem: 10G
+
+mmergeAlign:
+  time: "24"
+  nCPUs: "8"
+  memory: 50G
+
+sam2bam:
+  time: "24"
+  nCPUs: "2"
+  memory: 10G
+
+addRG:
+  time: "24"
+  nCPUs: "2"
+  memory: 10G
+
+bam2tab:
+  time: "24"
+  nCPUs: "2"
+  memory: 10G
+
+#<*><*><*><*><*><*><*><*><*>
+
+
+######################
+###### SV RULES ######
+#####################
+
+sniffles:
+  time: "72:00:00"
+  nCPUs: "16"
+  mem: 30G
+
+phaseSVs:
+  time: "24"
+  nCPUs: "8"
+  memory: 20G
+
+vcfSort:
+  time: "24"
+  nCPUs: "8"
+  memory: 20G
+
+bgzipFile:
+  time: "24"
+  nCPUs: "2"
+  memory: 10G
+
+changeSampleName:
+  time: "24"
+  nCPUs: "2"
+  memory: 10G
+
+SVsSNPsCompained:
+  time: "24"
+  nCPUs: "8"
+  memory: 10G
+
+#<*><*><*><*><*><*><*><*><*>
+
+
+
+#########################
+######  SNPs RULES ######
+#########################
+
+concatChromosome:
+  time: "24"
+  nCPUs: "2"
+  memory: 10G
+
+concactSNPs:
+  time: "24"
+  nCPUs: "2"
+  memory: 10G
+
+callSNVsChunk:
+  time: "168"
+  nCPUs: "5"
+  memory: 50G
+
+updateHeader:
+  time: "24"
+  nCPUs: "2"
+  memory: 4G
+
+vcfIndex:
+  time: "24"
+  nCPUs: "2"
+  memory: 4G
+
+mergeParentalSNPs:
+  time: "24"
+  nCPUs: "8"
+  memory: 16G
+
+updateSNPs:
+  time: "24"
+  nCPUs: "4"
+  memory: 20G
+
+#<*><*><*><*><*><*><*><*><*>
+
+
+
+#################################
+######  METHYLATION RULES #######
+#################################
+
+nanoIndex:
+     nCPUs: "5"
+     memory: 50G
+
+callMeth:
+     nCPUs: "8"
+     memory: 50G
+
+allMethylation:
+  nCPUs: "1"
+  memory: 2G
+  time: "1"
+
+#<*><*><*><*><*><*><*><*><*>
+
+
+
+############################
+######  PHASNIG RULES ######
+###########################
+
+gt:
+  nCPUs: "1"
+  memory: 50G
+  time: "72"
+
+phasing:
+  nCPUs: "4"
+  memory: 50G
+  time: "120"
+
+allPhased:
+  time: "24"
+  nCPUs: "2"
+  memory: 10G
+
+partionBam:
+  nCPUs: "4"
+  memory: 50G
+  time: "120"
+
+#<*><*><*><*><*><*><*><*><*>
+
+
+
+###############################
+######  STATISTICS RULES ######
+###############################
+
+readsStat:
+  nCPUs: "8"
+  memory: 20G
+  time: "120"
+
+bamStatstics:
+  time: "24"
+  nCPUs: "4"
+  memory: 10G
+
+svStat:
+  time: "24"
+  nCPUs: "4"
+  memory: 10G
+
+snpStat:
+  time: "24"
+  nCPUs: "4"
+  memory: 10G
+
+stat:
+  time: "1"
+  nCPUs: "1"
+  memory: 1G
+
+#<*><*><*><*><*><*><*><*><*>
+
+...
