@@ -1,15 +1,17 @@
+
+
 ---
 __default__:
     "account"   : "proj_CCDG"
-#    "queue"     : "analysis"
-    "queue"     : "ill-prod"
+#    "queue"     : "ill-prod"
+    "queue"     : "analysis"
     "nCPUs"     : "16"
-    "memory"    : 20000
-    "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
+    "mem"    : 20000
+#    "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
     "name"      : "JOBNAME.{rule}.{wildcards}"
-    "output"    : "{rule}.{wildcards}.out"
-    "error"     : "{rule}.{wildcards}.err"
-    "time"      : "07:00:00:00"
+    # "output"    : "log/{rule}.PBS_JOBID.out"
+    # "error"     : "log/{rule}.PBS_JOBID.err"
+    "time"      : "168"
 
 
 ##########################
@@ -207,6 +209,7 @@ stat:
   time: "00:00:10:00"
   nCPUs: "1"
   memory: 1G
+
 
 #<*><*><*><*><*><*><*><*><*>
 
