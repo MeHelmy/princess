@@ -1,4 +1,5 @@
 
+
 ---
 __default__:
     "account"   : "proj_CCDG"
@@ -25,25 +26,25 @@ minimap2:
 indexBam:
   time: "02:00:00"
   nCPUs: "4"
-  mem: 10G
+  memory: 10G
 
 mmergeAlign:
-  time: "24"
+  time: "24:00:00"
   nCPUs: "8"
   memory: 50G
 
 sam2bam:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "2"
   memory: 10G
 
 addRG:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "2"
   memory: 10G
 
 bam2tab:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "2"
   memory: 10G
 
@@ -57,30 +58,30 @@ bam2tab:
 sniffles:
   time: "72:00:00"
   nCPUs: "16"
-  mem: 30G
+  memory: 30G
 
 phaseSVs:
-  time: "24"
+  time: "24:00:00"
   nCPUs: "8"
   memory: 20G
 
 vcfSort:
-  time: "24"
+  time: "24:00:00"
   nCPUs: "8"
   memory: 20G
 
 bgzipFile:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "2"
   memory: 10G
 
 changeSampleName:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "2"
   memory: 10G
 
 SVsSNPsCompained:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "8"
   memory: 10G
 
@@ -93,37 +94,37 @@ SVsSNPsCompained:
 #########################
 
 concatChromosome:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "2"
   memory: 10G
 
 concactSNPs:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "2"
   memory: 10G
 
 callSNVsChunk:
-  time: "168"
+  time: "07:00:00:00"
   nCPUs: "5"
   memory: 50G
 
 updateHeader:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "2"
   memory: 4G
 
 vcfIndex:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "2"
   memory: 4G
 
 mergeParentalSNPs:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "8"
   memory: 16G
 
 updateSNPs:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "4"
   memory: 20G
 
@@ -146,7 +147,7 @@ callMeth:
 allMethylation:
   nCPUs: "1"
   memory: 2G
-  time: "1"
+  time: "00:40:00"
 
 #<*><*><*><*><*><*><*><*><*>
 
@@ -159,22 +160,22 @@ allMethylation:
 gt:
   nCPUs: "1"
   memory: 50G
-  time: "72"
+  time: "72:00:00"
 
 phasing:
   nCPUs: "4"
   memory: 50G
-  time: "120"
+  time: "05:00:00:00"
 
 allPhased:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "2"
   memory: 10G
 
 partionBam:
   nCPUs: "4"
   memory: 50G
-  time: "120"
+  time: "05:00:00:00"
 
 #<*><*><*><*><*><*><*><*><*>
 
@@ -187,27 +188,28 @@ partionBam:
 readsStat:
   nCPUs: "8"
   memory: 20G
-  time: "120"
+  time: "05:00:00:00"
 
 bamStatstics:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "4"
   memory: 10G
 
 svStat:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "4"
   memory: 10G
 
 snpStat:
-  time: "24"
+  time: "01:00:00:00"
   nCPUs: "4"
   memory: 10G
 
 stat:
-  time: "1"
+  time: "00:00:10:00"
   nCPUs: "1"
   memory: 1G
+
 
 #<*><*><*><*><*><*><*><*><*>
 
