@@ -1,5 +1,5 @@
 
-restart-times: 0
+restart-times: 3
 cluster-config: "cluster/cluster_config.yaml" #abs path
 cluster: "scheduler.py" #
 cluster-status: "pbs_status.py" #

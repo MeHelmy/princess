@@ -6,7 +6,7 @@ slurm:
   key_mapping:
     name: "--job-name={}"
     threads: "-n {}"
-    mem: "--mem={}g"
+    mem: "--mem={}"
     account: "--account={}"
     queue: "--partition={}"
     time: "--time={}"

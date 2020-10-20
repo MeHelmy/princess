@@ -1,17 +1,18 @@
 
 
+
 ---
 __default__:
     "account"   : "proj_CCDG"
-#    "queue"     : "ill-prod"
-    "queue"     : "analysis"
+    "queue"     : "ill-prod"
+#    "queue"     : "analysis"
     "nCPUs"     : "16"
     "mem"    : 20000
 #    "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
     "name"      : "JOBNAME.{rule}.{wildcards}"
     # "output"    : "log/{rule}.PBS_JOBID.out"
     # "error"     : "log/{rule}.PBS_JOBID.err"
-    "time"      : "168"
+    "time"      : "01:00:00:00"
 
 
 ##########################
@@ -21,32 +22,32 @@ __default__:
 minimap2:
   time: "72:00:00"
   nCPUs: "12"
-  memory: 30G
+  mem: 30G
 
 indexBam:
   time: "02:00:00"
   nCPUs: "4"
-  memory: 10G
+  mem: 10G
 
 mmergeAlign:
   time: "24:00:00"
   nCPUs: "8"
-  memory: 50G
+  mem: 50G
 
 sam2bam:
   time: "01:00:00:00"
   nCPUs: "2"
-  memory: 10G
+  mem: 10G
 
 addRG:
   time: "01:00:00:00"
   nCPUs: "2"
-  memory: 10G
+  mem: 10G
 
 bam2tab:
   time: "01:00:00:00"
   nCPUs: "2"
-  memory: 10G
+  mem: 10G
 
 #<*><*><*><*><*><*><*><*><*>
 
@@ -58,32 +59,32 @@ bam2tab:
 sniffles:
   time: "72:00:00"
   nCPUs: "16"
-  memory: 30G
+  mem: 30G
 
 phaseSVs:
   time: "24:00:00"
   nCPUs: "8"
-  memory: 20G
+  mem: 20G
 
 vcfSort:
   time: "24:00:00"
   nCPUs: "8"
-  memory: 20G
+  mem: 20G
 
 bgzipFile:
   time: "01:00:00:00"
   nCPUs: "2"
-  memory: 10G
+  mem: 10G
 
 changeSampleName:
   time: "01:00:00:00"
   nCPUs: "2"
-  memory: 10G
+  mem: 10G
 
 SVsSNPsCompained:
   time: "01:00:00:00"
   nCPUs: "8"
-  memory: 10G
+  mem: 10G
 
 #<*><*><*><*><*><*><*><*><*>
 
@@ -96,37 +97,37 @@ SVsSNPsCompained:
 concatChromosome:
   time: "01:00:00:00"
   nCPUs: "2"
-  memory: 10G
+  mem: 10G
 
 concactSNPs:
   time: "01:00:00:00"
   nCPUs: "2"
-  memory: 10G
+  mem: 10G
 
 callSNVsChunk:
   time: "07:00:00:00"
   nCPUs: "5"
-  memory: 50G
+  mem: 50G
 
 updateHeader:
   time: "01:00:00:00"
   nCPUs: "2"
-  memory: 4G
+  mem: 4G
 
 vcfIndex:
   time: "01:00:00:00"
   nCPUs: "2"
-  memory: 4G
+  mem: 4G
 
 mergeParentalSNPs:
   time: "01:00:00:00"
   nCPUs: "8"
-  memory: 16G
+  mem: 16G
 
 updateSNPs:
   time: "01:00:00:00"
   nCPUs: "4"
-  memory: 20G
+  mem: 20G
 
 #<*><*><*><*><*><*><*><*><*>
 
@@ -138,15 +139,15 @@ updateSNPs:
 
 nanoIndex:
      nCPUs: "5"
-     memory: 50G
+     mem: 50G
 
 callMeth:
      nCPUs: "8"
-     memory: 50G
+     mem: 50G
 
 allMethylation:
   nCPUs: "1"
-  memory: 2G
+  mem: 2G
   time: "00:40:00"
 
 #<*><*><*><*><*><*><*><*><*>
@@ -159,22 +160,22 @@ allMethylation:
 
 gt:
   nCPUs: "1"
-  memory: 50G
+  mem: 50G
   time: "72:00:00"
 
 phasing:
   nCPUs: "4"
-  memory: 50G
+  mem: 50G
   time: "05:00:00:00"
 
 allPhased:
   time: "01:00:00:00"
   nCPUs: "2"
-  memory: 10G
+  mem: 10G
 
 partionBam:
   nCPUs: "4"
-  memory: 50G
+  mem: 50G
   time: "05:00:00:00"
 
 #<*><*><*><*><*><*><*><*><*>
@@ -187,28 +188,28 @@ partionBam:
 
 readsStat:
   nCPUs: "8"
-  memory: 20G
+  mem: 20G
   time: "05:00:00:00"
 
 bamStatstics:
   time: "01:00:00:00"
   nCPUs: "4"
-  memory: 10G
+  mem: 10G
 
 svStat:
   time: "01:00:00:00"
   nCPUs: "4"
-  memory: 10G
+  mem: 10G
 
 snpStat:
   time: "01:00:00:00"
   nCPUs: "4"
-  memory: 10G
+  mem: 10G
 
 stat:
   time: "00:00:10:00"
   nCPUs: "1"
-  memory: 1G
+  mem: 1G
 
 
 #<*><*><*><*><*><*><*><*><*>
