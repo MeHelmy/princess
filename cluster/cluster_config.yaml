@@ -142,6 +142,7 @@ nanoIndex:
      mem: 50G
 
 callMeth:
+     time: "07:00:00:00"
      nCPUs: "8"
      mem: 50G
 

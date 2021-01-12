@@ -409,6 +409,7 @@ def all(args, unknownargs, main_vars):
             cmd = ['snakemake',  '-p', '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, *unknownargs]
         else:
             cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, *unknownargs]
+
     log_chrs = " ".join(chr_list) if chr_list else "All Chromsomes"
     logger.info("{}{}".format("Chromsomes that will be analysized: ", log_chrs))
     logger.info("SNVs will be filtered: {}".format(str(args.filter)))
@@ -554,7 +555,7 @@ def run_cmd(cmd):
     try:
         subprocess.run(cmd, check=True, universal_newlines=True)
     except subprocess.CalledProcessError as e:
-        logger.error("Error in subprocess:\n{}".format(e.returncode))
+        logger.error("Error in subprocess:\nComand: {}\nError: {}".format(cmd, e.returncode))
 
 def is_valid_chrs(chr_list, ref):
     if chr_list:

@@ -27,7 +27,7 @@ rule minimap2:
     input:
         datain=data_dir + "/{sample}"
     output:
-        dataout=data_dir + "/align/minimap/{sample}.bam"
+        dataout=temp(data_dir + "/align/minimap/{sample}.bam")
     params:
         reference=REFERENCES,
         h = minimap2_read_type,

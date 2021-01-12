@@ -152,10 +152,26 @@ rule concatChromosome:
             fi
             }}
 
-            vcfcat {input} | vcfstreamsort > {params.temp_chr}\
-            && first_max=$(find_max {params.temp_chr} {params.read_type})\
-            && threshold=$(filsn {params.temp_chr} $first_max)\
-            && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} > {output}
+            filecount=( {input} )
+            count=${{#filecount[@]}}
+            if [ "$count" -ge 2 ]; then
+                vcfcat {input} | vcfstreamsort > {params.temp_chr}\
+                && first_max=$(find_max {params.temp_chr} {params.read_type})\
+                && threshold=$(filsn {params.temp_chr} $first_max)\
+                && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} > {output}
+            else
+                if [ $(head -n 1000 {input} | grep -q -v "#") ]  ; then
+                    vcfcat {input} | vcfstreamsort > {params.temp_chr}\
+                    && first_max=$(find_max {params.temp_chr} {params.read_type})\
+                    && threshold=$(filsn {params.temp_chr} $first_max)\
+                    && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} > {output}
+                else
+                    cp {input} {output}
+                fi
+            fi
+
+
+
 
         elif [ {params.filter} == "False" ]; then
             vcfcat {input} | vcfstreamsort > {output}
