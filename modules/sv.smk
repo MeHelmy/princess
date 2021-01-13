@@ -56,11 +56,13 @@ rule vcfSort:
     """
     To concat the haplotype SVs with SNVs, SVs needs to be sorted first.
     """
-    input:data_dir + "/{sample}.vcf.gz"
+    input:
+        vcffile = data_dir + "/{sample}.vcf.gz",
+        ref = REFERENCES,
     output:data_dir + "/{sample}.sorted.vcf.gz"
     conda: PRINCESS_ENV
     shell:"""
-        zcat {input} | vcfsort | bgzip > {output}
+        bedtools sort -header -faidx {input.ref}.fai -i {input.vcffile} | bgzip > {output}
         """
     # shell:"""
     #     bcftools sort -O z -o {output} {input}
@@ -106,6 +108,7 @@ rule SVsSNPsCompained:
         sv = data_dir + "/sv/{aligner}/sniffles_hp_updated.sorted.namechnage.vcf.gz",
         sv_index =data_dir + "/sv/{aligner}/sniffles_hp_updated.sorted.namechnage.vcf.gz.tbi",
         snp =  lambda wildcards: data_dir + "/phased/{aligner}/data_updated.vcf.gz" if config['update_snps'] else data_dir + "/phased/{aligner}/data.vcf.gz",
+        ref = REFERENCES,
     output: data_dir + "/sv/{aligner}/sv_snp.vcf.gz"
     params:
         extension = "z"  # output a compressed file.
@@ -114,5 +117,8 @@ rule SVsSNPsCompained:
     threads: config['samtools_threads']
     conda: PRINCESS_ENV
     shell:"""
-        bcftools concat -a -O {params.extension} -o {output} --threads {threads} {input.sv} {input.snp} > {log} 2>&1
+        vcfcat  {input.sv} {input.snp}| bedtools sort -header -faidx {input.ref}.fai -i - | bgzip > {output} > {log} 2>&1
         """
+    # shell:"""
+    #     bcftools concat -a -O {params.extension} -o {output} --threads {threads} {input.sv} {input.snp} > {log} 2>&1
+    #     """
