@@ -60,8 +60,11 @@ rule vcfSort:
     output:data_dir + "/{sample}.sorted.vcf.gz"
     conda: PRINCESS_ENV
     shell:"""
-        bcftools sort -O z -o {output} {input}
+        zcat {input} | vcfsort | bgzip > {output}
         """
+    # shell:"""
+    #     bcftools sort -O z -o {output} {input}
+    #     """
 
 #### BGZIP SVs ####
 ###################
