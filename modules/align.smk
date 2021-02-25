@@ -109,7 +109,7 @@ rule mergeAlign:
         bams=lambda wildcards: expand(data_dir + "/align/{aligner}/{sample}.bam", aligner=wildcards.aligner, sample=sample_list),
         index_bams=lambda wildcards: expand(data_dir + "/align/{aligner}/{sample}.bam.bai", aligner=wildcards.aligner, sample=sample_list),
     output:
-        file_name=data_dir + "/align/{aligner}/data.bam"
+        file_name=temp(data_dir + "/align/{aligner}/data.bam")
     message:"Mergeing data"
     threads: config['samtools_threads']
     benchmark: data_dir + "/benchmark/align/{aligner}/merging.benchmark.txt"
@@ -126,7 +126,7 @@ rule mergeAlign:
 
 rule addRG:
     input:data_dir + "/{sample}.bam"
-    output:data_dir + "/{sample}_rg.bam"
+    output:temp(data_dir + "/{sample}_rg.bam")
     params:
         rg = "@RG\\tSM:SAMPLE\\tID:LONG",
     conda: PRINCESS_ENV
