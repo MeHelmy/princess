@@ -15,8 +15,8 @@ mkdir -p $clair_dir $modules_dir
 cd $modules_dir
 # download pretrained model (for Illumina)
 mkdir illumina && cd illumina
-wget http://www.bio8.cs.hku.hk/clair_models/illumina/trained_models.tar
-tar -xf trained_models.tar
+wget http://www.bio8.cs.hku.hk/clair_models/illumina/12345.tar
+tar -xf 12345.tar
 cd ../
 
 # download pretrained model (for PacBio CCS)
@@ -55,5 +55,6 @@ python get-pip.py
 pypy3 -m ensurepip
 #pypy3 -m pip install --no-cache-dir intervaltree blosc
 pypy3 -m pip install --no-cache-dir intervaltree
+pypy3 -m pip install blosc==1.8.3
 
 echo "Done"
