@@ -21,6 +21,7 @@ else:
     sys.exit("Looks like there is no config.yaml file in " + os.getcwd() + " make sure there is one or at least specify one with the --configfile commandline parameter.")
 #############
 
+command = config['running_command']
 
 
 # Listing samples

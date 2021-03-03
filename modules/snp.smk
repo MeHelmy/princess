@@ -106,7 +106,7 @@ rule concatChromosome:
     Concat splited chromomsomes regions
     """
     input: lambda wildcards: expand(data_dir + "/snp/{aligner}/chrsplit/chr.split.{chr}_{region}.vcf", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
-    output: data_dir + "/snp/{aligner}/data.{chr}.vcf"
+    output: temp(data_dir + "/snp/{aligner}/data.{chr}.vcf")
     message: "Concat variant split per Chromosome"
     conda: PRINCESS_ENV
     benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
@@ -192,7 +192,7 @@ rule updateHeader:
     Will be used in mergeParentalSNPs rule later
     """
     input:data_dir + "/{sample}.vcf"
-    output:data_dir + "/{sample}_update_header.vcf"
+    output:temp(data_dir + "/{sample}_update_header.vcf")
     message:"Update header file to change from float to string"
     shell:"""
         sed 's/ID=PS,Number=1,Type=Integer,Descri/ID=PS,Number=1,Type=String,Descri/' {input} > {output}

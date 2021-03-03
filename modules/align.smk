@@ -75,7 +75,7 @@ rule ngmlr:
 
 rule sam2bam:
     input: data_dir + "/align/ngmlr/{sample}.sam"
-    output: data_dir + "/align/ngmlr/{sample}.bam"
+    output: temp(data_dir + "/align/ngmlr/{sample}.bam")
     message: "Covert SAM to sorted BAM"
     threads: config['aligner_threads']
     benchmark: data_dir + "/benchmark/align/{sample}.sam2bam.benchmark.txt"
@@ -94,7 +94,7 @@ rule indexBam:
     input:
         data_dir + "/{sample}.bam"
     output:
-        data_dir + "/{sample}.bam.bai"
+        temp(data_dir + "/{sample}.bam.bai")
     benchmark: data_dir + "/benchmark/align/ngmlr/{sample}.benchmark.txt"
     message: "Indexing {input}"
     conda: PRINCESS_ENV
@@ -143,11 +143,12 @@ rule bam2tab:
     """
     This rules takes bam file and extract to tab delimeted file: reads   HP  PS.
     """
-    input: data_dir + "/align/{aligner}/data_hap.bam",
+    input:
+        bam_file = data_dir + "/align/{aligner}/data_hap.bam",
     output: data_dir + "/align/{aligner}/data_hap.tab",
     message: "Extracting read hp and ps info from tagged bam file."
     conda: PRINCESS_ENV
     benchmark: data_dir + "/benchmark/align/{aligner}/bam2tab.benchmark.txt"
     shell:"""
-        samtools view  {input} |  grep  "PS:i:" |  awk 'BEGIN{{OFS="\\t";}}{{print $1,$(NF-2), $(NF)}}'  > {output}
+        samtools index {input} && samtools view  {input.bam_file} |  grep  "PS:i:" |  awk 'BEGIN{{OFS="\\t";}}{{print $1,$(NF-2), $(NF)}}'  > {output}
         """

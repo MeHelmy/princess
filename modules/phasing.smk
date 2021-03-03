@@ -1,3 +1,4 @@
+
 ############################
 ######  PHASNIG RULES ######
 ###########################
@@ -42,7 +43,7 @@ rule phasing:
         bam_index=data_dir + "/align/{aligner}/data.bam.bai",
         snps=data_dir + "/snp/{aligner}/data.{chr}.vcf",
     output:
-        phased=data_dir + "/phased/{aligner}/data.{chr}.vcf",
+        phased=temp(data_dir + "/phased/{aligner}/data.{chr}.vcf"),
     params:
         reference=REFERENCES,
         read_list=data_dir + "/phased/{aligner}/data.{chr}.reads",
@@ -65,7 +66,7 @@ rule allPhased:
     Concat all the phased SNPs into one file.
     """
     input:lambda wildcards: expand(data_dir + "/phased/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list),
-    output: data_dir + "/phased/{aligner}/data.vcf"
+    output: temp(data_dir + "/phased/{aligner}/data.vcf")
     conda: PRINCESS_ENV
     benchmark: data_dir + "/benchmark/phase/{aligner}/concat_phased.benchmark.txt"
     shell:"""
