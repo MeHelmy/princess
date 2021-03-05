@@ -154,7 +154,9 @@ def overview(args, unknownargs, main_vars):
     os.chdir(main_vars.work_dir)
     chr_log = " ".join(chr_list) if chr_list else "All Chromosomes"
     logger.info("Analyzied Chromsomes: ".format(chr_log))
-    cmd = ['snakemake', '-n', '-p', '-r', '-j', args.jobs, '--config', sample_dir, samples, reference, chrs, *unknownargs]
+    running_command = "running_command=" + args.command
+
+    cmd = ['snakemake', '-n', '-p', '-r', '-j', args.jobs, '--config', sample_dir, samples, reference, chrs, running_command, *unknownargs]
     run_cmd(cmd)
     if args.remove_source:
         clean(main_vars.running_file, samples_names)
@@ -336,7 +338,7 @@ def varinat(args, unknownargs, main_vars):
     reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
     reset_times = main_vars.number_of_tries
     running_command = "running_command=" + args.command
-    
+
     if samples_names:
         samples, samples_names_str = get_sample_names(args, main_vars)
         if args.is_cluster:

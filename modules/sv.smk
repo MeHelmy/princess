@@ -62,8 +62,9 @@ rule vcfSort:
     output:data_dir + "/{sample}.sorted.vcf.gz"
     conda: PRINCESS_ENV
     shell:"""
-        bedtools sort -header -faidx {input.ref}.fai -i {input.vcffile} | bgzip > {output}
+         zcat {input} | awk 'BEGIN{{OFS="\t";}} /^#/{{print $0}} !/^#/{{ if ($2==0){{$2=1;print}} else {{print $0}} }}' |  bedtools sort -header -faidx {input.ref}.fai -i - | bgzip > {output}
         """
+# bedtools sort -header -faidx {input.ref}.fai -i {input.vcffile} | bgzip > {output}
     # shell:"""
     #     bcftools sort -O z -o {output} {input}
     #     """
