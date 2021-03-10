@@ -21,7 +21,8 @@ else:
     sys.exit("Looks like there is no config.yaml file in " + os.getcwd() + " make sure there is one or at least specify one with the --configfile commandline parameter.")
 #############
 
-command = config['running_command']
+
+
 
 
 # Listing samples
@@ -36,6 +37,21 @@ data_dir =  config["sample_directory"] if config['sample_directory'] else os.get
 sample_list = config['sample_list']
 if not isinstance(sample_list, list):
     sample_list = sample_list.split()
+#############
+
+# Clean after success
+#############
+source_dir = config['delete_files']
+samples_names = config['delete_samples']
+def clean(source_dir, data_dir, samples_names):
+    file_list = os.listdir(source_dir)
+    if samples_names:
+        for f in samples_names: os.remove(os.path.join(data_dir, os.path.basename(f)))
+    for f in file_list:
+        if os.path.isfile(f):
+            os.remove(f)
+        else:
+            shutil.rmtree(f)
 #############
 
 
@@ -160,12 +176,16 @@ rule all:
 ## Success and failure messages
 ## ------------------------------------------------------------------------------------ ##
 onsuccess:
+    clean(source_dir, data_dir, samples_names)
     if os.path.exists(os.path.join(data_dir, ".snakemake")):
         import shutil
         shutil.rmtree(os.path.join(data_dir, ".snakemake"), ignore_errors=True)
 	shell("mkdir -p {data_dir}/snake_log &&\
     find . -maxdepth 1 -name 'snakejob.*' -type f -print0 | xargs -0r mv -t {data_dir}/snake_log &&\
-    cat pictures/success.txt")
+    cat {source_dir}/pictures/success.txt")
+	# shell("mkdir -p {data_dir}/snake_log &&\
+    # find . -maxdepth 1 -name 'snakejob.*' -type f -print0 | xargs -0r mv -t {data_dir}/snake_log &&\
+    # cat pictures/success.txt")
     # shutil.rmtree(".snakemake")
 
 

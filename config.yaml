@@ -58,9 +58,7 @@ maternal_snps: "Data_giab/HG004_NA24143_mother/HG004_GRCh37_GIAB_highconf_CG-Ill
 # Methylation
 #############
 methylation: False
-# fast5_dir:
-#   'HS1011.fastq.gz': "home/seq"  # 'sample': "directory"
-fast5_dir: null
+fast5_dir: False
 methylation_threads: 8
 
 # Zipping Parameters
@@ -80,7 +78,7 @@ hap_methylation: "scripts/update_meth_hp_ps.py"
 
 # Cluster
 ##########
-cluster_jobs: 200
+cluster_jobs: 10
 number_of_tries: 3
 
 ...

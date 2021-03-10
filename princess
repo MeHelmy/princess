@@ -52,7 +52,7 @@ def get_args():
     default: %(default)s)', action='store_false')
     all_subparser.add_argument('-m', '--methylation', dest='detect_methylation', help='Identify methylation, mutually inclusinve with -md default: %(default)s)', action='store_true')
     all_subparser.add_argument('-md', '--methylationDirectory',metavar="Fast5 Directory",  dest='methylation_dir', help='Fast5 directory will be used to identify\
-     methylation mutually inclusinve with option -m default: %(default)s)', default="")
+     methylation mutually inclusinve with option -m default: %(default)s)', default=False)
     # all_subparser.add_argument('-md', '--methylationDirectory',metavar="Fast5 Directory", type=dir_path, dest='methylation_dir', help='Fast5 directory will be used to identify\
     #  methylation mutually inclusinve with option -m default: %(default)s)', default=None)
     all_subparser.set_defaults(func=all)
@@ -183,17 +183,24 @@ def align(args, unknownargs, main_vars):
     # Move to working directory to start
     os.chdir(main_vars.work_dir)
     cluster_config = os.path.join(main_vars.work_dir, "cluster", "cluster_config.yaml")
-    result = os.path.join(main_vars.work_dir, 'align', main_vars.aligner, 'data.bam')
+    #result = os.path.join(main_vars.work_dir, 'align', main_vars.aligner, 'data.bam')
+    result = os.path.join(main_vars.work_dir, 'result', "aligning.{}.bam".format(main_vars.aligner))
+
     reset_times = main_vars.number_of_tries
+    running_command = "running_command=" + args.command
+    delete_files = "delete_files="+ main_vars.running_file
+    delete_samples = "delete_samples=" + samples_names
+
     if args.is_cluster:
         # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
         # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
         # cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config,\
         #  '--cluster', cluster, '--config', sample_dir, samples, reference, *unknownargs]
-        cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', sample_dir, samples, reference, *unknownargs]
+        cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', sample_dir, samples, reference, running_command, *unknownargs]
     else:
         cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times,\
-          '--config', sample_dir, samples, reference, *unknownargs]
+          '--config', sample_dir, samples, reference, running_command, delete_files, delete_samples, *unknownargs]
+    print(cmd)
     run_cmd(cmd)
     if args.remove_source:
         clean(main_vars.running_file, samples_names)
@@ -216,13 +223,16 @@ def sv(args, unknownargs, main_vars):
         copy_tree(main_vars.running_file, main_vars.work_dir, update=1)
     os.chdir(main_vars.work_dir)
     cluster_config = os.path.join(main_vars.work_dir, "cluster", "cluster_config.yaml")
-    result = os.path.join(main_vars.work_dir, 'sv', main_vars.aligner, 'sniffles.vcf')
+    # result = os.path.join(main_vars.work_dir, 'sv', main_vars.aligner, 'sniffles.vcf')
+    result = os.path.join(main_vars.work_dir, 'result', "SVs.{}.vcf".format(main_vars.aligner))
+
     sample_dir = 'sample_directory=' + main_vars.work_dir
     reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
     samples_names = args.samples_files if args.samples_files else main_vars.sample_list_from_config
     reset_times = main_vars.number_of_tries
     running_command = "running_command=" + args.command
-
+    delete_files = "delete_files="+ main_vars.running_file
+    delete_samples = "delete_samples=" + str(samples_names)
 
     if samples_names:
         samples, samples_names_str = get_sample_names(args, main_vars)
@@ -230,17 +240,17 @@ def sv(args, unknownargs, main_vars):
             # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
             #cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, samples, reference, *unknownargs]
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--config', sample_dir, samples, reference, running_command, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--config', sample_dir, samples, reference, running_command,  delete_files, delete_samples, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', sample_dir, samples, reference, running_command, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', sample_dir, samples, reference, running_command, delete_files, delete_samples, *unknownargs]
     else:
         if args.is_cluster:
             # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
             # cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, reference, *unknownargs]
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', sample_dir, reference, running_command, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', sample_dir, reference, running_command, delete_files, delete_samples,  *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--config', sample_dir, reference, running_command, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--config', sample_dir, reference, running_command, delete_files, delete_samples, *unknownargs]
     run_cmd(cmd)
     if args.remove_source:
         clean(main_vars.running_file, samples_names_str)
@@ -412,22 +422,24 @@ def all(args, unknownargs, main_vars):
     reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
     reset_times = main_vars.number_of_tries
     running_command = "running_command=" + args.command
+    delete_files = "delete_files="+ main_vars.running_file
+    delete_samples = "delete_samples=" + str(samples_names)
 
     if samples_names:
         samples, samples_names_str = get_sample_names(args, main_vars)
         if args.is_cluster:
             # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, running_command, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, running_command, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
     else:
         if args.is_cluster:
             # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, running_command, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, running_command, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
 
     log_chrs = " ".join(chr_list) if chr_list else "All Chromsomes"
     logger.info("{}{}".format("Chromsomes that will be analysized: ", log_chrs))
@@ -440,6 +452,7 @@ def all(args, unknownargs, main_vars):
     logger.info("Fast5 directory for Methylation: {}".format(args.methylation_dir))
     logger.info("Sampels:\n{}".format("\n".join(samples_names)))
     logger.info("Running command:\n{}".format((str(cmd))))
+
     run_cmd(cmd)
     # Bita
     if args.remove_source:
@@ -577,7 +590,8 @@ def run_cmd(cmd):
     try:
         subprocess.run(cmd, check=True, universal_newlines=True)
     except subprocess.CalledProcessError as e:
-        logger.error("Error in subprocess:\nComand: {}\nError: {}".format(cmd, e.returncode))
+        # logger.error("Error in subprocess:\nComand: {}\nError: {}".format(cmd, e.returncode))
+        logger.error("Error in subprocess:\nComand: {}\nError: {}".format(" ".join(cmd), e))
 
 def is_valid_chrs(chr_list, ref):
     if chr_list:
