@@ -194,5 +194,5 @@ onsuccess:
 
 onerror:
 	shell("mkdir -p {data_dir}/snake_log &&\
-    find . -maxdepth 1 -name 'snakejob.*' -type f -print0 | xargs -0r mv -t {data_dir}/snake_log &&\
-    cat pictures/fail.txt")
+    find . -maxdepth 1  \( -name 'snakejob*' -or -name 'slurm*' \) -type f -exec mv -t {data_dir}/snake_log {{}}  \;  &&\
+    cat {source_dir}/pictures/fail.txt")
