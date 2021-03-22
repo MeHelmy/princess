@@ -67,7 +67,16 @@ rule snpStat:
     shell:"""
         bcftools stats {input.snp_file} > {output}
         """
+#### ALL STATISTICS No READs ####
+#################################
 
+rule statNoReads:
+    input:
+        expand(data_dir + "/statitics/{aligner}/data.stat", aligner=config['aligner']),
+        data_dir + "/statitics/sv/data.stat",\
+        data_dir + "/statitics/snp/snp.txt",
+    output: data_dir + "/stat.NoReads.txt"
+    shell: "touch {output}"
 
 #### ALL STATISTICS ####
 #######################

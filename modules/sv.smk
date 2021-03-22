@@ -21,7 +21,7 @@ rule sniffles:
         coverage=config['sniffles_coverage'],
     # benchmark: data_dir + "/sv/{aligner}/sniffles.benchmark.txt"
     conda: PRINCESS_ENV
-    priority: 1
+    priority: 2
     log: data_dir + "/sv/{aligner}/sniffles.log"
     benchmark: data_dir + "/benchmark/sv/{aligner}/sv.benchmark.txt"
     shell:"""
@@ -62,7 +62,7 @@ rule vcfSort:
     output:data_dir + "/{sample}.sorted.vcf.gz"
     conda: PRINCESS_ENV
     shell:"""
-         zcat {input} | awk 'BEGIN{{OFS="\t";}} /^#/{{print $0}} !/^#/{{ if ($2==0){{$2=1;print}} else {{print $0}} }}' |  bedtools sort -header -faidx {input.ref}.fai -i - | bgzip > {output}
+         zcat {input.vcffile} | awk 'BEGIN{{OFS="\t";}} /^#/{{print $0}} !/^#/{{ if ($2==0){{$2=1;print}} else {{print $0}} }}' |  bedtools sort -header -faidx {input.ref}.fai -i - | bgzip > {output}
         """
 # bedtools sort -header -faidx {input.ref}.fai -i {input.vcffile} | bgzip > {output}
     # shell:"""
