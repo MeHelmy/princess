@@ -148,19 +148,57 @@ for f in prefixed:
 ##################
 final_output = []
 
-if not config['methylation']:
-    pass
-# elif config['methylation'] and all(value  for value in ont_sample_dir.values()):
-elif config['methylation'] and  config['fast5_dir']:
-    final_output.append(data_dir + "/meth/"+ aligner + "/methylation_calls_hap.tsv")
-else:
-    sys.exit("Every ONT sample should have corresponding fast5 directory, please correct fast5_dir files in config.yaml or use -md option")
+if config['sample_list']:
+    if not config['methylation']:
+        pass
+    # elif config['methylation'] and all(value  for value in ont_sample_dir.values()):
+    elif config['methylation'] and  config['fast5_dir']:
+        final_output.append(data_dir + "result" + "methylation.{}_calls_hap.tsv".format(aligner)) # DONE
+    else:
+        sys.exit("Every ONT sample should have corresponding fast5 directory, please correct fast5_dir files in config.yaml or use -md option")
 
-if config['update_snps'] and config['paternal_snps'] and config['maternal_snps']:
-    final_output.extend([data_dir + "/stat.txt", *expand(data_dir + "/phased/{aligner}/data_updated.vcf", aligner=config['aligner']),\
-    *expand(data_dir + "/sv/{aligner}/sniffles_hp_updated.vcf", aligner=config['aligner'])])
+    if config['update_snps'] and config['paternal_snps'] and config['maternal_snps']:
+        final_output.extend([data_dir + "result/stat.{aligner}.txt", data_dir + "/result/{aligner}.phased.SNVs.vcf",\
+        data_dir + "/result/{aligner}.phased.SVs.vcf"])
+    else:
+        final_output.extend([data_dir + "result/stat.{}.txt".format(aligner), data_dir + "/result/{}.phased.sv_snp.vcf.gz".format(aligner)])
 else:
-    final_output.extend([data_dir + "/stat.txt", *expand(data_dir + "/sv/{aligner}/sv_snp.vcf.gz",  aligner=config['aligner'])])
+    if config['update_snps'] and config['paternal_snps'] and config['maternal_snps']:
+        final_output.extend([data_dir + "result/stat.{aligner}.txt", data_dir + "/result/{aligner}.phased.SNVs.vcf",\
+        data_dir + "/result/{aligner}.phased.SVs.vcf"])
+    else:
+        final_output.extend([data_dir + "/result/stat.noReads.{}.txt".format(aligner), data_dir + "/result/{}.phased.sv_snp.vcf.gz".format(aligner)])
+    print('we do not have samples ')
+
+
+
+# if not config['methylation']:
+#     pass
+# # elif config['methylation'] and all(value  for value in ont_sample_dir.values()):
+# elif config['methylation'] and  config['fast5_dir']:
+#     final_output.append(data_dir + "/meth/"+ aligner + "/methylation_calls_hap.tsv")
+# else:
+#     sys.exit("Every ONT sample should have corresponding fast5 directory, please correct fast5_dir files in config.yaml or use -md option")
+#
+# if config['update_snps'] and config['paternal_snps'] and config['maternal_snps']:
+#     final_output.extend([data_dir + "/stat.txt", *expand(data_dir + "/phased/{aligner}/data_updated.vcf", aligner=config['aligner']),\
+#     *expand(data_dir + "/sv/{aligner}/sniffles_hp_updated.vcf", aligner=config['aligner'])])
+# else:
+#     final_output.extend([data_dir + "/stat.txt", *expand(data_dir + "/sv/{aligner}/sv_snp.vcf.gz",  aligner=config['aligner'])])
+
+# if not config['methylation']:
+#     pass
+# # elif config['methylation'] and all(value  for value in ont_sample_dir.values()):
+# elif config['methylation'] and  config['fast5_dir']:
+#     final_output.append(data_dir + "/meth/"+ aligner + "/methylation_calls_hap.tsv")
+# else:
+#     sys.exit("Every ONT sample should have corresponding fast5 directory, please correct fast5_dir files in config.yaml or use -md option")
+#
+# if config['update_snps'] and config['paternal_snps'] and config['maternal_snps']:
+#     final_output.extend([data_dir + "/stat.txt", *expand(data_dir + "/phased/{aligner}/data_updated.vcf", aligner=config['aligner']),\
+#     *expand(data_dir + "/sv/{aligner}/sniffles_hp_updated.vcf", aligner=config['aligner'])])
+# else:
+#     final_output.extend([data_dir + "/stat.txt", *expand(data_dir + "/sv/{aligner}/sv_snp.vcf.gz",  aligner=config['aligner'])])
 ###################################
 
 
