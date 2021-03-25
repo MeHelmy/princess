@@ -4,8 +4,8 @@
 ---
 __default__:
     "account"   : "proj_CCDG"
-#    "queue"     : "ill-prod"
-    "queue"     : "analysis"
+    "queue"     : "ill-prod"
+#    "queue"     : "analysis"
     "nCPUs"     : "16"
     "mem"    : 20000
 #    "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
