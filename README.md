@@ -19,9 +19,10 @@ Princess was tested on CentOS release 6.7, Conda version 4.7.12 is installed:
 for more information about [Installing Conda press here](https://bioconda.github.io/user/install.html#install-conda, "Install Conda")
 To download same Conda version [here](https://repo.continuum.io/miniconda/Miniconda3-4.7.12-Linux-x86_64.sh "Conda 4.7.12")*
 
-1. After conda is installed. Snakemake should be installed
+1. After conda is installed. Snakemake should be installed and yaml
 ~~~
 conda install snakemake=5.7.1
+conda install yaml
 ~~~
 2. Downloading PRINCESS  
 ~~~
