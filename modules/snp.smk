@@ -155,16 +155,16 @@ rule concatChromosome:
             filecount=( {input} )
             count=${{#filecount[@]}}
             if [ "$count" -ge 2 ]; then
-                vcfcat {input} | vcfstreamsort > {params.temp_chr}\
+                vcfcat {input} | vcfstreamsort  > {params.temp_chr}\
                 && first_max=$(find_max {params.temp_chr} {params.read_type})\
                 && threshold=$(filsn {params.temp_chr} $first_max)\
-                && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} > {output}
+                && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} | awk '/^#/ {{ print }} !/^#/ {{ if ($4 != $5 ) {{ print }} }}' > {output}
             else
-                if [ $(head -n 1000 {input} | grep -q -v "#") ]  ; then
-                    vcfcat {input} | vcfstreamsort > {params.temp_chr}\
+                if $(head -n 1000 {input} | grep -q -v "#") ; then
+                    vcfcat {input}  | vcfstreamsort > {params.temp_chr}\
                     && first_max=$(find_max {params.temp_chr} {params.read_type})\
                     && threshold=$(filsn {params.temp_chr} $first_max)\
-                    && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} > {output}
+                    && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} | awk '/^#/ {{ print }} !/^#/ {{ if ($4 != $5 ) {{ print }} }}' > {output}
                 else
                     cp {input} {output}
                 fi
@@ -174,7 +174,7 @@ rule concatChromosome:
 
 
         elif [ {params.filter} == "False" ]; then
-            vcfcat {input} | vcfstreamsort > {output}
+            vcfcat {input} | awk '/^#/ {{ print }} !/^#/ {{ if ($4 != $5 ) {{ print }} }}' | vcfstreamsort | awk '/^#/ {{ print }} !/^#/ {{ if ($4 != $5 ) {{ print }} }}' > {output}
         else
             >&2 echo "Unknown option {params.filter}"
             exit 1
@@ -192,7 +192,7 @@ rule updateHeader:
     Will be used in mergeParentalSNPs rule later
     """
     input:data_dir + "/{sample}.vcf"
-    output:temp(data_dir + "/{sample}_update_header.vcf")
+    output:data_dir + "/{sample}_update_header.vcf"
     message:"Update header file to change from float to string"
     shell:"""
         sed 's/ID=PS,Number=1,Type=Integer,Descri/ID=PS,Number=1,Type=String,Descri/' {input} > {output}

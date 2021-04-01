@@ -118,7 +118,7 @@ rule SVsSNPsCompained:
     threads: config['samtools_threads']
     conda: PRINCESS_ENV
     shell:"""
-        vcfcat  {input.sv} {input.snp}| bedtools sort -header -faidx {input.ref}.fai -i - | bgzip > {output} > {log} 2>&1
+        vcfcat  {input.sv} {input.snp}| bedtools sort -header -faidx {input.ref}.fai -i - | bgzip > {output} 2> {log}
         """
     # shell:"""
     #     bcftools concat -a -O {params.extension} -o {output} --threads {threads} {input.sv} {input.snp} > {log} 2>&1

@@ -39,7 +39,7 @@ rule minimap2:
     message:
         "Running minimap2 , sample is: {wildcards.sample}"
     threads: config['aligner_threads']
-    benchmark: data_dir + "/benchmark/align/minimap/{sample}.benchmark.txt"
+    benchmark: data_dir + "/benchmark/align/{sample}.minimap.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
             minimap2  {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" | samtools sort -@ {threads} - > "{output.dataout}"
@@ -64,7 +64,7 @@ rule ngmlr:
     message:
         "Running ngmlr , sample is: {wildcards.sample}"
     threads: config['aligner_threads']
-    benchmark: data_dir + "/benchmark/align/ngmlr/{sample}.benchmark.txt"
+    benchmark: data_dir + "/benchmark/align/{sample}.ngmlr.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
             ngmlr -r "{params.reference}" -q "{input.datain}" --rg-sm SAMPLE -o "{output.dataout}" -t "{threads}" -x "{params.platform}" --bam-fix > {log} 2>&1
@@ -95,7 +95,7 @@ rule indexBam:
         data_dir + "/{sample}.bam"
     output:
         temp(data_dir + "/{sample}.bam.bai")
-    benchmark: data_dir + "/benchmark/align/ngmlr/{sample}.benchmark.txt"
+    benchmark: data_dir + "/benchmark/align/{sample}.index.benchmark.txt"
     message: "Indexing {input}"
     conda: PRINCESS_ENV
     shell:
@@ -112,7 +112,7 @@ rule mergeAlign:
         file_name=temp(data_dir + "/align/{aligner}/data.bam")
     message:"Mergeing data"
     threads: config['samtools_threads']
-    benchmark: data_dir + "/benchmark/align/{aligner}/merging.benchmark.txt"
+    benchmark: data_dir + "/benchmark/align/{aligner}.merging.benchmark.txt"
     log:
         data_dir + "/align/{aligner}/merge.log"
     conda: PRINCESS_ENV
@@ -148,7 +148,7 @@ rule bam2tab:
     output: data_dir + "/align/{aligner}/data_hap.tab",
     message: "Extracting read hp and ps info from tagged bam file."
     conda: PRINCESS_ENV
-    benchmark: data_dir + "/benchmark/align/{aligner}/bam2tab.benchmark.txt"
+    benchmark: data_dir + "/benchmark/align/{aligner}.bam2tab.benchmark.txt"
     shell:"""
         samtools index {input} && samtools view  {input.bam_file} |  grep  "PS:i:" |  awk 'BEGIN{{OFS="\\t";}}{{print $1,$(NF-2), $(NF)}}'  > {output}
         """
