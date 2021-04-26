@@ -4,7 +4,7 @@
 Snakemake file waraper for princess.
 """
 import argparse
-import sys, os, subprocess, ntpath, yaml
+import sys, os, subprocess, ntpath , yaml
 from distutils.dir_util import copy_tree
 import filecmp, shutil
 from pathlib import Path
