@@ -3,8 +3,8 @@
 
 ---
 __default__:
-    "account"   : "proj_CCDG"
-    "queue"     : "ill-prod"
+    "account"   : "YourAccount"
+    "queue"     : "YourQueue"
 #    "queue"     : "analysis"
     "nCPUs"     : "16"
     "mem"    : 20000
