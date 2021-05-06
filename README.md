@@ -22,7 +22,7 @@ To download same Conda version [here](https://repo.continuum.io/miniconda/Minico
 1. After conda is installed. Snakemake should be installed and yaml
 ~~~
 conda install snakemake=5.7.1
-conda install yaml
+conda install pyyaml
 ~~~
 2. Downloading PRINCESS  
 ~~~
