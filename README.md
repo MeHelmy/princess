@@ -1,4 +1,4 @@
-# Princess (beta version)
+# Princess
 Princess is a fast and scalable framework to detect and report haplotype resolved Single Nucleotide Variants (SNV) and Structural Variations (SVs) at scale. It can leverage your cluster environment to speed up the detection which starts with one or many fasta or fastq files.
 
 ![princess](./pictures/leia.jpg)
@@ -22,7 +22,7 @@ To download same Conda version [here](https://repo.continuum.io/miniconda/Minico
 1. After conda is installed. Snakemake should be installed and yaml
 ~~~
 conda install snakemake=5.7.1
-conda install yaml
+conda install pyyaml
 ~~~
 2. Downloading PRINCESS  
 ~~~
