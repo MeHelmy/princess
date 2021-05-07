@@ -32,6 +32,7 @@ aligner_threads: 5
 # Structural Variant Parameters
 ###############################
 sniffles_coverage: 2
+min_conflict: 0
 
 
 # Calling Variant Parameters
@@ -50,7 +51,7 @@ clair_script: "/home/source/Clair/clair.py"
 
 # Update SNPs
 #############
-update_snps: False 
+update_snps: False
 paternal_snps: "/users/mmahmoud/home/projects/pacbio/Data_giab/HG003_NA24149_father/HG003_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X_CHROM1-22_v.3.3.2_highconf.vcf.gz"
 maternal_snps: "/users/mmahmoud/home/projects/pacbio/Data_giab/HG004_NA24143_mother/HG004_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X_CHROM1-22_v.3.3.2_highconf.vcf.gz"
 

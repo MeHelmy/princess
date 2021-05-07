@@ -44,9 +44,10 @@ rule phaseSVs:
     output:data_dir + "/sv/{aligner}/sniffles_hp_updated.vcf"
     message: "Updating SVs using align/{aligner}/data_hap.tab"
     params:
-        update_script = updat_sv
+        update_script = updat_sv,
+        min_conflict =  config['min_conflict']
     shell:"""
-        python {params.update_script} {input.sv} {input.bam} {output}
+        python {params.update_script} {input.sv} {input.bam} {output} -c {params.min_conflict}
         """
 
 #### SORTING SVs ####
