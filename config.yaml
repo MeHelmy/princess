@@ -52,8 +52,8 @@ clair_script: "/home/source/Clair/clair.py"
 # Update SNPs
 #############
 update_snps: False
-paternal_snps: "/users/mmahmoud/home/projects/pacbio/Data_giab/HG003_NA24149_father/HG003_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X_CHROM1-22_v.3.3.2_highconf.vcf.gz"
-maternal_snps: "/users/mmahmoud/home/projects/pacbio/Data_giab/HG004_NA24143_mother/HG004_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X_CHROM1-22_v.3.3.2_highconf.vcf.gz"
+paternal_snps: ""
+maternal_snps: ""
 
 
 # Methylation
