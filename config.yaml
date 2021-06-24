@@ -47,7 +47,7 @@ clair_pypy: "/home/source/Clair/pypy3/pypy3.5-7.0.0-linux_x86_64-portable/bin/py
 training_data_ccs: "bin/modules/ccs/model" #"/users/mmahmoud/home/source/Clair/training_data/pacbio/rsii/model"
 training_data_ont: "bin/modules/ont/model" #"/users/mmahmoud/home/source/Clair/training_data/ont/r94/model"
 training_data_clr: "bin/modules/clr/model-000008"
-clair_script: "/home/source/Clair/clair.py"
+
 
 # Update SNPs
 #############

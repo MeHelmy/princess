@@ -3,9 +3,6 @@
 
 ---
 __default__:
-    "account"   : "YourAccount"
-    "queue"     : "YourQueue"
-#    "queue"     : "analysis"
     "nCPUs"     : "16"
     "mem"    : 20000
 #    "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
