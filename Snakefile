@@ -121,8 +121,8 @@ aligner = config["aligner"]
 # Preparing conda environements.
 ###############################
 PRINCESS_ENV=os.getcwd()+"/envs/princess_env.yaml"
-# CLAIR_ENV=os.getcwd()+"/envs/test-clair.yaml"
-CLAIR_ENV=os.getcwd()+"/envs/clair_env.yaml"
+# CLAIR_ENV=os.getcwd()+"/envs/clair_env.yaml"
+CLAIR_ENV=os.getcwd()+"/envs/clair3.test.yml"
 #############
 
 
