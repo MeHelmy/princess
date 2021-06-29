@@ -17,11 +17,15 @@
 if config['read_type'] == "ccs":
     training_data=config["training_data_ccs"]
     platform="hifi"
+    training_data="/bin/models/hifi"
 elif config['read_type'] == "ont":
     training_data=config["training_data_ont"]
     platform="ont"
+    training_data="/bin/models/ont"
 elif config['read_type'] == "clr":
+    platform="hifi"
     training_data=config["training_data_clr"]
+    training_data="/bin/models/hifi"
 else:
     print("Unknow data type, supported format are: ont, ccs, and clr")
     exit(1)
@@ -87,12 +91,12 @@ rule callSNVsChunk:
     shell:
         """
         echo $'{wildcards.chr}\t{params.start}\t{params.end}' > {wildcards.chr}.{params.start}.{params.end}.bed  &&\
-        /users/mmahmoud/home/source/Clair3/run_clair3.sh \
+        run_clair3.sh \
         --bam_fn {input.bam} \
         --ref_fn {input.reference} \
         --threads {threads} \
         --platform {params.platform} \
-        --model_path {params.train_data} \
+        --model_path $CONDA_PREFIX/{params.train_data} \
         --output $PWD/snp/{wildcards.aligner}/chr.split.{wildcards.chr}_{wildcards.region} \
         --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed > {log} 2>&1
         """
