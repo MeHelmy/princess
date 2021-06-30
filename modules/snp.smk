@@ -90,13 +90,14 @@ rule callSNVsChunk:
     threads: config['clair_threads']
     shell:
         """
+        echo $CONDA_PREFIX{params.train_data} &&\
         echo $'{wildcards.chr}\t{params.start}\t{params.end}' > {wildcards.chr}.{params.start}.{params.end}.bed  &&\
         run_clair3.sh \
         --bam_fn {input.bam} \
         --ref_fn {input.reference} \
         --threads {threads} \
         --platform {params.platform} \
-        --model_path $CONDA_PREFIX/{params.train_data} \
+        --model_path $CONDA_PREFIX{params.train_data} \
         --output $PWD/snp/{wildcards.aligner}/chr.split.{wildcards.chr}_{wildcards.region} \
         --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed > {log} 2>&1
         """
