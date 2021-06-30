@@ -126,6 +126,37 @@ I am assuming that the reference file is indexed, if not please use the followin
 
 Done!!
 
+### For methylation calling.
+Methylation calling is a part from the `all` option.
+
+```
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
+  -d Working directory, --directory Working directory
+                        Working directory.
+  -r {ont,clr,ccs}, --ReadType {ont,clr,ccs}
+                        Read techonlogy
+  -l, --removeFiles     remove princess source script after running default: False)
+  -u, --UseConda        Use conda for running default: True)
+  -e, --Cluster         Use cluster while runing default: True)
+  -a {minimap,ngmlr}, --Aligner {minimap,ngmlr}
+                        In case if you want to choose specific aligner otherwise default will be used default: minimap)
+  -s sampleFiles [sampleFiles ...], --samplesFiles sampleFiles [sampleFiles ...]
+                        list of fatsa, fastq, or gz files.
+  -f REF, --ref REF     The reference file will be used to align reads to.
+  -j JOBS, --jobs JOBS  Number of running jobs default: 200 )
+  -g LOG_FILE, --log LOG_FILE
+                        Log file: PrincessLog.txt )
+  -c CHRS [CHRS ...], --chr CHRS [CHRS ...]
+                        Chromosomes list, if not specified we will use all Chromosomes.
+  -t, --filter          Filter identified SNVs using Princess algorithm default: True)
+  -m, --methylation     Identify methylation, mutually inclusive with -md default: False)
+  -md Fast5 Directory, --methylationDirectory Fast5 Directory
+                        Fast5 directory will be used to identify methylation mutually inclusive with option -m default: False)
+```
+By choosing the flag __`--methylation`__, Princess will call the methylation on the input data (ONT data), this option is inclusive with the option __`--methylationDirectory`__ which requires the fasta5 directory.
+
 ## Output
 
 Princess will create these directories:

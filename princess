@@ -50,7 +50,7 @@ def get_args():
      if not specified we will use all Chromosomes.', nargs='+', default=[])
     all_subparser.add_argument('-t', '--filter', dest='filter', help='Filter identified SNVs using Princess algorithm\
     default: %(default)s)', action='store_false')
-    all_subparser.add_argument('-m', '--methylation', dest='detect_methylation', help='Identify methylation, mutually inclusinve with -md default: %(default)s)', action='store_true')
+    all_subparser.add_argument('-m', '--methylation', dest='detect_methylation', help='Identify methylation, mutually inclusive with -md default: %(default)s)', action='store_true')
     all_subparser.add_argument('-md', '--methylationDirectory',metavar="Fast5 Directory",  dest='methylation_dir', help='Fast5 directory will be used to identify\
      methylation mutually inclusinve with option -m default: %(default)s)', default=False)
     # all_subparser.add_argument('-md', '--methylationDirectory',metavar="Fast5 Directory", type=dir_path, dest='methylation_dir', help='Fast5 directory will be used to identify\
