@@ -123,7 +123,7 @@ aligner = config["aligner"]
 PRINCESS_ENV=os.getcwd()+"/envs/princess_env.yaml"
 # CLAIR_ENV=os.getcwd()+"/envs/clair_env.yaml"
 # CLAIR_ENV=os.getcwd()+"/envs/clair3.bio.yml"
-CLAIR_ENV=os.getcwd()+"/envs/clair3.bio.0141.yml"
+CLAIR_ENV=os.getcwd()+"/envs/clair3.bio.0142.yml"
 #############
 
 
