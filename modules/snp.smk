@@ -140,11 +140,14 @@ rule callSNVsChunk:
 #### CALL VARINAT BY CHUNKS #######
 ###################################
 
+
 rule concatChromosome:
     """
     Concat splited chromomsomes regions
     """
-    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
+    input:
+        vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
+        #vcf_index = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz.tbi", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
     output: temp(data_dir + "/snp/{aligner}/data.{chr}.vcf")
     message: "Concat variant split per Chromosome"
     conda: PRINCESS_ENV
@@ -154,7 +157,7 @@ rule concatChromosome:
         filter=config['filter_chrs'],
         read_type=config['read_type']
     shell:"""
-        vcfcat {input} | vcfstreamsort  >  {output}
+        bcftools concat -o {output} {input.vcf}
         """
 # rule concatChromosome:
 #     """
@@ -281,7 +284,7 @@ rule vcfIndex:
     """
     input: data_dir + "/{sample}.vcf.gz"
     output: data_dir + "/{sample}.vcf.gz.tbi"
-    message: "Indexing phacsed vcf file"
+    message: "Indexing vcf file {input}"
     conda: PRINCESS_ENV
     shell:"""
         tabix -p vcf {input}
