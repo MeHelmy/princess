@@ -90,7 +90,6 @@ rule callSNVsChunk:
     threads: config['clair_threads']
     shell:
         """
-        echo $CONDA_PREFIX{params.train_data} &&\
         echo $'{wildcards.chr}\t{params.start}\t{params.end}' > {wildcards.chr}.{params.start}.{params.end}.bed  &&\
         run_clair3.sh \
         --bam_fn {input.bam} \
@@ -99,7 +98,8 @@ rule callSNVsChunk:
         --platform {params.platform} \
         --model_path $CONDA_PREFIX{params.train_data} \
         --output $PWD/snp/{wildcards.aligner}/chr.split.{wildcards.chr}_{wildcards.region} \
-        --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed > {log} 2>&1
+        --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed > {log} 2>&1 \
+        && rm {wildcards.chr}.{params.start}.{params.end}.bed
         """
 # rule callSNVsChunk:
 #     """
@@ -145,8 +145,7 @@ rule concatChromosome:
     """
     Concat splited chromomsomes regions
     """
-    input:
-        vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
+    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
         #vcf_index = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz.tbi", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
     output: temp(data_dir + "/snp/{aligner}/data.{chr}.vcf")
     message: "Concat variant split per Chromosome"
@@ -157,7 +156,7 @@ rule concatChromosome:
         filter=config['filter_chrs'],
         read_type=config['read_type']
     shell:"""
-        bcftools concat -o {output} {input.vcf}
+        bcftools concat -o {output} {input}
         """
 # rule concatChromosome:
 #     """
