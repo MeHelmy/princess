@@ -175,8 +175,8 @@ all:           The command to run full analysis for other options please run `pr
 --ReadType:    Read type, the supported read types are clr, ccs, and ont.  
 --ref:         Path to the reference please use samtools faidx with refernce before running Princess.  
 --jobs:        Number of running jobs on cluster.  
---sampleFiles: sample fastq file we downloaded, it could be more than one either compressed or not.  
---latency-wait 200 -p:  these are additional Snakemake option to wait 200 seconds before collecting output.  
+--sampleFiles: Sample fastq file we downloaded, it could be more than one either compressed or not.  
+--latency-wait 200 -p:  These are additional Snakemake option to wait 200 seconds before collecting output.  
 
 
 
