@@ -157,6 +157,11 @@ optional arguments:
 ```
 By choosing the flag __`--methylation`__, Princess will call the methylation on the input data (ONT data), this option is inclusive with the option __`--methylationDirectory`__ which requires the fasta5 directory.
 
+## Test case
+
+We uploaded a HiFi compressed data file from the publically available HG002 data set. The complete data set is available at `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb/`  High-fidelity 15kb long-read dataset of HG002, Ashkenazim Son.
+
+ 
 ## Output
 
 Princess will create these directories:
