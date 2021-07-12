@@ -34,7 +34,7 @@ def get_args():
     parent_parser.add_argument('-u', '--UseConda', dest='use_conda', help='Use conda for running default: %(default)s)', action='store_false')
     parent_parser.add_argument('-e', '--Cluster', dest='is_cluster', help='Use cluster while runing default: %(default)s)', action='store_false')
     parent_parser.add_argument('-a', '--Aligner', dest="aligner", choices=['minimap', 'ngmlr'], help='In case if you want to choose specific aligner otherwise default will be used default: %(default)s)', default='minimap')
-    parent_parser.add_argument('-s', '--samplesFiles', dest="samples_files", metavar= "sampleFiles" ,  nargs='+',  help='list of fatsa, fastq, or gz files.')
+    parent_parser.add_argument('-s', '--sampleFiles', dest="samples_files", metavar= "sampleFiles" ,  nargs='+',  help='list of fatsa, fastq, or gz files.')
     parent_parser.add_argument('-f', '--ref', dest="ref", help='The reference file will be used to align reads to.', required=True)
     parent_parser.add_argument('-j', '--jobs', dest='jobs', type=str, help='Number of running jobs default: %(default)s )', default='200')
     parent_parser.add_argument('-g', '--log', dest='log_file', type=str, help='Log file: %(default)s )', default='PrincessLog.txt')

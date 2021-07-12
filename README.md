@@ -98,7 +98,7 @@ optional arguments:
   -a {minimap,ngmlr}, --Aligner {minimap,ngmlr}
                         In case if you want to choose specific aligner
                         otherwise default will be used default: minimap)
-  -s sampleFiles [sampleFiles ...], --samplesFiles sampleFiles [sampleFiles ...]
+  -s sampleFiles [sampleFiles ...], --sampleFiles sampleFiles [sampleFiles ...]
                         list of fatsa, fastq, or gz files.
   -f REF, --ref REF     The reference file will be used to align reads to.
   -j JOBS, --jobs JOBS  Number of running jobs default: 200 )
@@ -142,7 +142,7 @@ optional arguments:
   -e, --Cluster         Use cluster while runing default: True)
   -a {minimap,ngmlr}, --Aligner {minimap,ngmlr}
                         In case if you want to choose specific aligner otherwise default will be used default: minimap)
-  -s sampleFiles [sampleFiles ...], --samplesFiles sampleFiles [sampleFiles ...]
+  -s sampleFiles [sampleFiles ...], --sampleFiles sampleFiles [sampleFiles ...]
                         list of fatsa, fastq, or gz files.
   -f REF, --ref REF     The reference file will be used to align reads to.
   -j JOBS, --jobs JOBS  Number of running jobs default: 200 )
@@ -161,6 +161,24 @@ By choosing the flag __`--methylation`__, Princess will call the methylation on 
 
 We uploaded a HiFi compressed data file from the publically available HG002 data set.
 The complete data set (High-fidelity 15kb long-read dataset of HG002, Ashkenazim Son.) is available [Here](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb/)
+
+To download the test data run the following command:
+```
+wget https://bcm.box.com/shared/static/sdml5d7csxprgu3cl5cve0lgv5jnrrlv --output-document  HiFi.fastq.gz
+```
+After download is finished you shall have a HiFi fastq file called `HiFi.fastq.gz`, to run the analysis test run the following command:
+```
+Full/Path/To/princess all  --directory $PWD/analysis --ReadType ccs --ref Path/To/Reference/genome.fa --jobs 7 --sampleFiles $PWD/HiFi.fastq.gz  --latency-wait 200 -p
+```
+all:           The command to run full analysis for other options please run `princess -h`
+---directory:  The out put directory it could be any name, use the full path, in my case the output is  same place.
+--ReadType:    Read type, the supported read types are clr, ccs, and ont.
+--ref:         Path to the reference please use samtools faidx with refernce before running Princess.
+--jobs:        Number of running jobs on cluster.
+--sampleFiles: sample fastq file we downloaded, it could be more than one either compressed or not.
+--latency-wait 200 -p:  these are additional Snakemake option to wait 200 seconds before collecting output.
+
+
 
 
 
