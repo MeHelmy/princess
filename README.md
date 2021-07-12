@@ -170,13 +170,13 @@ After download is finished you shall have a HiFi fastq file called `HiFi.fastq.g
 ```
 Full/Path/To/princess all  --directory $PWD/analysis --ReadType ccs --ref Path/To/Reference/genome.fa --jobs 7 --sampleFiles $PWD/HiFi.fastq.gz  --latency-wait 200 -p
 ```
-all:           The command to run full analysis for other options please run `princess -h`
----directory:  The out put directory it could be any name, use the full path, in my case the output is  same place.
---ReadType:    Read type, the supported read types are clr, ccs, and ont.
---ref:         Path to the reference please use samtools faidx with refernce before running Princess.
---jobs:        Number of running jobs on cluster.
---sampleFiles: sample fastq file we downloaded, it could be more than one either compressed or not.
---latency-wait 200 -p:  these are additional Snakemake option to wait 200 seconds before collecting output.
+all:           The command to run full analysis for other options please run `princess -h`  
+---directory:  The out put directory it could be any name, use the full path, in my case the output is  same place.  
+--ReadType:    Read type, the supported read types are clr, ccs, and ont.  
+--ref:         Path to the reference please use samtools faidx with refernce before running Princess.  
+--jobs:        Number of running jobs on cluster.  
+--sampleFiles: sample fastq file we downloaded, it could be more than one either compressed or not.  
+--latency-wait 200 -p:  these are additional Snakemake option to wait 200 seconds before collecting output.  
 
 
 
