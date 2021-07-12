@@ -159,9 +159,12 @@ By choosing the flag __`--methylation`__, Princess will call the methylation on 
 
 ## Test case
 
-We uploaded a HiFi compressed data file from the publically available HG002 data set. The complete data set is available at `https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb/`  High-fidelity 15kb long-read dataset of HG002, Ashkenazim Son.
+We uploaded a HiFi compressed data file from the publically available HG002 data set.
+The complete data set (High-fidelity 15kb long-read dataset of HG002, Ashkenazim Son.) is available at:
+`https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb/`
 
- 
+
+
 ## Output
 
 Princess will create these directories:
