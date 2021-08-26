@@ -1,5 +1,7 @@
 # Princess
 Princess is a fast and scalable framework to detect and report haplotype resolved Single Nucleotide Variants (SNV) and Structural Variations (SVs) at scale. It can leverage your cluster environment to speed up the detection which starts with one or many fasta or fastq files.
+Cite the code: [![DOI](https://zenodo.org/badge/179986953.svg)](https://zenodo.org/badge/latestdoi/179986953)
+
 
 ![princess](./pictures/leia.jpg)
 
