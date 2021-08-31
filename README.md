@@ -1,5 +1,5 @@
 # Princess
-![GitHub](https://img.shields.io/github/license/MeHelmy/princess) ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/MeHelmy/princess)
+![GitHub](https://img.shields.io/github/license/MeHelmy/princess) ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/MeHelmy/princess) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/MeHelmy/princess)
 ---
 Princess is a fast and scalable framework to detect and report haplotype resolved Single Nucleotide Variants (SNV) and Structural Variations (SVs) at scale. It can leverage your cluster environment to speed up the detection which starts with one or many fasta or fastq files.
 Cite the code: [![DOI](https://zenodo.org/badge/179986953.svg)](https://zenodo.org/badge/latestdoi/179986953)
