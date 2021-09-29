@@ -6,7 +6,6 @@ channels:
   - defaults
 dependencies:
   - bcftools=1.9=h68d8f2e_7
-  - bgzip=1.12
   - bedtools=2.29.2=hc088bd4_0
   - biopython=1.74=py37h516909a_0
   - bwa=0.7.17=hed695b0_6
