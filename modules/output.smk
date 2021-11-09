@@ -256,7 +256,7 @@ rule mvParentalPhased:
         mv {data_dir}/phased/{wildcards.aligner}/*.log {data_dir}/log || :
     fi &&\
     mv {input.stat} {params.stat} &&\
-    mv {data_dir}/statitics {data_dir}/result &&\
+    mv {data_dir}/statistics {data_dir}/result &&\
     mv {input.phasedSNVs} {params.phasedSNVs} &&\
     bgzip {params.phasedSNVs} &&\
     tabix {params.phasedSNVs}.gz &&\

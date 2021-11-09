@@ -48,7 +48,7 @@ def main():
 def get_args():
     parser = argparse.ArgumentParser(epilog="%(prog)s version 0.01. use command -h for more info.",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     description='Calulate statitics form fasta, fastq, fasta.gz and fastq.gz files ',
+                                     description='Calulate statistics form fasta, fastq, fasta.gz and fastq.gz files ',
                                      add_help=True, )
 
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.01')
@@ -56,7 +56,7 @@ def get_args():
     parser.add_argument("-i", "--input", nargs="+",
                                help="<Required> one or more reads file ex: -i 1.fasta -i 2.fasta .... or -i 1.fasta  2.fasta",
                                action="append", required=True, metavar="FOO.fasta/q/gz")
-    parser.add_argument("-o", "--output", help="<Required> output statitics file", metavar="FOO.txt")
+    parser.add_argument("-o", "--output", help="<Required> output statistics file", metavar="FOO.txt")
 
     parser.add_argument("-t", "--threads", type=int, metavar='N', default=1,
                                help="<Optional> Number of threads default %(default)d")
@@ -81,7 +81,7 @@ def process_reads(read_file):
 
 def open_handle(myfile):
     if opath.isfile(myfile):
-        if myfile.endswith('fastq.gz'):
+        if myfile.endswith(('fastq.gz', 'fq.gz')):
             import gzip
             return gzip.open(myfile, 'rt'), "fastq"
         elif myfile.endswith('fasta.gz'):

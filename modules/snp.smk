@@ -267,11 +267,11 @@ rule updateSNPs:
     message: "Running update SNPs"
     params:
         update_script = config['updat_snps_script'],
-        phased_stat = data_dir + "/statitics/phased/phasing_stat.txt",
-        block_tsv = data_dir + "/statitics/phased/blocks.tsv",
+        phased_stat = data_dir + "/statistics/phased/phasing_stat.txt",
+        block_tsv = data_dir + "/statistics/phased/blocks.tsv",
     benchmark: data_dir + "/benchmark/snp/{aligner}/update_snps.benchmark.txt"
     shell:"""
-        mkdir -p statitics/phased  &&
+        mkdir -p statistics/phased  &&
         python {params.update_script} -i {input} -u {output.updated_vcf} -o {params.block_tsv} -s {params.phased_stat}
         """
 
