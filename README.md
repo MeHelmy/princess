@@ -1,5 +1,5 @@
 # Princess
-[![GitHub](https://img.shields.io/github/license/MeHelmy/princess)](https://opensource.org/licenses/MIT) ![GitHub last commit](https://img.shields.io/github/last-commit/MeHelmy/princess) 
+[![GitHub](https://img.shields.io/github/license/MeHelmy/princess)](https://opensource.org/licenses/MIT) ![GitHub last commit](https://img.shields.io/github/last-commit/MeHelmy/princess)
 ---
 Princess is a fast and scalable framework to detect and report haplotype resolved Single Nucleotide Variants (SNV) and Structural Variations (SVs) at scale. It can leverage your cluster environment to speed up the detection which starts with one or many fasta or fastq files.
 Cite the code: [![DOI](https://zenodo.org/badge/179986953.svg)](https://zenodo.org/badge/latestdoi/179986953)
@@ -195,4 +195,11 @@ Princess will create these directories:
 - snp     contains single nucleotide variant calls per chromosomes
 - phased  contains phased variant
 - stat    contains Statistics
-- meth    contains methylation info (if user choose to run methylation)      
+- meth    contains methylation info (if user choose to run methylation)  
+
+## Collect benchmark Statistics  
+```
+cd benchmark  # There is a directory benchmark contains all the analyses that were done by PRINCESS
+find "$PWD" -type f | grep -v "myBenchMark.txt" > myBenchMark.txt
+while read -r line; do n=$(echo  $line | awk  -v FS=/ '{print $(NF-1)"-"$(NF)}');  awk -v f=$line -v o=$n 'NR!=1 {print o"\t"$(NF)}' $line  ;done < myBenchMark.txt
+```  
