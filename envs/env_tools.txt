@@ -1,0 +1,1 @@
+conda create --no-default-packages -n princess_env  ngmlr samtools minimap2 sniffles bcftools whatshap vcflib survivor tabix pandas numpy seaborn matplotlib biopython nanopolish pyfadix

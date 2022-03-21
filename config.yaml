@@ -1,0 +1,85 @@
+
+---
+# Information about samples
+###########################
+sample_directory: "" # samples by default should exist in this directory unless otherwise.
+read_type: "ont" # ont,clr or ccs
+sample_extension: "gz" # please add sample extension ex: fastq , fasta or gz # default gz
+# sample list If specified this will overlap the default behavior which is all samples in directory specified above.
+# If you leave empty the input will be all the samples in directory.
+sample_list: []
+###########################
+
+# Information about reference
+###############################
+reference: ""
+chrs: []
+
+
+# Samtools Parameters
+#####################
+samtools_threads: 5
+#####################
+
+
+# Aligner
+#########
+aligner: "minimap" # minimap or ngmlr
+aligner_threads: 5
+#########
+
+
+# Structural Variant Parameters
+###############################
+sniffles_coverage: 2
+min_conflict: 0
+
+
+# Calling Variant Parameters
+############################
+clair_location: "bin/Clair/clair.py" # not used anymore
+clair_coverage: 2
+clair_threads: 5
+# chr_split: 24925062
+chr_split: 29925062
+filter_chrs: True # Case sensitive options [True, Fasle].
+clair_pypy: "/home/source/Clair/pypy3/pypy3.5-7.0.0-linux_x86_64-portable/bin/pypy"
+training_data_ccs: "/users/mmahmoud/home/source/Clair3/modules/hifi" #"/users/mmahmoud/home/source/Clair/training_data/pacbio/rsii/model"
+training_data_ont: "/users/mmahmoud/home/source/Clair3/modules/ont" #"/users/mmahmoud/home/source/Clair/training_data/ont/r94/model"
+training_data_clr: "bin/modules/clr/model-000008"
+
+
+# Update SNPs
+#############
+update_snps: False
+paternal_snps: ""
+maternal_snps: ""
+
+
+# Methylation
+#############
+methylation: False
+fast5_dir: False
+methylation_threads: 8
+
+# Zipping Parameters
+####################
+bgzip_threads: 5
+
+
+# Scripts
+##########
+read_raw_coverage: "scripts/rawcoverage.py"
+read_raw_coverage_threads: 5
+
+updat_snps_script: "scripts/phasing_report_update_vcf.py"
+updat_sv: "scripts/update_sv_hp_ps.py"
+hap_methylation: "scripts/update_meth_hp_ps.py"
+
+
+# Cluster
+##########
+cluster_jobs: 10
+number_of_tries: 3
+
+...

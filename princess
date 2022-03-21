@@ -1,0 +1,660 @@
+#!/usr/bin/env python3
+
+"""
+Snakemake file waraper for princess.
+"""
+import argparse
+import sys, os, subprocess, ntpath , yaml
+from distutils.dir_util import copy_tree
+import filecmp, shutil
+from pathlib import Path
+from collections import namedtuple
+import logging
+import filecmp
+
+# Create a custom logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+f_handler = None
+
+
+def get_args():
+    parser = argparse.ArgumentParser(epilog="%(prog)s version 0.01. use command -h for info.",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                     description='Princess A framework for long-reads analysis.',
+                                     add_help=True, )
+
+    parent_parser = argparse.ArgumentParser(add_help=False, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parent_parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.01')
+
+    # Adding the main params for any commands
+    parent_parser.add_argument('-d', '--directory', help='Working directory.', metavar='Working directory', required=True)
+    parent_parser.add_argument('-r', '--ReadType', dest="read_type",type=str.lower, choices=['ont', 'clr', 'ccs'], help='Read techonlogy', required=True)
+    parent_parser.add_argument('-l', '--removeFiles', dest='remove_source', help='remove princess source script after running default: %(default)s)', action='store_true')
+    parent_parser.add_argument('-u', '--UseConda', dest='use_conda', help='Use conda for running default: %(default)s)', action='store_false')
+    parent_parser.add_argument('-e', '--Cluster', dest='is_cluster', help='Use cluster while runing default: %(default)s)', action='store_false')
+    parent_parser.add_argument('-a', '--Aligner', dest="aligner", choices=['minimap', 'ngmlr'], help='In case if you want to choose specific aligner otherwise default will be used default: %(default)s)', default='minimap')
+    parent_parser.add_argument('-s', '--samplesFiles', dest="samples_files", metavar= "sampleFiles" ,  nargs='+',  help='list of fatsa, fastq, or gz files.')
+    parent_parser.add_argument('-f', '--ref', dest="ref", help='The reference file will be used to align reads to.', required=True)
+    parent_parser.add_argument('-j', '--jobs', dest='jobs', type=str, help='Number of running jobs default: %(default)s )', default='200')
+    parent_parser.add_argument('-g', '--log', dest='log_file', type=str, help='Log file: %(default)s )', default='PrincessLog.txt')
+
+
+    # Sub-commands:
+    subparser = parser.add_subparsers(title="Sub-commands", description='Valid sub-commands', dest="command")
+
+    # All subparser.
+    all_subparser = subparser.add_parser("all", help="""This command will run the following:\n
+    Align the reads.\nIdentify SVs\nIdentify SNVs\nPhase both SNVs and SVs""", parents=[parent_parser])
+    all_subparser.add_argument('-c', '--chr', dest='chrs', type=str, help='Chromosomes list,\
+     if not specified we will use all Chromosomes.', nargs='+', default=[])
+    all_subparser.add_argument('-t', '--filter', dest='filter', help='Filter identified SNVs using Princess algorithm\
+    default: %(default)s)', action='store_false')
+    all_subparser.add_argument('-m', '--methylation', dest='detect_methylation', help='Identify methylation, mutually inclusinve with -md default: %(default)s)', action='store_true')
+    all_subparser.add_argument('-md', '--methylationDirectory',metavar="Fast5 Directory",  dest='methylation_dir', help='Fast5 directory will be used to identify\
+     methylation mutually inclusinve with option -m default: %(default)s)', default=False)
+    # all_subparser.add_argument('-md', '--methylationDirectory',metavar="Fast5 Directory", type=dir_path, dest='methylation_dir', help='Fast5 directory will be used to identify\
+    #  methylation mutually inclusinve with option -m default: %(default)s)', default=None)
+    all_subparser.set_defaults(func=all)
+
+
+    # Align subparser.
+    align_subparser = subparser.add_parser("align", help='This command will use the input sequence\
+    files and align them against the reference using either Minimap2 or NGMLR use -a to choose aligner\
+    otherwise Minimap2 will be used by default.', parents=[parent_parser])
+    align_subparser.set_defaults(func=align)
+
+    # SV subparser.
+    sv_subparser = subparser.add_parser("sv", help='This command will use bam file \
+    to identify SV using Sniffles.', parents=[parent_parser])
+    sv_subparser.set_defaults(func=sv)
+
+    # SNV subparser.
+    snv_subparser = subparser.add_parser("snv",help='This command will use bam file \
+    to identify SNVs usin Clair.', parents=[parent_parser])
+    snv_subparser.add_argument('-c', '--chr', dest='chrs', type=str, help='Chromosomes list,\
+     if not specified we will use all Chromosomes.', nargs='+', default=[])
+    snv_subparser.add_argument('-t', '--filter', dest='filter', help='Filter identified SNVs using Princess algorithm\
+    default: %(default)s)', action='store_false')
+    snv_subparser.set_defaults(func=snv)
+
+    # VARIANT [SNV, and SV] subparser.
+    varinar_subparser = subparser.add_parser("variant",help='This command will use bam file \
+    to identify SVs and SNVs.', parents=[parent_parser])
+    varinar_subparser.add_argument('-c', '--chr', dest='chrs', type=str, help='Chromosomes list,\
+     if not specified we will use all Chromosomes.', nargs='+', default=[])
+    varinar_subparser.add_argument('-t', '--filter', dest='filter', help='Filter identified SNVs using Princess algorithm\
+    default: %(default)s)', action='store_false')
+    varinar_subparser.set_defaults(func=varinat)
+
+
+    # Phase subparser.
+    phase_subparser = subparser.add_parser("phase", help='This command will use use reads \
+    to identify SNVs by Clair and Phase them.', parents=[parent_parser])
+    phase_subparser.add_argument('-c', '--chr', dest='chrs', type=str, help='Chromosomes list,\
+     if not specified we will use all Chromosomes.', nargs='+', default=[])
+    phase_subparser.add_argument('-t', '--filter', dest='filter', help='Filter identified SNVs using Princess algorithm\
+    default: %(default)s)', action='store_false')
+    phase_subparser.set_defaults(func=phase)
+
+    # Overview subparser.
+    overview_subparser = subparser.add_parser("overview",help='This command will show what steps will run.', parents=[parent_parser])
+    overview_subparser.add_argument('-c', '--chr', dest='chrs', type=str, help='Chromosomes list,\
+     if not specified we will use all Chromosomes.', nargs='+', default=[])
+    overview_subparser.set_defaults(func=overview)
+
+    #if not argument print help.
+    if len(sys.argv) == 1:
+         parser.print_help(sys.stderr)
+         sys.exit(1)
+
+    args, unknownargs = parser.parse_known_args()
+    unknownargs = sort_params(args, unknownargs)
+
+    if 'func' in args:
+        current_dir, running_file, work_dir, conf_yaml, aligner, sample_list_from_config, number_of_jobs, number_of_tries = required_vars(args, unknownargs)
+        Main_vars = namedtuple('Main_vars', 'current_dir, running_file, work_dir, conf_yaml, aligner, sample_list_from_config, number_of_jobs, number_of_tries')
+        main_vars = Main_vars(current_dir, running_file, work_dir, conf_yaml, aligner, sample_list_from_config, number_of_jobs, number_of_tries)
+        log_dir = os.path.join(work_dir, args.log_file)
+        global f_handler
+        f_handler = logging.FileHandler(log_dir)
+        f_handler.setLevel(logging.DEBUG)
+        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        f_handler.setFormatter(f_format)
+        logger.addHandler(f_handler)
+        args.func(args, unknownargs, main_vars)
+    else:
+        parser.print_help()
+
+
+
+def overview(args, unknownargs, main_vars):
+    if not args.samples_files and not main_vars.sample_list_from_config:
+        print("You need to support sequence read file/s either by using -s parameter or through sample_list filed in config.yaml file")
+        exit(f'Error extiting, see log file {os.path.join(args.directory, args.log_file)}')
+    # check if the user gave existing chromosomes.
+    chr_list = args.chrs if args.chrs else main_vars.conf_yaml['chrs']
+    is_valid_chrs(chr_list, args.ref)
+    if not chr_list:
+        chr_list = get_chrs(args.ref)
+    chrs = "chrs="+ str(chr_list)
+    samples, samples_names = get_sample_names(args, main_vars)
+    # If we have samples let us create working directory If not exists.
+    if not os.path.exists(main_vars.work_dir):
+        os.makedirs(main_vars.work_dir)
+
+    # cluster_config = os.path.join(main_vars.work_dir, "cluster_config.yaml")
+    sample_dir = 'sample_directory=' + main_vars.work_dir
+    reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
+    # If we are already in main princess directory do nothing
+    if os.path.samefile(main_vars.running_file, main_vars.work_dir):
+        pass
+    else:
+        copy_tree(main_vars.running_file, main_vars.work_dir, update=1)
+    os.chdir(main_vars.work_dir)
+    chr_log = " ".join(chr_list) if chr_list else "All Chromosomes"
+    logger.info("Analyzied Chromsomes: ".format(chr_log))
+    running_command = "running_command=" + args.command
+
+    cmd = ['snakemake', '-n', '-p', '-r', '-j', args.jobs, '--config', sample_dir, samples, reference, chrs, running_command, *unknownargs]
+    run_cmd(cmd)
+    if args.remove_source:
+        clean(main_vars.running_file, samples_names)
+    os.chdir(main_vars.current_dir)
+
+def align(args, unknownargs, main_vars):
+    # Do we have samples?
+    if not args.samples_files and not main_vars.sample_list_from_config:
+        print("You need to support sequence read file/s either by using -s parameter or through sample_list filed in config.yaml file")
+        exit(f'Error extiting, see log file {os.path.join(args.directory, args.log_file)}')
+    # If we have samples let us create working directory If not exists.
+    if not os.path.exists(main_vars.work_dir):
+        os.makedirs(main_vars.work_dir)
+    # Get samples to pass to Snakefile
+
+    samples_names = args.samples_files if args.samples_files else main_vars.sample_list_from_config
+    sample_dir = 'sample_directory=' + main_vars.work_dir
+    reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
+
+    # If we are already in main princess directory do nothing
+    if os.path.samefile(main_vars.running_file, main_vars.work_dir):
+        pass
+    else:
+        copy_tree(main_vars.running_file, main_vars.work_dir, update=1)
+    # Move to working directory to start
+    os.chdir(main_vars.work_dir)
+    cluster_config = os.path.join(main_vars.work_dir, "cluster", "cluster_config.yaml")
+    #result = os.path.join(main_vars.work_dir, 'align', main_vars.aligner, 'data.bam')
+    result = os.path.join(main_vars.work_dir, 'result', ".aligning.{}.done".format(main_vars.aligner))
+
+    reset_times = main_vars.number_of_tries
+    running_command = "running_command=" + args.command
+    delete_files = "delete_files="+ main_vars.running_file
+    delete_samples = "delete_samples=" + str(samples_names)
+
+    samples, samples_names = get_sample_names(args, main_vars) # TODO: send only what needed instead of sending full object.
+    if args.is_cluster:
+        # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+        # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+        # cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config,\
+        #  '--cluster', cluster, '--config', sample_dir, samples, reference, *unknownargs]
+        cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', sample_dir, samples, reference, running_command, delete_files, delete_samples, *unknownargs]
+    else:
+        cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times,\
+          '--config', sample_dir, samples, reference, running_command, delete_files, delete_samples, *unknownargs]
+    run_cmd(cmd)
+    if args.remove_source:
+        clean(main_vars.running_file, samples_names)
+    os.chdir(main_vars.current_dir)
+
+def sv(args, unknownargs, main_vars):
+    if check_sampes(main_vars.work_dir, main_vars.aligner, args.samples_files, main_vars.sample_list_from_config, args.command, args.log_file):
+        pass
+    # if not os.path.exists(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")) and  not args.samples_files and  not main_vars.sample_list_from_config:
+    #     print("Please if you want run sv command there should be aligned file like {} otherwise use -s to support amples or sample_list filed in config.yaml file to support Princess with the files to align".\
+    #     format(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")))
+    #     exit(f'Error extiting, see log file {os.path.join(args.directory, args.log_file)}')
+    # If we have samples let us create working directory If not exists.
+    if not os.path.exists(main_vars.work_dir):
+        os.makedirs(main_vars.work_dir)
+    # If we are already in main princess directory do nothing
+    if os.path.samefile(main_vars.running_file, main_vars.work_dir):
+        pass
+    else:
+        copy_tree(main_vars.running_file, main_vars.work_dir, update=1)
+    os.chdir(main_vars.work_dir)
+    cluster_config = os.path.join(main_vars.work_dir, "cluster", "cluster_config.yaml")
+    # result = os.path.join(main_vars.work_dir, 'sv', main_vars.aligner, 'sniffles.vcf')
+    # result = os.path.join(main_vars.work_dir, 'result', "SVs.{}.vcf".format(main_vars.aligner))
+    result = os.path.join(main_vars.work_dir, 'result', ".SVs.{}.done".format(main_vars.aligner))
+    sample_dir = 'sample_directory=' + main_vars.work_dir
+    reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
+    samples_names = args.samples_files if args.samples_files else main_vars.sample_list_from_config
+    reset_times = main_vars.number_of_tries
+    running_command = "running_command=" + args.command
+    delete_files = "delete_files="+ main_vars.running_file
+    delete_samples = "delete_samples=" + str(samples_names)
+
+    if samples_names:
+        samples, samples_names_str = get_sample_names(args, main_vars)
+        if args.is_cluster:
+            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+            #cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, samples, reference, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--config', sample_dir, samples, reference, running_command,  delete_files, delete_samples, *unknownargs]
+        else:
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', sample_dir, samples, reference, running_command, delete_files, delete_samples, *unknownargs]
+    else:
+        if args.is_cluster:
+            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+            # cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, reference, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', sample_dir, reference, running_command, delete_files, delete_samples,  *unknownargs]
+        else:
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--config', sample_dir, reference, running_command, delete_files, delete_samples, *unknownargs]
+    run_cmd(cmd)
+    if args.remove_source:
+        clean(main_vars.running_file, samples_names_str)
+    os.chdir(main_vars.current_dir)
+
+def snv(args, unknownargs, main_vars):
+    if check_sampes(main_vars.work_dir, main_vars.aligner, args.samples_files, main_vars.sample_list_from_config, args.command, args.log_file):
+        pass
+    # if not os.path.exists(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")) and  not args.samples_files and  not main_vars.sample_list_from_config:
+    #     print("Please if you want run snv command there should be aligned file like {} otherwise use -s to support amples or sample_list filed in config.yaml file to support Princess with the files to align".\
+    #     format(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")))
+    #     exit(f'Error extiting, see log file {os.path.join(args.directory, args.log_file)}')
+    # check if the user gave existing chromosomes.
+    chr_list = args.chrs if args.chrs else main_vars.conf_yaml['chrs']
+    is_valid_chrs(chr_list, args.ref)
+    if not chr_list:
+        chr_list = get_chrs(args.ref)
+    chrs = "chrs="+ str(chr_list)
+
+    # Will I filter the SNVs?
+    filte_snv = "filter_chrs=" +str(args.filter)
+
+    # If we have samples let us create working directory If not exists.
+    if not os.path.exists(main_vars.work_dir):
+        os.makedirs(main_vars.work_dir)
+    # If we are already in main princess directory do nothing
+    if os.path.samefile(main_vars.running_file, main_vars.work_dir):
+        pass
+    else:
+        copy_tree(main_vars.running_file, main_vars.work_dir, update=1)
+    os.chdir(main_vars.work_dir)
+    cluster_config = os.path.join(main_vars.work_dir, "cluster", "cluster_config.yaml")
+    # result = os.path.join(main_vars.work_dir, 'snp', main_vars.aligner, 'data.vcf')
+    result = os.path.join(main_vars.work_dir, 'result', '.SNVs.{}.done'.format(main_vars.aligner))
+    sample_dir = 'sample_directory=' + main_vars.work_dir
+    reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
+    samples_names = args.samples_files if args.samples_files else main_vars.sample_list_from_config
+    reset_times = main_vars.number_of_tries
+    chr_log = " ".join(chr_list) if chr_list else "All Chromosomes"
+    logger.info("Analyzied Chromsomes: ".format(chr_log))
+    running_command = "running_command=" + args.command
+    delete_files = "delete_files="+ main_vars.running_file
+    delete_samples = "delete_samples=" + str(samples_names)
+
+    if samples_names:
+        samples, samples_names_str = get_sample_names(args, main_vars)
+        if args.is_cluster:
+            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+        else:
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+    else:
+        if args.is_cluster:
+            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+        else:
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+    run_cmd(cmd)
+
+    # Bita
+    if args.remove_source:
+        clean(main_vars.running_file, samples_names_str)
+    os.chdir(main_vars.current_dir)
+
+def varinat(args, unknownargs, main_vars):
+    if check_sampes(main_vars.work_dir, main_vars.aligner, args.samples_files, main_vars.sample_list_from_config, args.command, args.log_file):
+        pass
+    # if not os.path.exists(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")) and  not args.samples_files and  not main_vars.sample_list_from_config:
+    #     print("Please if you want run snv command there should be aligned file like {} otherwise use -s to support amples or sample_list filed in config.yaml file to support Princess with the files to align".\
+    #     format(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")))
+    #     exit(f'Error extiting, see log file {os.path.join(args.directory, args.log_file)}')
+    # check if the user gave existing chromosomes.
+    chr_list = args.chrs if args.chrs else main_vars.conf_yaml['chrs']
+    is_valid_chrs(chr_list, args.ref)
+    if not chr_list:
+        chr_list = get_chrs(args.ref)
+    chrs = "chrs="+ str(chr_list)
+
+    # Will I filter the SNVs?
+    filte_snv = "filter_chrs=" +str(args.filter)
+    samples_names = args.samples_files if args.samples_files else main_vars.sample_list_from_config
+
+    # If we have samples let us create working directory If not exists.
+    if not os.path.exists(main_vars.work_dir):
+        os.makedirs(main_vars.work_dir)
+    # If we are already in main princess directory do nothing
+    if os.path.samefile(main_vars.running_file, main_vars.work_dir):
+        pass
+    else:
+        copy_tree(main_vars.running_file, main_vars.work_dir, update=1)
+    os.chdir(main_vars.work_dir)
+    cluster_config = os.path.join(main_vars.work_dir, "cluster", "cluster_config.yaml")
+    # result1 = os.path.join(main_vars.work_dir, 'snp', main_vars.aligner, 'data.vcf')
+    # result1 = os.path.join(main_vars.work_dir, 'result', 'SNVs.{}.vcf.gz'.format(main_vars.aligner))
+    # result2 = os.path.join(main_vars.work_dir, 'sv', main_vars.aligner, 'sniffles.vcf')
+    # result2 = os.path.join(main_vars.work_dir, 'result', "SVs.{}.vcf".format(main_vars.aligner))
+    # result3 = os.path.join(main_vars.work_dir, 'result', "aligning.{}.bam".format(main_vars.aligner))
+    result = os.path.join(main_vars.work_dir, 'result', ".varaint.{}.done".format(main_vars.aligner))
+    sample_dir = 'sample_directory=' + main_vars.work_dir
+    reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
+    reset_times = main_vars.number_of_tries
+    running_command = "running_command=" + args.command
+    delete_files = "delete_files="+ main_vars.running_file
+    delete_samples = "delete_samples=" + str(samples_names)
+
+    if samples_names:
+        samples, samples_names_str = get_sample_names(args, main_vars)
+        if args.is_cluster:
+            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+        else:
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+    else:
+        if args.is_cluster:
+            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+        else:
+            cmd = ['snakemake',  '-p', result,'-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+
+    log_chrs = " ".join(chr_list) if chr_list else "All Chromsomes"
+    logger.info("{}{}".format("Chromsomes that will be analysized: ", log_chrs))
+    logger.info("SNVs will be filtered: {}".format(str(args.filter)))
+    logger.info("Work directory: {}".format(sample_dir))
+    logger.info("Reference: {}".format(args.ref))
+    logger.info("Aligner: {}".format(main_vars.aligner))
+    logger.info("Cluster Will be used: {}".format(args.is_cluster))
+    logger.info("Sampels:\n{}".format("\n".join(samples_names)))
+    logger.info("Results:\t{}".format(result))
+    run_cmd(cmd)
+
+    # Bita
+    if args.remove_source:
+        clean(main_vars.running_file, samples_names_str)
+    os.chdir(main_vars.current_dir)
+
+
+def all(args, unknownargs, main_vars):
+    if check_sampes(main_vars.work_dir, main_vars.aligner, args.samples_files, main_vars.sample_list_from_config, args.command, args.log_file):
+        pass
+    # not (os.path.exists(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")) or os.path.exists(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data_hap.bam"))) and  not args.samples_files and  not main_vars.sample_list_from_config:
+    #     logger.error("Please if you want run {} command there should be aligned file like {} otherwise use -s to support asmples or sample_list filed in config.yaml file to support Princess with the files to align".\
+    #     format(args.command ,os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")))
+    #     exit(f'Error extiting, see log file {os.path.join(main_vars.work_dir, args.log_file)}')
+
+    if args.detect_methylation and not args.methylation_dir and dir_path(args.methylation_dir):
+        logger.error("Option -m and -md is mututally inclusinve")
+        exit(f'Error extiting, see log file {os.path.join(args.directory, args.log_file)}')
+
+    # Methylation option and directory
+    methylation_option = "methylation="+str(args.detect_methylation)
+    meth_dir = "fast5_dir=" + str(args.methylation_dir)
+
+    # check if the user gave existing chromosomes.
+    chr_list = args.chrs if args.chrs else main_vars.conf_yaml['chrs']
+    is_valid_chrs(chr_list, args.ref)
+    if not chr_list:
+        chr_list = get_chrs(args.ref)
+    chrs = "chrs="+ str(chr_list)
+
+    # Will I filter the SNVs?
+    filte_snv = "filter_chrs=" +str(args.filter)
+    samples_names = args.samples_files if args.samples_files else main_vars.sample_list_from_config
+
+    # If we have samples let us create working directory If not exists.
+    if not os.path.exists(main_vars.work_dir):
+        os.makedirs(main_vars.work_dir)
+    # If we are already in main princess directory do nothing
+    if os.path.samefile(main_vars.running_file, main_vars.work_dir):
+        pass
+    else:
+        copy_tree(main_vars.running_file, main_vars.work_dir, update=1)
+    os.chdir(main_vars.work_dir)
+    cluster_config = os.path.join(main_vars.work_dir, "cluster", "cluster_config.yaml")
+    sample_dir = 'sample_directory=' + main_vars.work_dir
+    reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
+    reset_times = main_vars.number_of_tries
+    running_command = "running_command=" + args.command
+    delete_files = "delete_files="+ main_vars.running_file
+    delete_samples = "delete_samples=" + str(samples_names)
+
+    if samples_names:
+        samples, samples_names_str = get_sample_names(args, main_vars)
+        if args.is_cluster:
+            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+        else:
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+    else:
+        if args.is_cluster:
+            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+        else:
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+
+    log_chrs = " ".join(chr_list) if chr_list else "All Chromsomes"
+    logger.info("{}{}".format("Chromsomes that will be analysized: ", log_chrs))
+    logger.info("SNVs will be filtered: {}".format(str(args.filter)))
+    logger.info("Work directory: {}".format(sample_dir))
+    logger.info("Reference: {}".format(args.ref))
+    logger.info("Aligner: {}".format(main_vars.aligner))
+    logger.info("Cluster Will be used: {}".format(args.is_cluster))
+    logger.info("Methylation will be detected: {}".format(args.detect_methylation))
+    logger.info("Fast5 directory for Methylation: {}".format(args.methylation_dir))
+    logger.info("Sampels:\n{}".format("\n".join(samples_names)))
+    logger.info("Running command:\n{}".format((str(cmd))))
+
+    run_cmd(cmd)
+    # Bita
+    if args.remove_source:
+        clean(main_vars.running_file, samples_names_str)
+    os.chdir(main_vars.current_dir)
+
+def phase(args, unknownargs, main_vars):
+    if check_sampes(main_vars.work_dir, main_vars.aligner, args.samples_files, main_vars.sample_list_from_config, args.command, args.log_file):
+        pass
+    # if not os.path.exists(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")) and  not args.samples_files and  not main_vars.sample_list_from_config:
+    #     print("Please if you want run phase command there should be aligned file like {} otherwise use -s to support amples or sample_list filed in config.yaml file to support Princess with the files to align".\
+    #     format(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")))
+    #     exit(f'Error extiting, see log file {os.path.join(args.directory, args.log_file)}')
+    # check if the user gave existing chromosomes.
+    chr_list = args.chrs if args.chrs else main_vars.conf_yaml['chrs']
+    is_valid_chrs(chr_list, args.ref)
+    if not chr_list:
+        chr_list = get_chrs(args.ref)
+    chrs = "chrs="+ str(chr_list)
+
+    # Will I filter the SNVs?
+    filte_snv = "filter_chrs=" +str(args.filter)
+
+    # If we have samples let us create working directory If not exists.
+    if not os.path.exists(main_vars.work_dir):
+        os.makedirs(main_vars.work_dir)
+    # If we are already in main princess directory do nothing
+    if os.path.samefile(main_vars.running_file, main_vars.work_dir):
+        pass
+    else:
+        copy_tree(main_vars.running_file, main_vars.work_dir, update=1)
+    os.chdir(main_vars.work_dir)
+    cluster_config = os.path.join(main_vars.work_dir, "cluster", "cluster_config.yaml")
+    # result = os.path.join(main_vars.work_dir, 'phased', main_vars.aligner, 'data.vcf')
+    result = os.path.join(main_vars.work_dir, 'result', "phased.SNVs.{}.done".format(main_vars.aligner))
+    sample_dir = 'sample_directory=' + main_vars.work_dir
+    reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
+    samples_names = args.samples_files if args.samples_files else main_vars.sample_list_from_config
+    reset_times = main_vars.number_of_tries
+    running_command = "running_command=" + args.command
+    delete_files = "delete_files="+ main_vars.running_file
+    delete_samples = "delete_samples=" + str(samples_names)
+
+    if samples_names:
+        samples, samples_names_str = get_sample_names(args, main_vars)
+        if args.is_cluster:
+            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+        else:
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+    else:
+        if args.is_cluster:
+            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+        else:
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, *unknownargs]
+    log_chrs = " ".join(chr_list) if chr_list else "All Chromsomes"
+    logger.info("{}{}".format("Chromsomes that will be analysized: ", log_chrs))
+    logger.info("SNVs will be filtered: {}".format(str(args.filter)))
+    logger.info("Work directory: {}".format(sample_dir))
+    logger.info("Reference: {}".format(args.ref))
+    logger.info("Aligner: {}".format(main_vars.aligner))
+    logger.info("Cluster Will be used: {}".format(args.is_cluster))
+    logger.info("Sampels:\n{}".format("\n".join(samples_names)))
+    logger.info("Sampels:\n{}".format("\n".join(samples_names)))
+    logger.info("Results:\n{}".format(result))
+    logger.info("running command\n{}".format("\t".join(cmd)))
+
+    run_cmd(cmd)
+    # Bita
+    if args.remove_source:
+        clean(main_vars.running_file, samples_names_str)
+    os.chdir(main_vars.current_dir)
+
+def sort_params(args, unknownargs):
+    # To follow directly the param --config
+    if args.aligner:
+        unknownargs.insert(0,"aligner={}".format(args.aligner))
+
+    if args.read_type:
+        unknownargs.insert(0,"read_type={}".format(args.read_type))
+
+    # add othe snakemake params at the tail of the list
+    if args.use_conda:
+        unknownargs.append("--use-conda")
+
+    return unknownargs
+
+def required_vars(args, unknownargs):
+    current_dir = os.getcwd()
+    running_file = os.path.dirname(os.path.realpath(__file__))
+    work_dir = os.path.abspath(args.directory)
+
+    # creating DIRECTORY
+    if not os.path.exists(work_dir):
+        os.makedirs(work_dir)
+
+    # loading info from yaml file (configfile)
+    conf_yaml = None
+    if not os.path.exists(os.path.join(work_dir, "config.yaml")) or not filecmp.cmp(os.path.join(running_file, "config.yaml"), os.path.exists(os.path.join(work_dir, "config.yaml"))):
+         shutil.copy(os.path.join(running_file, "config.yaml"), work_dir)
+
+    with open(os.path.join(work_dir, "config.yaml"), 'r') as myyaml:
+        conf_yaml = yaml.safe_load(myyaml)
+
+    aligner = args.aligner if args.aligner else str(conf_yaml['aligner'])
+    # TODO: you shall create this variable by cheking first if it was passed as argument else use config file.
+    sample_list_from_config = conf_yaml['sample_list']
+    number_of_jobs = str(conf_yaml['cluster_jobs'])
+    number_of_tries = str(conf_yaml['number_of_tries'])
+
+    return current_dir, running_file, work_dir, conf_yaml, aligner, sample_list_from_config, number_of_jobs, number_of_tries
+
+def get_sample_names(args, main_vars):
+    final_samples = ""
+    samples_names = ""
+    if args.samples_files or main_vars.sample_list_from_config:
+        samples = [os.path.abspath(i) for i in args.samples_files] if args.samples_files else main_vars.sample_list_from_config
+        # get samples names and soft link them in the new directory
+        for sample in samples:
+            if not os.path.isfile(sample):
+                print("This sample {} does not exist".format(sample))
+                # shutil.rmtree(work_dir) # no need to remove the created dir because some will gave it instead of samples
+                exit(f'Error extiting, see log file {os.path.join(args.directory, args.log_file)}')
+            absolute_name = ntpath.basename(sample)
+            if not os.path.islink(os.path.join(main_vars.work_dir, absolute_name)) and not os.path.isfile(os.path.join(main_vars.work_dir, absolute_name)):
+                os.symlink(sample, os.path.join(main_vars.work_dir, absolute_name))
+            if  samples_names:
+                samples_names += " " + absolute_name
+            else:
+                samples_names += absolute_name
+        final_samples = 'sample_list=' + samples_names
+    return final_samples, samples_names
+
+def run_cmd(cmd):
+    try:
+        subprocess.run(cmd, check=True, universal_newlines=True)
+    except subprocess.CalledProcessError as e:
+        # logger.error("Error in subprocess:\nComand: {}\nError: {}".format(cmd, e.returncode))
+        logger.error("Error in subprocess:\nComand: {}\nError: {}".format(" ".join(cmd), e))
+
+def is_valid_chrs(chr_list, ref):
+    if chr_list:
+        if os.path.isfile(ref+".fai"):
+            chr_names = set()
+            with open(ref+".fai", 'r') as data_in:
+                for line in data_in:
+                    chr_names.add(str(line.split()[0]))
+            if not set(chr_list).issubset(chr_names):
+                print("The chromosomes names you gave {} one or more of them does not exists in the reference.\nSupported Chromosomes are:{}".format(str(chr_list), sorted(chr_names)))
+        else:
+            print("Please make sure that {ref}.fai exists.\nOtherwise run:\nsamtools faidx {ref}".format(ref=ref))
+
+def get_chrs(ref):
+    if os.path.isfile(ref+".fai"):
+        chr_names = []
+        with open(ref+".fai", 'r') as data_in:
+            for line in data_in:
+                chr_names.append(str(line.split()[0]))
+        return(chr_names)
+    else:
+        print("Please make sure that {ref}.fai exists.\nOtherwise run:\nsamtools faidx {ref}".format(ref=ref))
+
+def clean(source_dir, samples_names):
+    file_list = os.listdir(source_dir)
+    if samples_names:
+        for f in samples_names.split(): os.remove(f)
+    for f in file_list:
+        if os.path.isfile(f):
+            os.remove(f)
+        else:
+            shutil.rmtree(f)
+
+def dir_path(path):
+    return True if os.path.isdir(path) else False
+
+def check_sampes(work_dir, aligner, samples_files, sample_list, command, log_file):
+    if not (os.path.exists(os.path.join(work_dir, 'align', aligner, "data.bam")) or os.path.exists(os.path.join(work_dir, 'align', aligner, "data_hap.bam"))) and  not samples_files and  not sample_list:
+        logger.error("Please if you want run {} command there should be aligned file like {} otherwise use -s to support asmples or sample_list filed in config.yaml file to support Princess with the files to align".\
+        format(command ,os.path.join(work_dir, 'align', aligner, "data.bam")))
+        exit(f'Error extiting, see log file {os.path.join(work_dir, log_file)}')
+    else:
+        return True
+
+
+def main():
+    args = get_args()
+
+
+
+if __name__ == "__main__":
+    main()

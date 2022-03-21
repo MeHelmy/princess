@@ -1,0 +1,12 @@
+
+restart-times: 3
+latency-wait: 120
+cluster-config: "cluster/cluster_config.yaml" #abs path
+cluster: "scheduler.py" #
+cluster-status: "pbs_status.py" #
+max-jobs-per-second: 30
+max-status-checks-per-second: 10
+cores: 99 # how many jobs you want to submit to your cluster queue
+local-cores: 1
+rerun-incomplete: true  # recomended for cluster submissions
+keep-going: false

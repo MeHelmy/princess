@@ -1,0 +1,39 @@
+# only parameters defined in key_mapping (see below) are passed to the command in the order specified.
+system: "pbs" #check if system is defined below
+
+slurm:
+  command: "sbatch --parsable"
+  key_mapping:
+    name: "--job-name={}"
+    threads: "-n {}"
+    mem: "--mem={}"
+    account: "--account={}"
+    queue: "--partition={}"
+    time: "--time={}"
+    nodes: "-N {}"
+pbs:
+  command: "qsub"
+  key_mapping:
+    name: "-N {}"
+    account: "-A {}"
+    queue: "-q {}"
+    threads: "-l nodes=1:ppn={}" # always use 1 node
+    mem: "-l mem={}"
+    time: "-l walltime={}" #min= seconds x 100
+    output: "-o {}"
+    error: "-e {}"
+lsf:
+  command: "bsub -e lsf_%J.log -o lsf_%J.log"
+  key_mapping:
+    queue: "-q {}"
+    name: "-J {}"
+    threads: "-n {}"
+    mem: '-R "rusage[mem={}000]"'
+    account: "-P {}"
+    nodes: "-C {}"
+
+
+
+# for other cluster systems see: https://slurm.schedmd.com/rosetta.pdf
+# cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
+#       {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
