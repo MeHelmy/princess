@@ -42,7 +42,7 @@ rule minimap2:
     benchmark: data_dir + "/benchmark/align/{sample}.minimap.benchmark.txt"
     conda: PRINCESS_ENV
     shell:"""
-            minimap2  {params.x} -Y -R '@RG\tID:hg2' "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" | samtools sort -@ {threads} - > "{output.dataout}"
+            minimap2  {params.x} -Y -R "@RG\\tID:hg2" "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" | samtools sort -@ {threads} - > "{output.dataout}"
             """
 
 #### NGMLR ####
