@@ -80,6 +80,7 @@ rule bgzipFile:
     input:data_dir + "/{name}.vcf"
     output:data_dir + "/{name}.vcf.gz"
     threads: config['bgzip_threads']
+    conda: PRINCESS_ENV
     shell:"""
         bgzip -c -@ {threads} {input} > {output}
         """
