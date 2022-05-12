@@ -94,5 +94,5 @@ rule partionBam:
     params:
         ref = REFERENCES
     shell:"""
-        whatshap haplotag -o {output.hap_bam} -r {params.ref} {input.snp} {input.bam}
+        whatshap haplotag --ignore-read-groups -o {output.hap_bam} -r {params.ref} {input.snp} {input.bam}
         """
