@@ -1,0 +1,9 @@
+name: Utils
+channels:
+  - bioconda
+dependencies:
+  - bcftools=1.15.1
+  - bedtools=2.30.0
+  - samtools=1.15.1
+  - survivor=1.0.7
+  - vcflib=1.0.3

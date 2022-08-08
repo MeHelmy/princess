@@ -33,16 +33,17 @@ rule minimap2:
         h = minimap2_read_type,
         md = "--MD",
         x = x_param,
+        sample_name = SAMPLE_NAME,
         # rg = "@RG\\tSM:SAMPLE\\tID:LONG", shuld be used like -R {params.rg}
     log:
         data_dir + "/align/minimap/{sample}.log"
     message:
-        "Running minimap2 , sample is: {wildcards.sample}"
+        "Running minimap2 , sample is: {wildcards.sample} in rule {rule}"
     threads: config['aligner_threads']
     benchmark: data_dir + "/benchmark/align/{sample}.minimap.benchmark.txt"
-    conda: PRINCESS_ENV
+    conda: MINIMAP2_ENV
     shell:"""
-            minimap2  {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" | samtools sort -@ {threads} - > "{output.dataout}"
+            minimap2 -Y -R '@RG\\tSM:{params.sample_name}\\tID:{params.sample_name}' {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" | samtools sort -@ {threads} - > "{output.dataout}"
             """
 
 #### NGMLR ####

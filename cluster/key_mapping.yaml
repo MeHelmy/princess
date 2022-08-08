@@ -22,6 +22,7 @@ pbs:
     time: "-l walltime={}" #min= seconds x 100
     output: "-o {}"
     error: "-e {}"
+    host: "-l select=1:{}"
 lsf:
   command: "bsub -e lsf_%J.log -o lsf_%J.log"
   key_mapping:

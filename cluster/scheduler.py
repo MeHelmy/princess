@@ -46,7 +46,7 @@ for res in ['time','mem']:
     if (res in job_properties["resources"]) and (res not in cluster_param):
         cluster_param[res] = job_properties["resources"][res]
 
-## TODO: Comment tis line || test while using normal time 01:00:00:00
+## TODO: Comment this line || test while using normal time 01:00:00:00
 # time in hours
 if "time" in cluster_param:
     # cluster_param["time"]=int(cluster_param["time"])*60

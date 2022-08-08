@@ -6,32 +6,33 @@
 
 #### SNIFFLES ####
 ##################
-
 rule sniffles:
     """
-    Identify structural variants using Sniffles.
+    Identify structural variants using Sniffles2.
     """
     input:
-        datain=data_dir + "/align/{aligner}/data.bam",
-        data_index=data_dir + "/align/{aligner}/data.bam.bai",
+        datain=data_dir + "/align/{aligner}/data_hap.bam" if config['phase_sv'] else data_dir + "/align/{aligner}/data.bam",
+        data_index=data_dir + "/align/{aligner}/data_hap.bam.bai" if config['phase_sv'] else data_dir + "/align/{aligner}/data.bam.bai",
     output:
-        dataout=data_dir + "/sv/{aligner}/sniffles.vcf"
-    message: "Running Sniffles"
+        dataout=data_dir + "/sv/{aligner}/sniffles.vcf",
+        dataout_snf=data_dir + "/sv/{aligner}/sniffles.snf"
+    message: "Running Sniffles in rule: {rule}\nUsing {input.datain} output:{output.dataout}"
     params:
-        coverage=config['sniffles_coverage'],
-    # benchmark: data_dir + "/sv/{aligner}/sniffles.benchmark.txt"
-    conda: PRINCESS_ENV
+        min_sv_len=config['min_sv_len'],
+        sv_threads=config['sv_threads'],
+        sample_name = SAMPLE_NAME,
+        phase = "--phase" if config['phase_sv'] else "",
+    conda: SNIFFLES_ENV
     priority: 2
     log: data_dir + "/sv/{aligner}/sniffles.log"
     benchmark: data_dir + "/benchmark/sv/{aligner}/sv.benchmark.txt"
     shell:"""
-        sniffles --min_support {params.coverage} --mapped_reads {input.datain} --vcf {output.dataout} --num_reads_report -1 --genotype  > {log} 2>&1
+        sniffles --minsvlen {params.min_sv_len} --sample-id {params.sample_name} -t {params.sv_threads} --input {input.datain} --vcf {output.dataout} --snf {output.dataout_snf} {params.phase} > {log} 2>&1
         """
 
 #### HAPLOTYPE SVs ####
 #######################
 
-# TODO: rule is not finished script needs to be updated to change hp filed according to whashap results
 rule phaseSVs:
     """
     This rules takes as input a taged tabed bam file
@@ -45,7 +46,6 @@ rule phaseSVs:
     message: "Updating SVs using align/{aligner}/data_hap.tab"
     params:
         update_script = updat_sv,
-        min_conflict =  config['min_conflict']
     shell:"""
         python {params.update_script} {input.sv} {input.bam} {output} -c {params.min_conflict}
         """
@@ -80,6 +80,7 @@ rule bgzipFile:
     input:data_dir + "/{name}.vcf"
     output:data_dir + "/{name}.vcf.gz"
     threads: config['bgzip_threads']
+    conda: PRINCESS_ENV
     shell:"""
         bgzip -c -@ {threads} {input} > {output}
         """

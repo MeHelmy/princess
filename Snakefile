@@ -23,8 +23,6 @@ else:
 
 
 
-
-
 # Listing samples
 #################
 # GET SAMPLES EXTENSION
@@ -39,8 +37,16 @@ if not isinstance(sample_list, list):
     sample_list = sample_list.split()
 #############
 
-# Clean after success
+
+
+# Output sample name
+###################
+SAMPLE_NAME = config['sample_name']
 #############
+
+
+# Clean after success
+####################
 source_dir = config['delete_files']
 samples_names = config['delete_samples']
 def clean(source_dir, data_dir, samples_names):
@@ -60,25 +66,6 @@ def clean(source_dir, data_dir, samples_names):
 #######################################
 REFERENCES = config["reference"]
 chr_list = config['chrs']
-# ref = config["ref"]
-# chr_list = {}
-#
-# if  config["chr_list"] and ref:
-#     for reference in ref:
-#         if reference in config["chr_list"] and config["chr_list"][reference]:
-#             chr_list[reference] = config["chr_list"][reference]
-#         else:
-#             if os.path.isfile(REFERENCES[reference]+".fai"):
-#                 chr_names = []
-#                 with open(REFERENCES[reference]+".fai", 'r') as data_in:
-#                     for line in data_in:
-#                         chr_names.append(str(line.split()[0]))
-#             else:
-#                 print("Please make sure that {ref}.fai exists.\nOtherwise run:\nsamtools faidx {ref}".format(ref=REFERENCES[reference]))
-#                 exit(1)
-#             # f = Fasta(REFERENCES[reference])
-#             # chr_list[reference] = [chr_name for chr_name in f.keys()]
-#             chr_list[reference] = chr_names
 
 # chromosomes List splited to chunks
 split_size = config['chr_split'] if config['chr_split'] and (config['chr_split'] >= 1000000) else 1000000
@@ -121,9 +108,10 @@ aligner = config["aligner"]
 # Preparing conda environements.
 ###############################
 PRINCESS_ENV=os.getcwd()+"/envs/princess_env.yaml"
-# CLAIR_ENV=os.getcwd()+"/envs/clair_env.yaml"
-# CLAIR_ENV=os.getcwd()+"/envs/clair3.bio.yml"
-CLAIR_ENV=os.getcwd()+"/envs/clair3.bio.0142.yml"
+SNIFFLES_ENV=os.getcwd()+"/envs/sniffles.yaml"
+CLAIR_ENV=os.getcwd()+"/envs/clair3.yaml"
+MINIMAP2_ENV=os.getcwd()+"/envs/minimap2.yaml"
+WHATSHAP_ENV=os.getcwd()+"/envs/whatshap.yaml"
 #############
 
 
@@ -167,6 +155,7 @@ else:
         final_output.extend([data_dir + "/result/.allReadsparental.{aligner}.txt".format(aligner=aligner)])
     else:
         final_output.extend([data_dir + "/result/.all.noReads.{}.txt".format(aligner)])
+print("the output is ---> {}".format(final_output))
 
 ##############
 
@@ -190,13 +179,6 @@ onsuccess:
 	shell("mkdir -p {data_dir}/snake_log &&\
     find . -maxdepth 1  \( -name 'snakejob*' -or -name 'slurm*' \) -type f -exec mv -t {data_dir}/snake_log {{}}  \;  &&\
     cat {source_dir}/pictures/success.txt")
-	# shell("mkdir -p {data_dir}/snake_log &&\
-    # find . -maxdepth 1 -name 'snakejob.*' -type f -print0 | xargs -0r mv -t {data_dir}/snake_log &&\
-    # cat {source_dir}/pictures/success.txt")
-	# shell("mkdir -p {data_dir}/snake_log &&\
-    # find . -maxdepth 1 -name 'snakejob.*' -type f -print0 | xargs -0r mv -t {data_dir}/snake_log &&\
-    # cat pictures/success.txt")
-    # shutil.rmtree(".snakemake")
 
 
 onerror:

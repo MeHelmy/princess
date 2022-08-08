@@ -3,32 +3,55 @@
 #########################
 
 
-
-# TODO: Clair needs a lot of configuration to run not just environement
-
-
-
 #### CLAIR #######
 ##################
 
 # CLAIR Parameters
 #=================
 
-if config['read_type'] == "ccs":
-    training_data=config["training_data_ccs"]
-    platform="hifi"
-    training_data="/bin/models/hifi"
-elif config['read_type'] == "ont":
-    training_data=config["training_data_ont"]
-    platform="ont"
-    training_data="/bin/models/ont"
-elif config['read_type'] == "clr":
-    platform="hifi"
-    training_data=config["training_data_clr"]
-    training_data="/bin/models/hifi"
-else:
-    print("Unknow data type, supported format are: ont, ccs, and clr")
-    exit(1)
+# if config["clair_model"]:
+#     training_data=config["clair_model"]
+def platform(wildcards):
+    if config['read_type'] == "ccs":
+        return "hifi"
+    elif config['read_type'] == "ont":
+        return "ont"
+    elif config['read_type'] == "clr":
+        return "hifi"
+    else:
+        print("Unknow data type, supported format are: ont, ccs, and clr")
+        exit(1)
+
+def get_model(conda_dir):
+    training_data = ""
+    if config['read_type'] == "ccs":
+        training_data=config["clair_model"] if config["clair_model"] else None
+    elif config['read_type'] == "ont":
+        training_data=config["clair_model"] if config["clair_model"] else None
+    elif config['read_type'] == "clr":
+        training_data=config["clair_model"] if config["clair_model"] else None
+    else:
+        print("Unknow data type, supported format are: ont, ccs, and clr")
+        exit(1)
+    return training_data
+# if config['read_type'] == "ccs":
+#     # training_data=config["training_data_ccs"]
+#     platform="hifi"
+#     training_data=config["clair_model"] if config["clair_model"] else os.path.join(os.environ['CONDA_PREFIX'], "bin/models/hifi")
+# elif config['read_type'] == "ont":
+#     # training_data=config["training_data_ont"]
+#     platform="ont"
+#     training_data=config["clair_model"] if config["clair_model"] else os.path.join(os.environ['CONDA_PREFIX'], "bin/models/ont")
+#     # training_data="/bin/models/ont"
+# elif config['read_type'] == "clr":
+#     platform="hifi"
+#     # training_data=config["training_data_clr"]
+#     training_data=config["clair_model"] if config["clair_model"] else os.path.join(os.environ['CONDA_PREFIX'], "bin/models/hifi")
+#     # training_data="/bin/models/hifi"
+# else:
+#     print("Unknow data type, supported format are: ont, ccs, and clr")
+#     exit(1)
+
 
 # CLAIR RULE
 #===========
@@ -48,29 +71,37 @@ rule callSNVsChunk:
     output:
         temp(data_dir + "/snp/{aligner}/chr.split.{chr}_{region,\d+}/merge_output.vcf.gz")
     params:
-        train_data = training_data,
+        train_data = lambda wildcards: get_model(os.environ['CONDA_PREFIX']),
         platform = platform,
         start = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region)],
         end = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region) + 1]
     benchmark: data_dir + "/benchmark/snp/{aligner}/chr.split.{chr}_{region}/{chr}_{region}.benchmark.txt"
     conda: CLAIR_ENV
     log: data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/data.split.{chr}_{region}.log"
-    # log: data_dir + "/snp/{aligner}/data.split.{chr,[A-Za-z0-9]+}_{region}.log"
     threads: config['clair_threads']
     shell:
         """
+        if [ {params.train_data} == "None" ]
+            then
+            model="$CONDA_PREFIX/bin/models/{params.platform}"
+        else
+            model="{params.train_data}"
+        fi
+
         echo $'{wildcards.chr}\t{params.start}\t{params.end}' > {wildcards.chr}.{params.start}.{params.end}.bed  &&\
         run_clair3.sh \
         --bam_fn {input.bam} \
         --ref_fn {input.reference} \
         --threads {threads} \
         --platform {params.platform} \
-        --model_path $CONDA_PREFIX{params.train_data} \
+        --model_path $model \
         --output $PWD/snp/{wildcards.aligner}/chr.split.{wildcards.chr}_{wildcards.region} \
+        --enable_phasing\
         --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed > {log} 2>&1 \
         && rm {wildcards.chr}.{params.start}.{params.end}.bed
         """
-
+#         --model_path $CONDA_PREFIX{params.train_data} \
+    # --model_path {params.train_data} \
 
 #### CALL VARINAT BY CHUNKS #######
 ###################################
@@ -81,7 +112,6 @@ rule concatChromosome:
     Concat splited chromomsomes regions
     """
     input: lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
-        #vcf_index = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz.tbi", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
     output: temp(data_dir + "/snp/{aligner}/data.{chr}.vcf")
     message: "Concat variant split per Chromosome"
     conda: PRINCESS_ENV
@@ -180,11 +210,11 @@ rule updateSNPs:
     message: "Running update SNPs"
     params:
         update_script = config['updat_snps_script'],
-        phased_stat = data_dir + "/statitics/phased/phasing_stat.txt",
-        block_tsv = data_dir + "/statitics/phased/blocks.tsv",
+        phased_stat = data_dir + "/statistics/phased/phasing_stat.txt",
+        block_tsv = data_dir + "/statistics/phased/blocks.tsv",
     benchmark: data_dir + "/benchmark/snp/{aligner}/update_snps.benchmark.txt"
     shell:"""
-        mkdir -p statitics/phased  &&
+        mkdir -p statistics/phased  &&
         python {params.update_script} -i {input} -u {output.updated_vcf} -o {params.block_tsv} -s {params.phased_stat}
         """
 
@@ -199,8 +229,10 @@ rule concactSNPs:
     input: lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list),
     output: data_dir + "/snp/{aligner}/data.vcf"
     message: "Concat SNP files"
-    benchmark: data_dir + "/benchmark/snp/{aligner}/concat_snp.vcf"
+    benchmark: data_dir + "/benchmark/snp/{aligner}/concat_snp.txt"
+    params:
+        sample_name = SAMPLE_NAME,
     conda: PRINCESS_ENV
     shell:"""
-        vcfcat {input} | vcfstreamsort > {output}
+        echo "{params.sample_name}" > sample_name.txt && vcfcat {input} | vcfstreamsort | bcftools reheader --samples sample_name.txt -o {output}
         """

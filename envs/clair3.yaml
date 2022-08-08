@@ -1,0 +1,6 @@
+name: clair3.0.1.11
+channels:
+  - bioconda
+dependencies:
+  - clair3=0.1.11
+  # - clair3=0.1.11=py36hb9dc472_5
