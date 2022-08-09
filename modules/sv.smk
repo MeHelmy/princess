@@ -22,12 +22,13 @@ rule sniffles:
         sv_threads=config['sv_threads'],
         sample_name = SAMPLE_NAME,
         phase = "--phase" if config['phase_sv'] else "",
+        mosaic = "--non-germline" if config['mosaic_sv'] else "",
     conda: SNIFFLES_ENV
     priority: 2
     log: data_dir + "/sv/{aligner}/sniffles.log"
     benchmark: data_dir + "/benchmark/sv/{aligner}/sv.benchmark.txt"
     shell:"""
-        sniffles --minsvlen {params.min_sv_len} --sample-id {params.sample_name} -t {params.sv_threads} --input {input.datain} --vcf {output.dataout} --snf {output.dataout_snf} {params.phase} > {log} 2>&1
+        sniffles --minsvlen {params.min_sv_len} --sample-id {params.sample_name} -t {params.sv_threads} --input {input.datain} --vcf {output.dataout} --snf {output.dataout_snf} {params.phase} {params.mosaic} > {log} 2>&1
         """
 
 #### HAPLOTYPE SVs ####

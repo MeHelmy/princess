@@ -41,6 +41,8 @@ def get_args():
     parent_parser.add_argument('-g', '--log', dest='log_file', type=str, help='Log file: %(default)s )', default='PrincessLog.txt')
     parent_parser.add_argument('-sn', '--sample-name', dest='sample_name', type=str, help='A sample name to use for bams, SVs, and SNVs helps when you are planning to merge multiple samples in the downstream analysis %(default)s', default='SAMPLE')
     parent_parser.add_argument('-sp', '--phase-sv', dest='phase_sv', help='Phase the identifed SV, default: %(default)s', action='store_true')
+    parent_parser.add_argument('-ms', '--mosaic-sv', dest='mosaic_sv', help='Identify mosaic SV, default: %(default)s', action='store_true')
+    parent_parser.add_argument('-gv', '--gvcf-snv', dest='gvcf_snv', help='Identify gVCF SNVs, default: %(default)s', action='store_true')
 
 
     # Sub-commands:
@@ -415,19 +417,21 @@ def all(args, unknownargs, main_vars):
     delete_samples = "delete_samples=" + str(samples_names)
     sample_name = "sample_name=" + args.sample_name
     phase_sv = "phase_sv=" + str(args.phase_sv)
+    mosaic_sv = "mosaic_sv=" + str(args.mosaic_sv)
     clair_model = "clair_model=" + args.clair_model if args.clair_model else "clair_model=''"
+    gvcf_snv = "gvcf_snv=" + str(args.gvcf_snv)
 
     if samples_names:
         samples, samples_names_str = get_sample_names(args, main_vars)
         if args.is_cluster:
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, clair_model, sample_name, phase_sv, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, clair_model, sample_name, phase_sv, mosaic_sv, gvcf_snv, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, clair_model, sample_name, phase_sv, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, clair_model, sample_name, phase_sv, mosaic_sv, gvcf_snv, *unknownargs]
     else:
         if args.is_cluster:
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples,clair_model, sample_name, phase_sv, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples,clair_model, sample_name, phase_sv, mosaic_sv, gvcf_snv, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples,clair_model, sample_name, phase_sv, *unknownargs]
+            cmd = ['snakemake',  '-p', '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config',  methylation_option, meth_dir, filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples,clair_model, sample_name, phase_sv, mosaic_sv, gvcf_snv, *unknownargs]
 
     log_chrs = " ".join(chr_list) if chr_list else "All Chromsomes"
     logger.info("{}{}".format("Chromsomes that will be analysized: ", log_chrs))

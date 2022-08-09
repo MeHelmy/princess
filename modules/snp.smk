@@ -60,69 +60,129 @@ def get_model(conda_dir):
 # CLAIR CHUNK RULE
 #=================
 
-rule callSNVsChunk:
-    """
-    Calling SNPs using clair
-    """
-    input:
-        bam=data_dir + "/align/{aligner}/data.bam",
-        data_index=data_dir + "/align/{aligner}/data.bam.bai",
-        reference=REFERENCES,
-    output:
-        temp(data_dir + "/snp/{aligner}/chr.split.{chr}_{region,\d+}/merge_output.vcf.gz")
-    params:
-        train_data = lambda wildcards: get_model(os.environ['CONDA_PREFIX']),
-        platform = platform,
-        start = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region)],
-        end = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region) + 1]
-    benchmark: data_dir + "/benchmark/snp/{aligner}/chr.split.{chr}_{region}/{chr}_{region}.benchmark.txt"
-    conda: CLAIR_ENV
-    log: data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/data.split.{chr}_{region}.log"
-    threads: config['clair_threads']
-    shell:
+if config['gvcf_snv']:
+    rule callSNVsChunk:
         """
-        if [ {params.train_data} == "None" ]
-            then
-            model="$CONDA_PREFIX/bin/models/{params.platform}"
-        else
-            model="{params.train_data}"
-        fi
+        Calling SNPs using clair
+        """
+        input:
+            bam=data_dir + "/align/{aligner}/data.bam",
+            data_index=data_dir + "/align/{aligner}/data.bam.bai",
+            reference=REFERENCES,
+        output:
+            vcf = temp(data_dir + "/snp/{aligner}/chr.split.{chr}_{region,\d+}/merge_output.vcf.gz"),
+            gvcf = temp(data_dir + "/snp/{aligner}/chr.split.{chr}_{region,\d+}/merge_output.gvcf.gz")
+        params:
+            train_data = lambda wildcards: get_model(os.environ['CONDA_PREFIX']),
+            platform = platform,
+            start = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region)],
+            end = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region) + 1],
+            gvcf = "--gvcf",
+        benchmark: data_dir + "/benchmark/snp/{aligner}/chr.split.{chr}_{region}/{chr}_{region}.benchmark.txt"
+        conda: CLAIR_ENV
+        log: data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/data.split.{chr}_{region}.log"
+        threads: config['clair_threads']
+        shell:
+            """
+            if [ {params.train_data} == "None" ]
+                then
+                model="$CONDA_PREFIX/bin/models/{params.platform}"
+            else
+                model="{params.train_data}"
+            fi
 
-        echo $'{wildcards.chr}\t{params.start}\t{params.end}' > {wildcards.chr}.{params.start}.{params.end}.bed  &&\
-        run_clair3.sh \
-        --bam_fn {input.bam} \
-        --ref_fn {input.reference} \
-        --threads {threads} \
-        --platform {params.platform} \
-        --model_path $model \
-        --output $PWD/snp/{wildcards.aligner}/chr.split.{wildcards.chr}_{wildcards.region} \
-        --enable_phasing\
-        --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed > {log} 2>&1 \
-        && rm {wildcards.chr}.{params.start}.{params.end}.bed
+            echo $'{wildcards.chr}\t{params.start}\t{params.end}' > {wildcards.chr}.{params.start}.{params.end}.bed  &&\
+            run_clair3.sh \
+            --bam_fn {input.bam} \
+            --ref_fn {input.reference} \
+            --threads {threads} \
+            --platform {params.platform} \
+            --model_path $model \
+            --output $PWD/snp/{wildcards.aligner}/chr.split.{wildcards.chr}_{wildcards.region} \
+            --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed \
+            {params.gvcf} > {log} 2>&1 \
+            && rm {wildcards.chr}.{params.start}.{params.end}.bed
+            """
+else:
+    rule callSNVsChunk:
         """
+        Calling SNPs using clair
+        """
+        input:
+            bam=data_dir + "/align/{aligner}/data.bam",
+            data_index=data_dir + "/align/{aligner}/data.bam.bai",
+            reference=REFERENCES,
+        output:
+            vcf = temp(data_dir + "/snp/{aligner}/chr.split.{chr}_{region,\d+}/merge_output.vcf.gz")
+        params:
+            train_data = lambda wildcards: get_model(os.environ['CONDA_PREFIX']),
+            platform = platform,
+            start = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region)],
+            end = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region) + 1],
+        benchmark: data_dir + "/benchmark/snp/{aligner}/chr.split.{chr}_{region}/{chr}_{region}.benchmark.txt"
+        conda: CLAIR_ENV
+        log: data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/data.split.{chr}_{region}.log"
+        threads: config['clair_threads']
+        shell:
+            """
+            if [ {params.train_data} == "None" ]
+                then
+                model="$CONDA_PREFIX/bin/models/{params.platform}"
+            else
+                model="{params.train_data}"
+            fi
+
+            echo $'{wildcards.chr}\t{params.start}\t{params.end}' > {wildcards.chr}.{params.start}.{params.end}.bed  &&\
+            run_clair3.sh \
+            --bam_fn {input.bam} \
+            --ref_fn {input.reference} \
+            --threads {threads} \
+            --platform {params.platform} \
+            --model_path $model \
+            --output $PWD/snp/{wildcards.aligner}/chr.split.{wildcards.chr}_{wildcards.region} \
+            --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed  > {log} 2>&1 \
+            && rm {wildcards.chr}.{params.start}.{params.end}.bed
+            """
+
 #         --model_path $CONDA_PREFIX{params.train_data} \
     # --model_path {params.train_data} \
 
 #### CALL VARINAT BY CHUNKS #######
 ###################################
 
-
-rule concatChromosome:
-    """
-    Concat splited chromomsomes regions
-    """
-    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
-    output: temp(data_dir + "/snp/{aligner}/data.{chr}.vcf")
-    message: "Concat variant split per Chromosome"
-    conda: PRINCESS_ENV
-    benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
-    params:
-        temp_chr=data_dir + "/snp/{aligner}/data.{chr}_filtered.vcf",
-        filter=config['filter_chrs'],
-        read_type=config['read_type']
-    shell:"""
-        bcftools concat -o {output} {input}
+if config['gvcf_snv']:
+    rule concatChromosome:
         """
+        Concat splited chromomsomes regions
+        """
+        input:
+            vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
+            gvcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.gvcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
+        output:
+            vcf = temp(data_dir + "/snp/{aligner}/data.{chr}.vcf"),
+            gvcf = temp(data_dir + "/snp/{aligner}/data.{chr}.gvcf")
+        message: "Concat variant split per Chromosome"
+        conda: PRINCESS_ENV
+        benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
+        shell:"""
+            bcftools concat -o {output.vcf} {input.vcf} &&\
+            bcftools concat -o {output.gvcf} {input.gvcf}
+            """
+else:
+    rule concatChromosome:
+        """
+        Concat splited chromomsomes regions
+        """
+        input:
+            vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
+        output:
+            vcf = temp(data_dir + "/snp/{aligner}/data.{chr}.vcf")
+        message: "Concat variant split per Chromosome"
+        conda: PRINCESS_ENV
+        benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
+        shell:"""
+            bcftools concat -o {output.vcf} {input.vcf}
+            """
 
 #### UPDATE HEADER #######
 ##########################
@@ -221,18 +281,58 @@ rule updateSNPs:
 
 #### CONCAT SNPs ########
 #########################
-rule concactSNPs:
+
+if config['gvcf_snv']:
+    rule concactSNPs:
+        """
+        Rule to concat the identifed SNPs this will only be called by the user
+        in case if he wanted to have only SNPs
+        """
+        input:
+            vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list),
+            gvcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.gvcf", aligner=wildcards.aligner, chr=chr_list),
+        output:
+            vcf = data_dir + "/snp/{aligner}/data.vcf",
+            gvcf = data_dir + "/snp/{aligner}/data.gvcf",
+        message: "Concat SNP files"
+        benchmark: data_dir + "/benchmark/snp/{aligner}/concat_snp.txt"
+        params:
+            sample_name = SAMPLE_NAME,
+        conda: PRINCESS_ENV
+        shell:"""
+            echo "{params.sample_name}" > sample_name.txt && vcfcat {input.vcf} | vcfstreamsort | bcftools reheader --samples sample_name.txt -o {output.vcf} &&\
+            vcfcat {input.gvcf} | vcfstreamsort | bcftools reheader --samples sample_name.txt -o {output.gvcf}
+            """
+else:
+    rule concactSNPs:
+        """
+        Rule to concat the identifed SNPs this will only be called by the user
+        in case if he wanted to have only SNPs
+        """
+        input:
+            vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list),
+        output:
+            vcf = data_dir + "/snp/{aligner}/data.vcf"
+        message: "Concat SNP files"
+        benchmark: data_dir + "/benchmark/snp/{aligner}/concat_snp.txt"
+        params:
+            sample_name = SAMPLE_NAME,
+        conda: PRINCESS_ENV
+        shell:"""
+            echo "{params.sample_name}" > sample_name.txt && vcfcat {input.vcf} | vcfstreamsort | bcftools reheader --samples sample_name.txt -o {output.vcf}
+            """
+
+# #### Bgzip gVCF #########
+# #########################
+
+rule bgzipgVCFFile:
     """
-    Rule to concat the identifed SNPs this will only be called by the user
-    in case if he wanted to have only SNPs
+    General rule to bgzip files
     """
-    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list),
-    output: data_dir + "/snp/{aligner}/data.vcf"
-    message: "Concat SNP files"
-    benchmark: data_dir + "/benchmark/snp/{aligner}/concat_snp.txt"
-    params:
-        sample_name = SAMPLE_NAME,
+    input:data_dir + "/{name}.gvcf"
+    output:data_dir + "/{name}.gvcf.gz"
+    threads: config['bgzip_threads']
     conda: PRINCESS_ENV
     shell:"""
-        echo "{params.sample_name}" > sample_name.txt && vcfcat {input} | vcfstreamsort | bcftools reheader --samples sample_name.txt -o {output}
+        bgzip -c -@ {threads} {input} > {output}
         """

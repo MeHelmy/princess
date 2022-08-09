@@ -275,68 +275,137 @@ rule mvParentalPhased:
 # mv {input.phasedSVs} {params.phasedSVs} &&\
 # rm_last2 {input.phasedSVs} &&\
 
-rule mvNoParentalPhased:
-    """
-    The rule here will make sure to get the rsul for all command without parental comparison and later will delete the data.
-    """
-    input:
-        stat = data_dir + "/stat.txt" if config['sample_list'] else data_dir + "/stat.NoReads.txt",
-        # phasedSvsSNVs = data_dir + "/sv/{aligner}/sv_snp.vcf.gz",
-        phasedSNVs = data_dir + "/phased/{aligner}/data.vcf.gz",
-        phasedSNVsindex = data_dir + "/phased/{aligner}/data.vcf.gz.tbi",
-        SVs = data_dir + "/sv/{aligner}/sniffles.vcf",
-        snf = data_dir + "/sv/{aligner}/sniffles.snf",
-        # phasedSVs = data_dir + "/sv/{aligner}/sniffles_hp_updated.sorted.namechnage.vcf.gz",
-        bam = data_dir + "/align/{aligner}/data_hap.bam",
-        bamindex = data_dir + "/align/{aligner}/data_hap.bam.bai",
-    output:
-        stat = data_dir + "/result/.all.Reads.{aligner}.txt" if config['sample_list'] else data_dir + "/result/.all.noReads.{aligner}.txt",
-    params:
-        stat = data_dir + "/result/stat.{sample}.{{aligner}}.txt".format(sample=SAMPLE_NAME),
-        # phasedSvsSNVs = data_dir + "/result/{aligner}.phased.sv_snp.vcf.gz",
-        phasedSNVs = data_dir + "/result/{sample}.{{aligner}}.phased.SNVs.vcf.gz".format(sample=SAMPLE_NAME),
-        phasedSNVsindex = data_dir + "/result/{sample}.{{aligner}}.phased.SNVs.vcf.gz.tbi".format(sample=SAMPLE_NAME),
-        SVs = data_dir + "/result/{sample}.{{aligner}}.SVs.vcf".format(sample=SAMPLE_NAME),
-        snf = data_dir + "/result/{sample}.{{aligner}}.SVs.snf".format(sample=SAMPLE_NAME),
-        # phasedSVs = data_dir + "/result/{aligner}.SVs.phased.vcf.gz",
-        bam = data_dir + "/result/{sample}.{{aligner}}.hap.bam".format(sample=SAMPLE_NAME),
-        bamindex = data_dir + "/result/{sample}.{{aligner}}.hap.bam.bai".format(sample=SAMPLE_NAME),
-    shell:"""
-    function rm_last2() {{
-    d1=$(dirname $1)
-    d2=$(dirname $d1)
-    rm -rf $d2 ||:
-    }}
-    function rm_last1() {{
-    d1=$(dirname $1)
-    rm -rf $d1 ||:
-    }}
-    mkdir -p {data_dir}/log &&\
-    if [ -f {data_dir}/sv/{wildcards.aligner}/*.log ]; then
-        mv {data_dir}/sv/{wildcards.aligner}/*.log {data_dir}/log || :
-    fi &&\
-    if [ -f {data_dir}/snp/{wildcards.aligner}/*.log ]; then
-        mv {data_dir}/snp/{wildcards.aligner}/*.log {data_dir}/log || :
-    fi &&\
-    if [ -f {data_dir}/align/{wildcards.aligner}/*.log ]; then
-        mv {data_dir}/align/{wildcards.aligner}/*.log {data_dir}/log || :
-    fi &&\
-    if [ -f {data_dir}/phased/{wildcards.aligner}/*.log ]; then
-        mv {data_dir}/phased/{wildcards.aligner}/*.log {data_dir}/log || :
-    fi &&\
-    mv {input.stat} {params.stat} &&\
-    mv {input.phasedSNVs} {params.phasedSNVs} &&\
-    mv {input.phasedSNVsindex} {params.phasedSNVsindex} &&\
-    mv {input.SVs} {params.SVs} &&\
-    mv {input.snf} {params.snf} &&\
-    mv {input.bam} {params.bam} &&\
-    mv {input.bamindex} {params.bamindex} &&\
-    rm_last2 {input.SVs} &&\
-    rm_last2 {input.phasedSNVs} &&\
-    rm_last2 {input.bam} &&\
-    rm_last1 {data_dir}/snp/{wildcards.aligner} &&\
-    touch {output}
-    """
+if config['gvcf_snv']:
+    rule mvNoParentalPhased:
+        """
+        The rule here will make sure to get the rule for all command without parental comparison and later will delete the data.
+        """
+        input:
+            stat = data_dir + "/stat.txt" if config['sample_list'] else data_dir + "/stat.NoReads.txt",
+            # phasedSvsSNVs = data_dir + "/sv/{aligner}/sv_snp.vcf.gz",
+            phasedSNVs = data_dir + "/phased/{aligner}/data.vcf.gz",
+            phasedSNVsindex = data_dir + "/phased/{aligner}/data.vcf.gz.tbi",
+            SVs = data_dir + "/sv/{aligner}/sniffles.vcf",
+            snf = data_dir + "/sv/{aligner}/sniffles.snf",
+            # phasedSVs = data_dir + "/sv/{aligner}/sniffles_hp_updated.sorted.namechnage.vcf.gz",
+            bam = data_dir + "/align/{aligner}/data_hap.bam",
+            bamindex = data_dir + "/align/{aligner}/data_hap.bam.bai",
+            gvcf = data_dir + "/snp/{aligner}/data.gvcf.gz",
+        output:
+            stat = data_dir + "/result/.all.Reads.{aligner}.txt" if config['sample_list'] else data_dir + "/result/.all.noReads.{aligner}.txt",
+        params:
+            stat = data_dir + "/result/stat.{sample}.{{aligner}}.txt".format(sample=SAMPLE_NAME),
+            # phasedSvsSNVs = data_dir + "/result/{aligner}.phased.sv_snp.vcf.gz",
+            phasedSNVs = data_dir + "/result/{sample}.{{aligner}}.phased.SNVs.vcf.gz".format(sample=SAMPLE_NAME),
+            phasedSNVsindex = data_dir + "/result/{sample}.{{aligner}}.phased.SNVs.vcf.gz.tbi".format(sample=SAMPLE_NAME),
+            SVs = data_dir + "/result/{sample}.{{aligner}}.SVs.vcf".format(sample=SAMPLE_NAME),
+            snf = data_dir + "/result/{sample}.{{aligner}}.SVs.snf".format(sample=SAMPLE_NAME),
+            # phasedSVs = data_dir + "/result/{aligner}.SVs.phased.vcf.gz",
+            bam = data_dir + "/result/{sample}.{{aligner}}.hap.bam".format(sample=SAMPLE_NAME),
+            bamindex = data_dir + "/result/{sample}.{{aligner}}.hap.bam.bai".format(sample=SAMPLE_NAME),
+            copy_gvcf = "True" if config['gvcf_snv'] else "False",
+            gvcf = data_dir + "/result/{sample}.{{aligner}}.SNVs.gvcf.gz".format(sample=SAMPLE_NAME),
+        shell:"""
+        function rm_last2() {{
+        d1=$(dirname $1)
+        d2=$(dirname $d1)
+        rm -rf $d2 ||:
+        }}
+        function rm_last1() {{
+        d1=$(dirname $1)
+        rm -rf $d1 ||:
+        }}
+        mkdir -p {data_dir}/log &&\
+        if [ -f {data_dir}/sv/{wildcards.aligner}/*.log ]; then
+            mv {data_dir}/sv/{wildcards.aligner}/*.log {data_dir}/log || :
+        fi &&\
+        if [ -f {data_dir}/snp/{wildcards.aligner}/*.log ]; then
+            mv {data_dir}/snp/{wildcards.aligner}/*.log {data_dir}/log || :
+        fi &&\
+        if [ -f {data_dir}/align/{wildcards.aligner}/*.log ]; then
+            mv {data_dir}/align/{wildcards.aligner}/*.log {data_dir}/log || :
+        fi &&\
+        if [ -f {data_dir}/phased/{wildcards.aligner}/*.log ]; then
+            mv {data_dir}/phased/{wildcards.aligner}/*.log {data_dir}/log || :
+        fi &&\
+        mv {input.gvcf} {params.gvcf} &&\
+        mv {input.stat} {params.stat} &&\
+        mv {input.phasedSNVs} {params.phasedSNVs} &&\
+        mv {input.phasedSNVsindex} {params.phasedSNVsindex} &&\
+        mv {input.SVs} {params.SVs} &&\
+        mv {input.snf} {params.snf} &&\
+        mv {input.bam} {params.bam} &&\
+        mv {input.bamindex} {params.bamindex} &&\
+        rm_last2 {input.SVs} &&\
+        rm_last2 {input.phasedSNVs} &&\
+        rm_last2 {input.bam} &&\
+        rm_last1 {data_dir}/snp/{wildcards.aligner} &&\
+        touch {output}
+        """
+else:
+    rule mvNoParentalPhased:
+        """
+        The rule here will make sure to get the rule for all command without parental comparison and later will delete the data.
+        """
+        input:
+            stat = data_dir + "/stat.txt" if config['sample_list'] else data_dir + "/stat.NoReads.txt",
+            # phasedSvsSNVs = data_dir + "/sv/{aligner}/sv_snp.vcf.gz",
+            phasedSNVs = data_dir + "/phased/{aligner}/data.vcf.gz",
+            phasedSNVsindex = data_dir + "/phased/{aligner}/data.vcf.gz.tbi",
+            SVs = data_dir + "/sv/{aligner}/sniffles.vcf",
+            snf = data_dir + "/sv/{aligner}/sniffles.snf",
+            # phasedSVs = data_dir + "/sv/{aligner}/sniffles_hp_updated.sorted.namechnage.vcf.gz",
+            bam = data_dir + "/align/{aligner}/data_hap.bam",
+            bamindex = data_dir + "/align/{aligner}/data_hap.bam.bai",
+        output:
+            stat = data_dir + "/result/.all.Reads.{aligner}.txt" if config['sample_list'] else data_dir + "/result/.all.noReads.{aligner}.txt",
+        params:
+            stat = data_dir + "/result/stat.{sample}.{{aligner}}.txt".format(sample=SAMPLE_NAME),
+            # phasedSvsSNVs = data_dir + "/result/{aligner}.phased.sv_snp.vcf.gz",
+            phasedSNVs = data_dir + "/result/{sample}.{{aligner}}.phased.SNVs.vcf.gz".format(sample=SAMPLE_NAME),
+            phasedSNVsindex = data_dir + "/result/{sample}.{{aligner}}.phased.SNVs.vcf.gz.tbi".format(sample=SAMPLE_NAME),
+            SVs = data_dir + "/result/{sample}.{{aligner}}.SVs.vcf".format(sample=SAMPLE_NAME),
+            snf = data_dir + "/result/{sample}.{{aligner}}.SVs.snf".format(sample=SAMPLE_NAME),
+            # phasedSVs = data_dir + "/result/{aligner}.SVs.phased.vcf.gz",
+            bam = data_dir + "/result/{sample}.{{aligner}}.hap.bam".format(sample=SAMPLE_NAME),
+            bamindex = data_dir + "/result/{sample}.{{aligner}}.hap.bam.bai".format(sample=SAMPLE_NAME),
+            copy_gvcf = "True" if config['gvcf_snv'] else "False",
+        shell:"""
+        function rm_last2() {{
+        d1=$(dirname $1)
+        d2=$(dirname $d1)
+        rm -rf $d2 ||:
+        }}
+        function rm_last1() {{
+        d1=$(dirname $1)
+        rm -rf $d1 ||:
+        }}
+        mkdir -p {data_dir}/log &&\
+        if [ -f {data_dir}/sv/{wildcards.aligner}/*.log ]; then
+            mv {data_dir}/sv/{wildcards.aligner}/*.log {data_dir}/log || :
+        fi &&\
+        if [ -f {data_dir}/snp/{wildcards.aligner}/*.log ]; then
+            mv {data_dir}/snp/{wildcards.aligner}/*.log {data_dir}/log || :
+        fi &&\
+        if [ -f {data_dir}/align/{wildcards.aligner}/*.log ]; then
+            mv {data_dir}/align/{wildcards.aligner}/*.log {data_dir}/log || :
+        fi &&\
+        if [ -f {data_dir}/phased/{wildcards.aligner}/*.log ]; then
+            mv {data_dir}/phased/{wildcards.aligner}/*.log {data_dir}/log || :
+        fi &&\
+        mv {input.stat} {params.stat} &&\
+        mv {input.phasedSNVs} {params.phasedSNVs} &&\
+        mv {input.phasedSNVsindex} {params.phasedSNVsindex} &&\
+        mv {input.SVs} {params.SVs} &&\
+        mv {input.snf} {params.snf} &&\
+        mv {input.bam} {params.bam} &&\
+        mv {input.bamindex} {params.bamindex} &&\
+        rm_last2 {input.SVs} &&\
+        rm_last2 {input.phasedSNVs} &&\
+        rm_last2 {input.bam} &&\
+        rm_last1 {data_dir}/snp/{wildcards.aligner} &&\
+        touch {output}
+        """
 # mv {input.phasedSVs} {params.phasedSVs} &&\
 # mv {input.phasedSvsSNVs} {params.phasedSvsSNVs} &&\
 # rm_last2 {input.phasedSvsSNVs} &&\

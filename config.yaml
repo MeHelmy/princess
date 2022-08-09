@@ -35,6 +35,8 @@ aligner_threads: 20
 min_sv_len: 50
 sv_threads: 5
 phase_sv: 'False'
+mosaic_sv: 'False'
+
 
 
 # Calling Variant Parameters
@@ -47,6 +49,7 @@ chr_split: 29925062
 filter_chrs: True # Case sensitive options [True, Fasle].
 clair_pypy: "/home/source/Clair/pypy3/pypy3.5-7.0.0-linux_x86_64-portable/bin/pypy"
 clair_model: ""
+gvcf_snv: 'False'
 
 
 
