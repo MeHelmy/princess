@@ -101,7 +101,9 @@ if config['gvcf_snv']:
             --output $PWD/snp/{wildcards.aligner}/chr.split.{wildcards.chr}_{wildcards.region} \
             --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed \
             {params.gvcf} > {log} 2>&1 \
-            && rm {wildcards.chr}.{params.start}.{params.end}.bed
+            &&\
+            [ ! -f {output.gvcf} ] && cp {output.vcf} {output.gvcf} &&  {output.vcf}.tbi {output.gvcf}.tbi &&\
+            rm {wildcards.chr}.{params.start}.{params.end}.bed
             """
 else:
     rule callSNVsChunk:
@@ -151,6 +153,15 @@ else:
 ###################################
 
 if config['gvcf_snv']:
+    ## TODO: This function will raise an error if there is missing gvcf, missing gvcf results from calling varaint in alt contigs where there are no variants this no gVCF, solution is to check if the vcf file is empty then just copy it with gVCF name.
+    # if $(head -n 1000 {input} | grep -q -v "#") ; then
+    #     vcfcat {input}  | vcfstreamsort > {params.temp_chr}\
+    #     && first_max=$(find_max {params.temp_chr} {params.read_type})\
+    #     && threshold=$(filsn {params.temp_chr} $first_max)\
+    #     && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} | awk '/^#/ {{ print }} !/^#/ {{ if ($4 != $5 ) {{ print }} }}' > {output}
+    # else
+    #     cp {input} {output}
+    # fi
     rule concatChromosome:
         """
         Concat splited chromomsomes regions
@@ -165,8 +176,8 @@ if config['gvcf_snv']:
         conda: PRINCESS_ENV
         benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
         shell:"""
-            bcftools concat -o {output.vcf} {input.vcf} &&\
-            bcftools concat -o {output.gvcf} {input.gvcf}
+            bcftools concat {input.vcf} | bcftools sort > {output.vcf} &&\
+            bcftools concat {input.gvcf} | bcftools sort > {output.gvcf}
             """
 else:
     rule concatChromosome:
@@ -181,7 +192,7 @@ else:
         conda: PRINCESS_ENV
         benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
         shell:"""
-            bcftools concat -o {output.vcf} {input.vcf}
+            bcftools concat {input.vcf} | bcftools sort > {output.vcf} 
             """
 
 #### UPDATE HEADER #######

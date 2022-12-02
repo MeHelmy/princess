@@ -35,7 +35,7 @@ def get_args():
     parent_parser.add_argument('-u', '--UseConda', dest='use_conda', help='Use conda for running default: %(default)s)', action='store_false')
     parent_parser.add_argument('-e', '--Cluster', dest='is_cluster', help='Use cluster while runing default: %(default)s)', action='store_false')
     parent_parser.add_argument('-a', '--Aligner', dest="aligner", choices=['minimap', 'ngmlr'], help='In case if you want to choose specific aligner otherwise default will be used default: %(default)s)', default='minimap')
-    parent_parser.add_argument('-s', '--samplesFiles', dest="samples_files", metavar= "sampleFiles" ,  nargs='+',  help='list of fatsa, fastq, or gz files.')
+    parent_parser.add_argument('-s', '--samplesFiles', dest="samples_files", metavar= "samplesFiles" ,  nargs='+',  help='list of fatsa, fastq, or gz files.')
     parent_parser.add_argument('-f', '--ref', dest="ref", help='The reference file will be used to align reads to.', required=True)
     parent_parser.add_argument('-j', '--jobs', dest='jobs', type=str, help='Number of running jobs default: %(default)s )', default='200')
     parent_parser.add_argument('-g', '--log', dest='log_file', type=str, help='Log file: %(default)s )', default='PrincessLog.txt')
@@ -214,11 +214,6 @@ def align(args, unknownargs, main_vars):
 def sv(args, unknownargs, main_vars):
     if check_sampes(main_vars.work_dir, main_vars.aligner, args.samples_files, main_vars.sample_list_from_config, args.command, args.log_file):
         pass
-    # if not os.path.exists(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")) and  not args.samples_files and  not main_vars.sample_list_from_config:
-    #     print("Please if you want run sv command there should be aligned file like {} otherwise use -s to support amples or sample_list filed in config.yaml file to support Princess with the files to align".\
-    #     format(os.path.join(main_vars.work_dir, 'align', main_vars.aligner, "data.bam")))
-    #     exit(f'Error extiting, see log file {os.path.join(args.directory, args.log_file)}')
-    # If we have samples let us create working directory If not exists.
     if not os.path.exists(main_vars.work_dir):
         os.makedirs(main_vars.work_dir)
     # If we are already in main princess directory do nothing
@@ -228,8 +223,6 @@ def sv(args, unknownargs, main_vars):
         copy_tree(main_vars.running_file, main_vars.work_dir, update=1)
     os.chdir(main_vars.work_dir)
     cluster_config = os.path.join(main_vars.work_dir, "cluster", "cluster_config.yaml")
-    # result = os.path.join(main_vars.work_dir, 'sv', main_vars.aligner, 'sniffles.vcf')
-    # result = os.path.join(main_vars.work_dir, 'result', "SVs.{}.vcf".format(main_vars.aligner))
     result = os.path.join(main_vars.work_dir, 'result', ".SVs.{}.done".format(main_vars.aligner))
     sample_dir = 'sample_directory=' + main_vars.work_dir
     reference = 'reference='+ args.ref if args.ref else 'reference='+ main_vars.conf_yaml['reference']
@@ -238,6 +231,8 @@ def sv(args, unknownargs, main_vars):
     running_command = "running_command=" + args.command
     delete_files = "delete_files="+ main_vars.running_file
     delete_samples = "delete_samples=" + str(samples_names)
+    phase_sv = "phase_sv=" + str(args.phase_sv)
+    mosaic_sv = "mosaic_sv=" + str(args.mosaic_sv)
 
     if samples_names:
         samples, samples_names_str = get_sample_names(args, main_vars)
@@ -245,17 +240,17 @@ def sv(args, unknownargs, main_vars):
             # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
             #cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, samples, reference, *unknownargs]
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--config', sample_dir, samples, reference, running_command,  delete_files, delete_samples, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--config', sample_dir, samples, reference, running_command,  delete_files, delete_samples, phase_sv, mosaic_sv, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', sample_dir, samples, reference, running_command, delete_files, delete_samples, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', sample_dir, samples, reference, running_command, delete_files, delete_samples, phase_sv, mosaic_sv, *unknownargs]
     else:
         if args.is_cluster:
             # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
             # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
             # cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, reference, *unknownargs]
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', sample_dir, reference, running_command, delete_files, delete_samples,  *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', sample_dir, reference, running_command, delete_files, delete_samples, phase_sv, mosaic_sv,  *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--config', sample_dir, reference, running_command, delete_files, delete_samples, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--config', sample_dir, reference, running_command, delete_files, delete_samples, phase_sv, mosaic_sv, *unknownargs]
     run_cmd(cmd)
     if args.remove_source:
         clean(main_vars.running_file, samples_names_str)
@@ -361,7 +356,7 @@ def varinat(args, unknownargs, main_vars):
             cmd = ['snakemake',  '-p', result,'-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, clair_model, *unknownargs]
 
     log_chrs = " ".join(chr_list) if chr_list else "All Chromsomes"
-    logger.info("{}{}".format("Chromsomes that will be analysized: ", log_chrs))
+    logger.info("{}{}".format("Chromsomes that will be analyized: ", log_chrs))
     logger.info("SNVs will be filtered: {}".format(str(args.filter)))
     logger.info("Clair model: ".format(args.clair_model))
     logger.info("Work directory: {}".format(sample_dir))

@@ -5,7 +5,7 @@
 __default__:
     "nCPUs"     : "16"
     "mem"    : 20000
-    # "queue"  : "analysis"
+      # "queue"  : "analysis"
 #    "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
     "name"      : "JOBNAME.{rule}.{wildcards}"
     # "output"    : "log/{rule}.PBS_JOBID.out"
@@ -23,7 +23,7 @@ minimap2:
   mem: 30G
 
 indexBam:
-  time: "02:00:00"
+  time: "06:00:00"
   nCPUs: "4"
   mem: 10G
 
@@ -93,7 +93,7 @@ SVsSNPsCompained:
 #########################
 
 concatChromosome:
-  time: "01:00:00:00"
+  time: "04:00:00:00"
   nCPUs: "2"
   mem: 10G
 

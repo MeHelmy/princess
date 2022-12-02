@@ -155,7 +155,7 @@ else:
         final_output.extend([data_dir + "/result/.allReadsparental.{aligner}.txt".format(aligner=aligner)])
     else:
         final_output.extend([data_dir + "/result/.all.noReads.{}.txt".format(aligner)])
-print("the output is ---> {}".format(final_output))
+
 
 ##############
 

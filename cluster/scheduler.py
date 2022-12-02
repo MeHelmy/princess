@@ -16,6 +16,33 @@ def run_cmd(cmd):
         subprocess.run(cmd, check=True, universal_newlines=True)
     except subprocess.CalledProcessError as e:
         logger.error("Error in subprocess:\n{}".format(e.returncode))
+        
+def convert_time_to_seconds(run_time):
+    # Number of : in input:
+    colons = run_time.count(':')
+    if colons == 3:
+        # dd:hh:mm:ss
+        d, h, m, s = run_time.split(':')
+        return str(day2sec(int(d)) + hours2sec(int(h)) + minutes2sec(int(m)) + int(s))
+    elif colons == 2:
+        # hh:mm:ss
+        h, m, s = run_time.split(':')
+        return str( hours2sec(int(h)) + minutes2sec(int(m)) + int(s))
+    elif colons == 1:
+        # mm:ss
+        m, s = run_time.split(':')
+        return str(minutes2sec(int(m)) + int(s))
+    else:
+        return run_time
+
+def day2sec(days):
+    return days * 24 * 60 * 60
+
+def hours2sec(hours):
+    return hours * 60 * 60
+
+def minutes2sec(minutes):
+    return minutes * 60
 
 # let snakemake read job_properties
 from snakemake.utils import read_job_properties
@@ -50,7 +77,7 @@ for res in ['time','mem']:
 # time in hours
 if "time" in cluster_param:
     # cluster_param["time"]=int(cluster_param["time"])*60
-    cluster_param["time"]=cluster_param["time"]
+    cluster_param["time"]=convert_time_to_seconds(cluster_param["time"])
 
 
 # check which system you are on and load command command_options

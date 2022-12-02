@@ -9,11 +9,13 @@ sample_extension: "gz" # please add sample extension ex: fastq , fasta or gz # d
 # If you leave empty the input will be all the samples in directory.
 sample_list: []
 sample_name: "SAMPLE"
+delete_files: ""
+delete_samples: ""
 ###########################
 
 # Information about reference
 ###############################
-reference: ""
+reference: "/users/sedlazec/ccdg_tech/reference/GRCh38-2.1.0/genome.fa"
 chrs: []
 
 
@@ -27,6 +29,7 @@ samtools_threads: 5
 #########
 aligner: "minimap" # minimap or ngmlr
 aligner_threads: 20
+minimap_other_tags: "-y"
 #########
 
 

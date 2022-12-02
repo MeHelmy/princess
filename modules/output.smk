@@ -61,7 +61,9 @@ rule mvSV:
         mv {data_dir}/align/{wildcards.aligner}/*.log {data_dir}/log || :
     fi &&\
     mv {input.vcf} {params.vcf} && rm_last2 {input.vcf} &&\
-    mv {input.snf} {params.snf} && rm_last2 {input.snf} &&\
+    if [ -f {input.snf} ]; then
+        mv {input.snf} {params.snf} && rm_last2 {input.snf} || :
+    fi &&\
     mv {input.bam} {params.bam} && mv {input.bamindex} {params.bamindex} && rm_last2 {input.bam} &&\
     touch {output.vcf}
     """

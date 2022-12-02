@@ -1,6 +1,6 @@
 
 restart-times: 3
-latency-wait: 120
+latency-wait: 1200
 cluster-config: "cluster/cluster_config.yaml" #abs path
 cluster: "scheduler.py" #
 cluster-status: "pbs_status.py" #

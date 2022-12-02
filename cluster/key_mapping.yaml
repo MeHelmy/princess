@@ -1,5 +1,6 @@
 # only parameters defined in key_mapping (see below) are passed to the command in the order specified.
 system: "pbs" #check if system is defined below
+#system: "slurm" #check if system is defined below
 
 slurm:
   command: "sbatch --parsable"

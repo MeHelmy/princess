@@ -35,6 +35,7 @@ rule minimap2:
         x = x_param,
         sample_name = SAMPLE_NAME,
         # rg = "@RG\\tSM:SAMPLE\\tID:LONG", shuld be used like -R {params.rg}
+        minimap_other_tags = config['minimap_other_tags'],
     log:
         data_dir + "/align/minimap/{sample}.log"
     message:
@@ -43,8 +44,8 @@ rule minimap2:
     benchmark: data_dir + "/benchmark/align/{sample}.minimap.benchmark.txt"
     conda: MINIMAP2_ENV
     shell:"""
-            minimap2 -Y -R '@RG\\tSM:{params.sample_name}\\tID:{params.sample_name}' {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" | samtools sort -@ {threads} - > "{output.dataout}"
-            """
+            minimap2 -Y -R '@RG\\tSM:{params.sample_name}\\tID:{params.sample_name}' {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" "{params.minimap_other_tags}" | samtools sort -@ {threads} - > "{output.dataout}"
+        """
 
 #### NGMLR ####
 ###############
