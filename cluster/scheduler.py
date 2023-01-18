@@ -16,7 +16,7 @@ def run_cmd(cmd):
         subprocess.run(cmd, check=True, universal_newlines=True)
     except subprocess.CalledProcessError as e:
         logger.error("Error in subprocess:\n{}".format(e.returncode))
-        
+
 def convert_time_to_seconds(run_time):
     # Number of : in input:
     colons = run_time.count(':')
@@ -78,6 +78,7 @@ for res in ['time','mem']:
 if "time" in cluster_param:
     # cluster_param["time"]=int(cluster_param["time"])*60
     cluster_param["time"]=convert_time_to_seconds(cluster_param["time"])
+    # cluster_param["time"]=cluster_param["time"]
 
 
 # check which system you are on and load command command_options

@@ -199,13 +199,13 @@ def align(args, unknownargs, main_vars):
     delete_files = "delete_files="+ main_vars.running_file
     delete_samples = "delete_samples=" + str(samples_names)
     sample_name = "sample_name=" + args.sample_name
-
     samples, samples_names = get_sample_names(args, main_vars) # TODO: send only what needed instead of sending full object.
     if args.is_cluster:
         cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', sample_dir, samples, reference, running_command, delete_files, delete_samples, sample_name, *unknownargs]
     else:
         cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times,\
           '--config', sample_dir, samples, reference, running_command, delete_files, delete_samples, sample_name, *unknownargs]
+    print(cmd)
     run_cmd(cmd)
     if args.remove_source:
         clean(main_vars.running_file, samples_names)
@@ -292,18 +292,19 @@ def snv(args, unknownargs, main_vars):
     running_command = "running_command=" + args.command
     delete_files = "delete_files="+ main_vars.running_file
     delete_samples = "delete_samples=" + str(samples_names)
+    gvcf_snv = "gvcf_snv=" + str(args.gvcf_snv)
 
     if samples_names:
         samples, samples_names_str = get_sample_names(args, main_vars)
         if args.is_cluster:
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, clair_model, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, clair_model, gvcf_snv, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, clair_model, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, samples, reference, chrs, running_command, delete_files, delete_samples, clair_model, gvcf_snv, *unknownargs]
     else:
         if args.is_cluster:
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, clair_model, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, clair_model, gvcf_snv, *unknownargs]
         else:
-            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, clair_model, *unknownargs]
+            cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', filte_snv, sample_dir, reference, chrs, running_command, delete_files, delete_samples, clair_model, gvcf_snv, *unknownargs]
     run_cmd(cmd)
 
     if args.remove_source:
@@ -582,7 +583,10 @@ def run_cmd(cmd):
         subprocess.run(cmd, check=True, universal_newlines=True)
     except subprocess.CalledProcessError as e:
         # logger.error("Error in subprocess:\nComand: {}\nError: {}".format(cmd, e.returncode))
+        v = " ".join(cmd)
+        print(f"Runing:\n{v}")
         logger.error("Error in subprocess:\nComand: {}\nError: {}".format(" ".join(cmd), e))
+
 
 def is_valid_chrs(chr_list, ref):
     if chr_list:

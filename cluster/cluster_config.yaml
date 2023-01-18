@@ -1,16 +1,14 @@
-
-
-
 ---
 __default__:
     "nCPUs"     : "16"
-    "mem"    : 20000
-      # "queue"  : "analysis"
-#    "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
+    "mem"       : 20000
+    "queue"     : "medium" #scavenger" #"analysis"
     "name"      : "JOBNAME.{rule}.{wildcards}"
-    # "output"    : "log/{rule}.PBS_JOBID.out"
-    # "error"     : "log/{rule}.PBS_JOBID.err"
     "time"      : "01:00:00:00"
+    # "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
+    #"output"    : "log/{rule}.PBS_JOBID.out"
+    #"error"     : "log/{rule}.PBS_JOBID.err"
+
 
 
 ##########################
@@ -18,19 +16,19 @@ __default__:
 #########################
 
 minimap2:
-  time: "72:00:00"
+  time: "01:00:00"
   nCPUs: "12"
-  mem: 30G
+  mem: 20G
 
 indexBam:
-  time: "06:00:00"
+  time: "01:00:00"
   nCPUs: "4"
   mem: 10G
 
-mmergeAlign:
-  time: "24:00:00"
+mergeAlign:
+  time: "01:00:00"
   nCPUs: "8"
-  mem: 50G
+  mem: 10G
 
 sam2bam:
   time: "01:00:00:00"
@@ -47,6 +45,11 @@ bam2tab:
   nCPUs: "2"
   mem: 10G
 
+mvAlign:
+  time: "01:00:00"
+  nCPUs: "2"
+  mem: 1G
+  
 #<*><*><*><*><*><*><*><*><*>
 
 
@@ -55,7 +58,7 @@ bam2tab:
 #####################
 
 sniffles:
-  time: "72:00:00"
+  time: "10:00:00"
   nCPUs: "16"
   mem: 30G
 
@@ -105,7 +108,7 @@ concactSNPs:
 callSNVsChunk:
   time: "07:00:00:00"
   nCPUs: "5"
-  mem: 50G
+  mem: 30G
   host: "host=c86q-23+1:host=c86q-22+1:host=c86q-21+1:host=c86q-20+1:host=c86q-19+1:host=c86q-18+1:host=c86q-17+1:host=c86q-16+1:host=c86q-15+1:host=c86q-14+1:host=c86q-13+1:host=c86q-12+1:host=c86q-11"
 
 updateHeader:
