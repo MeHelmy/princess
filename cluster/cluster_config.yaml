@@ -1,8 +1,12 @@
 ---
+
+long: &long_queue scavenger
+short: &short_queue medium
+
 __default__:
     "nCPUs"     : "16"
     "mem"       : 20000
-    "queue"     : "medium" #scavenger" #"analysis"
+    "queue"     : "scavenger" #queue_names.long #"scavenger" #"medium" #"analysis"
     "name"      : "JOBNAME.{rule}.{wildcards}"
     "time"      : "01:00:00:00"
     # "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
@@ -16,17 +20,20 @@ __default__:
 #########################
 
 minimap2:
-  time: "01:00:00"
+  queue: *long_queue
+  time: "72:00:00"
   nCPUs: "12"
   mem: 20G
 
 indexBam:
-  time: "01:00:00"
+  queue: *short_queue
+  time: "10:00:00"
   nCPUs: "4"
   mem: 10G
 
 mergeAlign:
-  time: "01:00:00"
+  queue: *long_queue
+  time: "01:00:00:00"
   nCPUs: "8"
   mem: 10G
 
@@ -49,7 +56,7 @@ mvAlign:
   time: "01:00:00"
   nCPUs: "2"
   mem: 1G
-  
+
 #<*><*><*><*><*><*><*><*><*>
 
 
