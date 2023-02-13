@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Snakemake file waraper for princess.
+Snakemake file wrapper for princess.
 """
 import argparse
 import sys, os, subprocess, ntpath , yaml
@@ -29,8 +29,8 @@ def get_args():
 
     # Adding the main params for any commands
     parent_parser.add_argument('-d', '--directory', help='Working directory.', metavar='Working directory', required=True)
-    parent_parser.add_argument('-r', '--ReadType', dest="read_type",type=str.lower, choices=['ont', 'clr', 'ccs'], help='Read techonlogy', required=True)
-    # TODO: Depricated remove it, we remove files anyway.
+    parent_parser.add_argument('-r', '--ReadType', dest="read_type",type=str.lower, choices=['ont', 'clr', 'ccs'], help='Read technology', required=True)
+    #TODO: Deprecated remove it, we remove files anyway.
     parent_parser.add_argument('-l', '--removeFiles', dest='remove_source', help='remove princess source script after running default: %(default)s)', action='store_true')
     parent_parser.add_argument('-u', '--UseConda', dest='use_conda', help='Use conda for running default: %(default)s)', action='store_false')
     parent_parser.add_argument('-e', '--Cluster', dest='is_cluster', help='Use cluster while runing default: %(default)s)', action='store_false')
@@ -40,7 +40,7 @@ def get_args():
     parent_parser.add_argument('-j', '--jobs', dest='jobs', type=str, help='Number of running jobs default: %(default)s )', default='200')
     parent_parser.add_argument('-g', '--log', dest='log_file', type=str, help='Log file: %(default)s )', default='PrincessLog.txt')
     parent_parser.add_argument('-sn', '--sample-name', dest='sample_name', type=str, help='A sample name to use for bams, SVs, and SNVs helps when you are planning to merge multiple samples in the downstream analysis %(default)s', default='SAMPLE')
-    parent_parser.add_argument('-sp', '--phase-sv', dest='phase_sv', help='Phase the identifed SV, default: %(default)s', action='store_true')
+    parent_parser.add_argument('-sp', '--phase-sv', dest='phase_sv', help='Phase the identified SV, default: %(default)s', action='store_true')
     parent_parser.add_argument('-ms', '--mosaic-sv', dest='mosaic_sv', help='Identify mosaic SV, default: %(default)s', action='store_true')
     parent_parser.add_argument('-gv', '--gvcf-snv', dest='gvcf_snv', help='Identify gVCF SNVs, default: %(default)s', action='store_true')
 
