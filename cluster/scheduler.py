@@ -16,7 +16,7 @@ def run_cmd(cmd):
         subprocess.run(cmd, check=True, universal_newlines=True)
     except subprocess.CalledProcessError as e:
         logger.error("Error in subprocess:\n{}".format(e.returncode))
-        
+
 def convert_time_to_seconds(run_time):
     # Number of : in input:
     colons = run_time.count(':')
@@ -43,6 +43,15 @@ def hours2sec(hours):
 
 def minutes2sec(minutes):
     return minutes * 60
+
+def qsub_to_slurm_time(qsub_time):
+    qsub_time = qsub_time.split(':')
+    slurm_time = ''
+    if len(qsub_time) == 4:
+        slurm_time = '{}-{}:{}:{}'.format(qsub_time[0], qsub_time[1], qsub_time[2], qsub_time[3])
+    elif len(qsub_time) == 3:
+        slurm_time = '{}:{}:{}'.format(qsub_time[0], qsub_time[1], qsub_time[2])
+    return slurm_time
 
 # let snakemake read job_properties
 from snakemake.utils import read_job_properties
@@ -73,21 +82,27 @@ for res in ['time','mem']:
     if (res in job_properties["resources"]) and (res not in cluster_param):
         cluster_param[res] = job_properties["resources"][res]
 
-## TODO: Comment this line || test while using normal time 01:00:00:00
-# time in hours
-if "time" in cluster_param:
-    # cluster_param["time"]=int(cluster_param["time"])*60
-    cluster_param["time"]=convert_time_to_seconds(cluster_param["time"])
-
-
 # check which system you are on and load command command_options
 key_mapping_file=os.path.join(os.path.dirname(__file__),"key_mapping.yaml")
 command_options=yaml.load(open(key_mapping_file),
                           Loader=yaml.BaseLoader)
 system= command_options['system']
 command= command_options[system]['command']
-
 key_mapping= command_options[system]['key_mapping']
+
+
+## TODO: Comment this line || test while using normal time 01:00:00:00
+# time in hours
+if "time" in cluster_param:
+    # cluster_param["time"]=int(cluster_param["time"])*60
+    # cluster_param["time"]=convert_time_to_seconds(cluster_param["time"])
+    if system == "pbs":
+        cluster_param["time"]=cluster_param["time"]
+    elif system == "slurm":
+        cluster_param["time"] = qsub_to_slurm_time(cluster_param["time"])
+
+
+
 
 # construct command:
 for  key in key_mapping:

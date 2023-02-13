@@ -1,16 +1,18 @@
-
-
-
 ---
+
+long: &long_queue scavenger
+short: &short_queue medium
+
 __default__:
     "nCPUs"     : "16"
-    "mem"    : 20000
-      # "queue"  : "analysis"
-#    "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
+    "mem"       : 20000
+    "queue"     : *long_queue #"analysis"
     "name"      : "JOBNAME.{rule}.{wildcards}"
-    # "output"    : "log/{rule}.PBS_JOBID.out"
-    # "error"     : "log/{rule}.PBS_JOBID.err"
     "time"      : "01:00:00:00"
+    # "resources" : "\"select[mem>20000] rusage[mem=20000] span[hosts=1]\""
+    #"output"    : "log/{rule}.PBS_JOBID.out"
+    #"error"     : "log/{rule}.PBS_JOBID.err"
+
 
 
 ##########################
@@ -18,34 +20,46 @@ __default__:
 #########################
 
 minimap2:
+  queue: *long_queue
   time: "72:00:00"
   nCPUs: "12"
-  mem: 30G
+  mem: 20G
 
 indexBam:
-  time: "06:00:00"
+  queue: *short_queue
+  time: "10:00:00"
   nCPUs: "4"
   mem: 10G
 
-mmergeAlign:
-  time: "24:00:00"
+mergeAlign:
+  queue: *long_queue
+  time: "01:00:00:00"
   nCPUs: "8"
-  mem: 50G
+  mem: 10G
 
 sam2bam:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "2"
   mem: 10G
 
 addRG:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "2"
   mem: 10G
 
 bam2tab:
+  queue: *short_queue
   time: "01:00:00:00"
   nCPUs: "2"
   mem: 10G
+
+mvAlign:
+  queue: *short_queue
+  time: "01:00:00"
+  nCPUs: "2"
+  mem: 1G
 
 #<*><*><*><*><*><*><*><*><*>
 
@@ -55,31 +69,36 @@ bam2tab:
 #####################
 
 sniffles:
-  time: "72:00:00"
+  time: "10:00:00"
   nCPUs: "16"
   mem: 30G
 
 phaseSVs:
+  queue: *long_queue
   time: "24:00:00"
   nCPUs: "8"
   mem: 20G
 
 vcfSort:
-  time: "24:00:00"
+  queue: *short_queue
+  time: "10:00:00"
   nCPUs: "8"
-  mem: 20G
+  mem: 10G
 
 bgzipFile:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "2"
   mem: 10G
 
 changeSampleName:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "2"
   mem: 10G
 
 SVsSNPsCompained:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "8"
   mem: 10G
@@ -93,37 +112,44 @@ SVsSNPsCompained:
 #########################
 
 concatChromosome:
+  queue: *long_queue
   time: "04:00:00:00"
   nCPUs: "2"
   mem: 10G
 
 concactSNPs:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "2"
   mem: 10G
 
 callSNVsChunk:
+  queue: *long_queue
   time: "07:00:00:00"
   nCPUs: "5"
-  mem: 50G
+  mem: 30G
   host: "host=c86q-23+1:host=c86q-22+1:host=c86q-21+1:host=c86q-20+1:host=c86q-19+1:host=c86q-18+1:host=c86q-17+1:host=c86q-16+1:host=c86q-15+1:host=c86q-14+1:host=c86q-13+1:host=c86q-12+1:host=c86q-11"
 
 updateHeader:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "2"
   mem: 4G
 
 vcfIndex:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "2"
   mem: 4G
 
 mergeParentalSNPs:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "8"
   mem: 16G
 
 updateSNPs:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "4"
   mem: 20G
@@ -137,15 +163,18 @@ updateSNPs:
 #################################
 
 nanoIndex:
-     nCPUs: "5"
-     mem: 50G
+  queue: *long_queue
+  nCPUs: "5"
+  mem: 50G
 
 callMeth:
-     time: "07:00:00:00"
-     nCPUs: "8"
-     mem: 50G
+  queue: *long_queue
+  time: "07:00:00:00"
+  nCPUs: "8"
+  mem: 50G
 
 allMethylation:
+  queue: *long_queue
   nCPUs: "1"
   mem: 2G
   time: "00:40:00"
@@ -159,21 +188,25 @@ allMethylation:
 ###########################
 
 gt:
+  queue: *long_queue
   nCPUs: "1"
   mem: 50G
   time: "72:00:00"
 
 phasing:
+  queue: *long_queue
   nCPUs: "4"
   mem: 50G
   time: "05:00:00:00"
 
 allPhased:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "2"
   mem: 10G
 
 partionBam:
+  queue: *long_queue
   nCPUs: "4"
   mem: 50G
   time: "05:00:00:00"
@@ -187,26 +220,31 @@ partionBam:
 ###############################
 
 readsStat:
+  queue: *long_queue
   nCPUs: "8"
   mem: 20G
   time: "05:00:00:00"
 
 bamStatstics:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "4"
   mem: 10G
 
 svStat:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "4"
   mem: 10G
 
 snpStat:
+  queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "4"
   mem: 10G
 
 stat:
+  queue: *short_queue
   time: "00:00:10:00"
   nCPUs: "1"
   mem: 1G

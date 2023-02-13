@@ -28,7 +28,7 @@ samtools_threads: 5
 # Aligner
 #########
 aligner: "minimap" # minimap or ngmlr
-aligner_threads: 20
+aligner_threads: 3
 minimap_other_tags: "-y"
 #########
 
@@ -87,6 +87,6 @@ hap_methylation: "scripts/update_meth_hp_ps.py"
 # Cluster
 ##########
 cluster_jobs: 10
-number_of_tries: 3
+number_of_tries: 0
 
 ...

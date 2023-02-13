@@ -1,4 +1,3 @@
-# princess2
 New princess implementation with sniffles2 and Clair3
 =======
 
@@ -9,13 +8,15 @@ Princess is a fast and scalable framework to detect and report haplotype resolve
 ## Princess
 
 * __Mapping__:  NGMLR or Minimap2
-* __SNVs__: Clair (successor of Clairvoyante)
-* __SVs__: Sniffles
+* __SNVs__: Clair3 
+* __SVs__: Sniffles2
 * __Phasing SNVs__: WhatsHap
 * __Phasing SVs__: PRINCESS-subtool
 * __Extend Phasing__: PRINCESS-subtool
 * __Phased Methylation__: Nanopolish + PRINCESS-subtool
 * __QC Statistics__ for each step
+
+---
 
 ## Installation
 Princess was tested on CentOS release 6.7, Conda version 4.7.12 is installed:
@@ -31,13 +32,8 @@ conda install pyyaml
 ~~~
 git clone https://github.com/MeHelmy/princess.git
 ~~~
-3. Install Clair, Training models, pypy, and intervaltree
-~~~
-cd princess
-chmod +x install.sh
-./install.sh
-~~~
 
+---
 
 ## Tutorial
 
@@ -93,7 +89,7 @@ optional arguments:
   -d Working directory, --directory Working directory
                         Working directory.
   -r {ont,clr,ccs}, --ReadType {ont,clr,ccs}
-                        Read techonlogy
+                        Read techonlogy (Note: clr is not supported anymore by clair3)
   -l, --removeFiles     remove princess source script after running default:
                         False)
   -u, --UseConda        Use conda for running default: True)
@@ -137,4 +133,25 @@ Princess will create these directories:
 - snp     contains single nucleotide variant calls per chromosomes
 - phased  contains phased variant
 - stat    contains Statistics
-- meth    contains methylation info (if user choose to run methylation)      
+- meth    contains methylation info (if user choose to run methylation) 
+
+---
+
+## Converting from Pbs to Slurm
+1- Please ensure that you modify the `cluster/cluster_config.yaml` to specify the appropriate long-running node. For example, you can set the long queue system as follows:
+    `long: &long_queue long_queue` 
+    Where long_queue is the queue system that can run for a long time. Similarly, you can set the short queue in the following way:
+    `short: &short_queue short_queue`, . Please refer to your cluster system administrator for more details.  
+2- Please, ensure that you changed `cluster/config.yaml` from `cluster-status: "pbs_status.py"` to `cluster-status: "slurm_status.py"`  
+3- In the `cluster/key_mapping.yaml` file. Please, change `system: "pbs"` to `system: "slurm"`  
+4- Finally, in the `cluster/cluster_config.yaml` file, I set CPU and memory to each job to suit my cluster.  
+E.g.
+```
+minimap2:
+  queue: *long_queue
+  time: "72:00:00"
+  nCPUs: "12"
+  mem: 20G
+```
+Here, I am using 12 CPUs, 20G memory, and the job running time is "72:00:00" maximum (three days.). You may need to use different configuration based on the availability in you cluster. Please, refer to your system administrator for more details.
+
