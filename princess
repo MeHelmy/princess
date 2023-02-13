@@ -61,9 +61,7 @@ def get_args():
 
 
     # Align subparser.
-    align_subparser = subparser.add_parser("align", help='This command will use the input sequence\
-    files and align them against the reference using either Minimap2 or NGMLR use -a to choose aligner\
-    otherwise Minimap2 will be used by default.', parents=[parent_parser])
+    align_subparser = subparser.add_parser("align", help='This command will align the input sequence files against the reference using either Minimap2 or NGMLR. You can use the -a option to choose the aligner, otherwise Minimap2 will be used by default.', parents=[parent_parser])
     align_subparser.set_defaults(func=align)
 
     # SV subparser.

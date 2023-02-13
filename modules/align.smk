@@ -34,7 +34,7 @@ rule minimap2:
         md = "--MD",
         x = x_param,
         sample_name = SAMPLE_NAME,
-        # rg = "@RG\\tSM:SAMPLE\\tID:LONG", shuld be used like -R {params.rg}
+        # rg = "@RG\\tSM:SAMPLE\\tID:LONG", should be used like -R {params.rg}
         minimap_other_tags = config['minimap_other_tags'],
     log:
         data_dir + "/align/minimap/{sample}.log"
@@ -44,9 +44,9 @@ rule minimap2:
     benchmark: data_dir + "/benchmark/align/{sample}.minimap.benchmark.txt"
     conda: MINIMAP2_ENV
     shell:"""
-        minimap2 -Y -R '@RG\\tSM:{params.sample_name}\\tID:{params.sample_name}' {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" | samtools sort -@ {threads} - > "{output.dataout}"
+        minimap2 -Y -R '@RG\\tSM:{params.sample_name}\\tID:{params.sample_name}' {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads} "{params.minimap_other_tags}"  2>{log} | samtools sort -@ {threads} - > "{output.dataout}" 2>>{log}
         """
-#        minimap2 -Y -R '@RG\\tSM:{params.sample_name}\\tID:{params.sample_name}' {params.x} "{params.reference}" "{input.datain}"  {params.h} "{params.md}"  -t "{threads}" "{params.minimap_other_tags}"  -o "{output.dataout}" 2>>{log}| samtools sort -@ {threads}
+
 #### NGMLR ####
 ###############
 
@@ -138,7 +138,7 @@ rule addRG:
 
 
 
-#### CONVER BAM FILE TO TAB ####
+#### CONVERT BAM FILE TO TAB ####
 ################################
 
 rule bam2tab:
