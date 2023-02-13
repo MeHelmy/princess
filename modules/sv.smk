@@ -104,7 +104,7 @@ rule changeSampleName:
 #### CONCAT SVs WITH SNPs ####
 ##############################
 
-rule SVsSNPsCompained:
+rule SVsSNPsCombined:
     """
     Concat haplotyped SNPs with haplotyped and Genotyped SVs.
     """

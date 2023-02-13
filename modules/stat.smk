@@ -28,7 +28,7 @@ rule readsStat:
 #### BAM STATISTICS ####
 ########################
 
-rule bamStatstics:
+rule bamStatistics:
     """
     Calculate statistics from merged bam file
     """

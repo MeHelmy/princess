@@ -97,7 +97,7 @@ changeSampleName:
   nCPUs: "2"
   mem: 10G
 
-SVsSNPsCompained:
+SVsSNPsCombined:
   queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "8"
@@ -184,7 +184,7 @@ allMethylation:
 
 
 ############################
-######  PHASNIG RULES ######
+######  PHASING RULES ######
 ###########################
 
 gt:
@@ -225,7 +225,7 @@ readsStat:
   mem: 20G
   time: "05:00:00:00"
 
-bamStatstics:
+bamStatistics:
   queue: *long_queue
   time: "01:00:00:00"
   nCPUs: "4"
