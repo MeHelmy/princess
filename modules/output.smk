@@ -120,7 +120,7 @@ rule mvVariants:
         bam = data_dir + "/align/{aligner}/data.bam",
         bamindex = data_dir + "/align/{aligner}/data.bam.bai",
     output:
-        data_dir + "/result" + "/.varaint.{aligner}.done"
+        data_dir + "/result" + "/.variant.{aligner}.done"
     message: "Moving called SNVs to result directory {input}"
     shell:"""
     function rm_last2() {{
