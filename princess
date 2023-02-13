@@ -29,18 +29,18 @@ def get_args():
 
     # Adding the main params for any commands
     parent_parser.add_argument('-d', '--directory', help='Working directory.', metavar='Working directory', required=True)
-    parent_parser.add_argument('-r', '--ReadType', dest="read_type",type=str.lower, choices=['ont', 'clr', 'ccs'], help='Read techonlogy', required=True)
-    # TODO: Depricated remove it, we remove files anyway.
+    parent_parser.add_argument('-r', '--ReadType', dest="read_type",type=str.lower, choices=['ont', 'clr', 'ccs'], help='Read technology', required=True)
+    # TODO: Deprecated remove it, we remove files anyway.
     parent_parser.add_argument('-l', '--removeFiles', dest='remove_source', help='remove princess source script after running default: %(default)s)', action='store_true')
     parent_parser.add_argument('-u', '--UseConda', dest='use_conda', help='Use conda for running default: %(default)s)', action='store_false')
-    parent_parser.add_argument('-e', '--Cluster', dest='is_cluster', help='Use cluster while runing default: %(default)s)', action='store_false')
+    parent_parser.add_argument('-e', '--Cluster', dest='is_cluster', help='Use cluster while running default: %(default)s)', action='store_false')
     parent_parser.add_argument('-a', '--Aligner', dest="aligner", choices=['minimap', 'ngmlr'], help='In case if you want to choose specific aligner otherwise default will be used default: %(default)s)', default='minimap')
     parent_parser.add_argument('-s', '--samplesFiles', dest="samples_files", metavar= "samplesFiles" ,  nargs='+',  help='list of fatsa, fastq, or gz files.')
     parent_parser.add_argument('-f', '--ref', dest="ref", help='The reference file will be used to align reads to.', required=True)
     parent_parser.add_argument('-j', '--jobs', dest='jobs', type=str, help='Number of running jobs default: %(default)s )', default='200')
     parent_parser.add_argument('-g', '--log', dest='log_file', type=str, help='Log file: %(default)s )', default='PrincessLog.txt')
     parent_parser.add_argument('-sn', '--sample-name', dest='sample_name', type=str, help='A sample name to use for bams, SVs, and SNVs helps when you are planning to merge multiple samples in the downstream analysis %(default)s', default='SAMPLE')
-    parent_parser.add_argument('-sp', '--phase-sv', dest='phase_sv', help='Phase the identifed SV, default: %(default)s', action='store_true')
+    parent_parser.add_argument('-sp', '--phase-sv', dest='phase_sv', help='Phase the identified SV, default: %(default)s', action='store_true')
     parent_parser.add_argument('-ms', '--mosaic-sv', dest='mosaic_sv', help='Identify mosaic SV, default: %(default)s', action='store_true')
     parent_parser.add_argument('-gv', '--gvcf-snv', dest='gvcf_snv', help='Identify gVCF SNVs, default: %(default)s', action='store_true')
 
@@ -80,7 +80,7 @@ def get_args():
      if not specified we will use all Chromosomes.', nargs='+', default=[])
     snv_subparser.add_argument('-t', '--filter', dest='filter', help='Filter identified SNVs using Princess algorithm\
     default: %(default)s)', action='store_false')
-    snv_subparser.add_argument('-cm', '--clair-model',metavar="Clair model",  dest='clair_model', help='Clair model, if not supplied we will use default model came with conda instalation of Clair3.\nThe folder path containing a Clair3 model (requiring six files in the folder, including pileup.data-00000-of-00002, pileup.data-00001-of-00002 pileup.index, full_alignment.data-00000-of-00002, full_alignment.data-00001-of-00002  and full_alignment.index)', default="")
+    snv_subparser.add_argument('-cm', '--clair-model',metavar="Clair model",  dest='clair_model', help='Clair model, if not supplied we will use default model came with conda installation of Clair3.\nThe folder path containing a Clair3 model (requiring six files in the folder, including pileup.data-00000-of-00002, pileup.data-00001-of-00002 pileup.index, full_alignment.data-00000-of-00002, full_alignment.data-00001-of-00002  and full_alignment.index)', default="")
     snv_subparser.set_defaults(func=snv)
 
 
@@ -92,7 +92,7 @@ def get_args():
     varinar_subparser.add_argument('-t', '--filter', dest='filter', help='Filter identified SNVs using Princess algorithm\
     default: %(default)s)', action='store_false')
     varinar_subparser.add_argument('-cm', '--clair-model',metavar="Clair model",  dest='clair_model', help='Clair model, if not supplied we will use default model came with conda instalation of Clair3.\nThe folder path containing a Clair3 model (requiring six files in the folder, including pileup.data-00000-of-00002, pileup.data-00001-of-00002 pileup.index, full_alignment.data-00000-of-00002, full_alignment.data-00001-of-00002  and full_alignment.index)', default=None)
-    varinar_subparser.set_defaults(func=varinat)
+    varinar_subparser.set_defaults(func=variant)
 
 
     # Phase subparser.
@@ -310,7 +310,7 @@ def snv(args, unknownargs, main_vars):
         clean(main_vars.running_file, samples_names_str)
     os.chdir(main_vars.current_dir)
 
-def varinat(args, unknownargs, main_vars):
+def variant(args, unknownargs, main_vars):
     if check_sampes(main_vars.work_dir, main_vars.aligner, args.samples_files, main_vars.sample_list_from_config, args.command, args.log_file):
         pass
     # check if the user gave existing chromosomes.

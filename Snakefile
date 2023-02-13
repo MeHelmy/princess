@@ -109,7 +109,8 @@ aligner = config["aligner"]
 ###############################
 PRINCESS_ENV=os.getcwd()+"/envs/princess_env.yaml"
 SNIFFLES_ENV=os.getcwd()+"/envs/sniffles.yaml"
-CLAIR_ENV=os.getcwd()+"/envs/clair3.yaml"
+#CLAIR_ENV=os.getcwd()+"/envs/clair3.yaml"
+CLAIR_ENV=os.getcwd()+"/envs/clair3_no_depend.yaml"
 MINIMAP2_ENV=os.getcwd()+"/envs/minimap2.yaml"
 WHATSHAP_ENV=os.getcwd()+"/envs/whatshap.yaml"
 #############

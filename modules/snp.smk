@@ -31,7 +31,7 @@ def get_model(conda_dir):
     elif config['read_type'] == "clr":
         training_data=config["clair_model"] if config["clair_model"] else None
     else:
-        print("Unknow data type, supported format are: ont, ccs, and clr")
+        print("Unknown data type, supported format are: ont, ccs, and clr")
         exit(1)
     return training_data
 # if config['read_type'] == "ccs":
@@ -102,7 +102,7 @@ if config['gvcf_snv']:
             --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed \
             {params.gvcf} > {log} 2>&1 \
             &&\
-            [ ! -f {output.gvcf} ] && cp {output.vcf} {output.gvcf} &&  {output.vcf}.tbi {output.gvcf}.tbi &&\
+            [ ! -f {output.gvcf} ] && cp {output.vcf} {output.gvcf} && cp {output.vcf}.tbi {output.gvcf}.tbi &&\
             rm {wildcards.chr}.{params.start}.{params.end}.bed
             """
 else:
