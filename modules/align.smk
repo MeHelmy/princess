@@ -44,7 +44,7 @@ rule minimap2:
     benchmark: data_dir + "/benchmark/align/{sample}.minimap.benchmark.txt"
     conda: MINIMAP2_ENV
     shell:"""
-        minimap2 -Y -R '@RG\\tSM:{params.sample_name}\\tID:{params.sample_name}' {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads} "{params.minimap_other_tags}"  2>{log} | samtools sort -@ {threads} - > "{output.dataout}" 2>>{log}
+        minimap2 -Y -R '@RG\\tSM:{params.sample_name}\\tID:{params.sample_name}' {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" "{params.minimap_other_tags}"  2>{log} | samtools sort -@ {threads} - > "{output.dataout}" 2>>{log}
         """
 
 #### NGMLR ####
@@ -99,7 +99,7 @@ rule indexBam:
         temp(data_dir + "/{sample}.bam.bai")
     benchmark: data_dir + "/benchmark/align/{sample}.index.benchmark.txt"
     message: "Indexing {input}"
-    conda: PRINCESS_ENV
+    conda: MINIMAP2_ENV
     shell:
         "samtools index {input}"
 
@@ -117,7 +117,7 @@ rule mergeAlign:
     benchmark: data_dir + "/benchmark/align/{aligner}.merging.benchmark.txt"
     log:
         data_dir + "/align/{aligner}/merge.log"
-    conda: PRINCESS_ENV
+    conda: MINIMAP2_ENV
     threads: config['aligner_threads']
     shell:"""
         samtools merge -@ {threads} {output} {input.bams} > {log} 2>&1

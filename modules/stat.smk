@@ -19,10 +19,10 @@ rule readsStat:
     threads: config['read_raw_coverage_threads']
     log: data_dir + "/statistics/raw_reads/reads_stat.log",
     benchmark: data_dir + "/benchmark/raw_reads/stat.benchmark.txt"
-    conda: PRINCESS_ENV
+    conda: READ_STAT_ENV
     shell:
         """
-        python {params.read_stat_script} -i {input} -o {output} -t {threads}
+        python {params.read_stat_script} -i {input} -o {output} -t {threads} 2>{log}
         """
 
 #### BAM STATISTICS ####
@@ -36,7 +36,7 @@ rule bamStatistics:
     output:data_dir + "/statistics/{aligner}/data.stat"
     message:"Calculating aligned reads statistics from bam file"
     benchmark: data_dir + "/benchmark/align/{aligner}/stat.benchmark.txt"
-    conda: PRINCESS_ENV
+    conda: MINIMAP2_ENV
     shell:"""
         samtools stats {input} > {output}
         """
@@ -49,7 +49,7 @@ rule svStat:
     output: data_dir + "/statistics/sv/data.stat"
     message: "calculating statistics for structural variant"
     benchmark: data_dir + "/benchmark/sv/stat.benchmark.txt"
-    conda: PRINCESS_ENV
+    conda: VARIANT_ENV
     shell:"""
         SURVIVOR stats {input} -1 -1 -1  {output}
         """
@@ -64,7 +64,7 @@ rule snpStat:
     output: data_dir + "/statistics/snp/snp.txt",
     message: "Calculate SNPs statistics"
     benchmark: data_dir + "/benchmark/snp/stat.benchmark.txt"
-    conda: PRINCESS_ENV
+    conda: VARIANT_ENV
     shell:"""
         bcftools stats {input.snp_file} > {output}
         """
@@ -74,7 +74,7 @@ rule snpStat:
 rule statNoReads:
     input:
         expand(data_dir + "/statistics/{aligner}/data.stat", aligner=config['aligner']),
-        data_dir + "/statistics/sv/data.stat",\
+        data_dir + "/statistics/sv/data.stat",
         data_dir + "/statistics/snp/snp.txt",
     output: data_dir + "/stat.NoReads.txt"
     shell: "touch {output}"
@@ -85,8 +85,8 @@ rule statNoReads:
 rule stat:
     input:
         expand(data_dir + "/statistics/{aligner}/data.stat", aligner=config['aligner']),
-        data_dir + "/statistics/raw_reads/reads_stat.txt",\
-        data_dir + "/statistics/sv/data.stat",\
-        data_dir + "/statistics/snp/snp.txt",
+        data_dir + "/statistics/raw_reads/reads_stat.txt",
+        data_dir + "/statistics/sv/data.stat",
+        data_dir + "/statistics/snp/snp.txt"
     output: data_dir + "/stat.txt"
     shell: "touch {output}"

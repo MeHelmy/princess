@@ -33,7 +33,7 @@ rule sniffles:
 
 #### HAPLOTYPE SVs ####
 #######################
-
+# TODO: orphan code # # # # # # # # # # # # # #
 rule phaseSVs:
     """
     This rules takes as input a taged tabed bam file
@@ -66,10 +66,6 @@ rule vcfSort:
     shell:"""
          zcat {input.vcffile} | awk 'BEGIN{{OFS="\t";}} /^#/{{print $0}} !/^#/{{ if ($2==0){{$2=1;print}} else {{print $0}} }}' |  bedtools sort -header -faidx {input.ref}.fai -i - | bgzip > {output}
         """
-# bedtools sort -header -faidx {input.ref}.fai -i {input.vcffile} | bgzip > {output}
-    # shell:"""
-    #     bcftools sort -O z -o {output} {input}
-    #     """
 
 #### BGZIP SVs ####
 ###################
@@ -81,7 +77,7 @@ rule bgzipFile:
     input:data_dir + "/{name}.vcf"
     output:data_dir + "/{name}.vcf.gz"
     threads: config['bgzip_threads']
-    conda: PRINCESS_ENV
+    conda: VARIANT_ENV
     shell:"""
         bgzip -c -@ {threads} {input} > {output}
         """
@@ -106,7 +102,7 @@ rule changeSampleName:
 
 rule SVsSNPsCombined:
     """
-    Concat haplotyped SNPs with haplotyped and Genotyped SVs.
+    Concat haplotype SNPs with haplotype and Genotype SVs.
     """
     input:
         sv = data_dir + "/sv/{aligner}/sniffles_hp_updated.sorted.namechnage.vcf.gz",

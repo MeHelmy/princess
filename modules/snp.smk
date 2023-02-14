@@ -173,7 +173,7 @@ if config['gvcf_snv']:
             vcf = temp(data_dir + "/snp/{aligner}/data.{chr}.vcf"),
             gvcf = temp(data_dir + "/snp/{aligner}/data.{chr}.gvcf")
         message: "Concat variant split per Chromosome"
-        conda: PRINCESS_ENV
+        conda: VARIANT_ENV
         benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
         shell:"""
             bcftools concat {input.vcf} | bcftools sort > {output.vcf} &&\
@@ -189,7 +189,7 @@ else:
         output:
             vcf = temp(data_dir + "/snp/{aligner}/data.{chr}.vcf")
         message: "Concat variant split per Chromosome"
-        conda: PRINCESS_ENV
+        conda: VARIANT_ENV
         benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
         shell:"""
             bcftools concat {input.vcf} | bcftools sort > {output.vcf} 
@@ -241,7 +241,7 @@ rule vcfIndex:
     input: data_dir + "/{sample}.vcf.gz"
     output: data_dir + "/{sample}.vcf.gz.tbi"
     message: "Indexing vcf file {input}"
-    conda: PRINCESS_ENV
+    conda: VARIANT_ENV
     shell:"""
         tabix -p vcf {input}
         """

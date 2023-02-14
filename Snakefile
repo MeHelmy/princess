@@ -52,12 +52,12 @@ samples_names = config['delete_samples']
 def clean(source_dir, data_dir, samples_names):
     file_list = os.listdir(source_dir)
     if samples_names:
-        for f in samples_names: os.remove(os.path.join(data_dir, os.path.basename(f)))
-    for f in file_list:
-        if os.path.isfile(f):
-            os.remove(f)
+        for sample in samples_names: os.remove(os.path.join(data_dir, os.path.basename(sample)))
+    for sample in file_list:
+        if os.path.isfile(sample):
+            os.remove(sample)
         else:
-            shutil.rmtree(f)
+            shutil.rmtree(sample)
 #############
 
 
@@ -67,7 +67,7 @@ def clean(source_dir, data_dir, samples_names):
 REFERENCES = config["reference"]
 chr_list = config['chrs']
 
-# chromosomes List splited to chunks
+# chromosomes List split to chunks
 split_size = config['chr_split'] if config['chr_split'] and (config['chr_split'] >= 1000000) else 1000000
 ref_index_file = REFERENCES+".fai"
 chr_range = {}
@@ -98,14 +98,14 @@ aligner = config["aligner"]
 
 
 
-# Metytlation variables
+# Methylation variables
 #######################
 # ont_sample_dir = config['fast5_dir']
 #############
 
 
 
-# Preparing conda environements.
+# Preparing conda environments.
 ###############################
 PRINCESS_ENV=os.getcwd()+"/envs/princess_env.yaml"
 SNIFFLES_ENV=os.getcwd()+"/envs/sniffles.yaml"
@@ -113,6 +113,8 @@ SNIFFLES_ENV=os.getcwd()+"/envs/sniffles.yaml"
 CLAIR_ENV=os.getcwd()+"/envs/clair3_no_depend.yaml"
 MINIMAP2_ENV=os.getcwd()+"/envs/minimap2.yaml"
 WHATSHAP_ENV=os.getcwd()+"/envs/whatshap.yaml"
+VARIANT_ENV=os.getcwd()+"/envs/variant_tools.yaml"
+READ_STAT_ENV=os.getcwd()+"/envs/pythonRun.yaml"
 #############
 
 
@@ -125,8 +127,8 @@ updat_sv = config['updat_sv']
 
 
 
-# Include all snakefiles sub-moduels
-###################################
+# Include all snakemake files sub-modules
+########################################
 prefixed = ["./modules/"+filename for filename in os.listdir('./modules') if filename.endswith(".smk")]
 for f in prefixed:
     include: f
@@ -177,12 +179,12 @@ onsuccess:
     if os.path.exists(os.path.join(data_dir, ".snakemake")):
         import shutil
         shutil.rmtree(os.path.join(data_dir, ".snakemake"), ignore_errors=True)
-	shell("mkdir -p {data_dir}/snake_log &&\
+    shell("mkdir -p {data_dir}/snake_log &&\
     find . -maxdepth 1  \( -name 'snakejob*' -or -name 'slurm*' \) -type f -exec mv -t {data_dir}/snake_log {{}}  \;  &&\
     cat {source_dir}/pictures/success.txt")
 
 
 onerror:
-	shell("mkdir -p {data_dir}/snake_log &&\
+    shell("mkdir -p {data_dir}/snake_log &&\
     find . -maxdepth 1  \( -name 'snakejob*' -or -name 'slurm*' \) -type f -exec mv -t {data_dir}/snake_log {{}}  \;  &&\
     cat {source_dir}/pictures/fail.txt")

@@ -41,10 +41,10 @@ rule mvSV:
     output:
         vcf = data_dir +'/result' + '/.SVs.{aligner}.done',
     params:
-        vcf = data_dir +'/result' + '/SVs.{aligner}.vcf',
-        snf = data_dir +'/result' + '/SVs.{aligner}.snf',
-        bam = data_dir +'/result' + '/aligning.{aligner}.bam',
-        bamindex = data_dir +'/result' + '/aligning.{aligner}.bam.bai',
+        vcf = data_dir +'/result' + "/{sample}.{{aligner}}.SVs.vcf".format(sample=SAMPLE_NAME),
+        snf = data_dir +'/result' + "/{sample}.{{aligner}}.SVs.snf".format(sample=SAMPLE_NAME),
+        bam = data_dir +'/result' + "/{sample}.{{aligner}}.bam".format(sample=SAMPLE_NAME),
+        bamindex = data_dir +'/result' + "/{sample}.{{aligner}}.bam.bai".format(sample=SAMPLE_NAME),
     message: "Moving called SVs to result directory {input}"
     priority: 1
     shell:"""
@@ -60,9 +60,11 @@ rule mvSV:
     if [ -f {data_dir}/align/{wildcards.aligner}/*.log ]; then
         mv {data_dir}/align/{wildcards.aligner}/*.log {data_dir}/log || :
     fi &&\
-    mv {input.vcf} {params.vcf} && rm_last2 {input.vcf} &&\
+    mv {input.vcf} {params.vcf} &&\
     if [ -f {input.snf} ]; then
         mv {input.snf} {params.snf} && rm_last2 {input.snf} || :
+    else
+        rm_last2 {input.vcf} || :
     fi &&\
     mv {input.bam} {params.bam} && mv {input.bamindex} {params.bamindex} && rm_last2 {input.bam} &&\
     touch {output.vcf}

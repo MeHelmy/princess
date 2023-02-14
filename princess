@@ -42,7 +42,6 @@ def get_args():
     parent_parser.add_argument('-ms', '--mosaic-sv', dest='mosaic_sv', help='Identify mosaic SV, default: %(default)s', action='store_true')
     parent_parser.add_argument('-gv', '--gvcf-snv', dest='gvcf_snv', help='Identify gVCF SNVs, default: %(default)s', action='store_true')
 
-
     # Sub-commands:
     subparser = parser.add_subparsers(title="Sub-commands", description='Valid sub-commands', dest="command")
 
@@ -226,17 +225,11 @@ def sv(args, unknownargs, main_vars):
     if samples_names:
         samples, samples_names_str = get_sample_names(args, main_vars)
         if args.is_cluster:
-            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
-            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            #cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, samples, reference, *unknownargs]
             cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--config', sample_dir, samples, reference, running_command,  delete_files, delete_samples, phase_sv, mosaic_sv, *unknownargs]
         else:
             cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--nolock', '--restart-times', reset_times, '--config', sample_dir, samples, reference, running_command, delete_files, delete_samples, phase_sv, mosaic_sv, *unknownargs]
     else:
         if args.is_cluster:
-            # cluster = "qsub -A {cluster.account}  -l walltime={cluster.time} -q \
-            # {cluster.queue} -l nodes=1:ppn={cluster.nCPUs} -l mem={cluster.memory}"
-            # cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--cluster', cluster, '--config', sample_dir, reference, *unknownargs]
             cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--profile', 'cluster', '--nolock', '--restart-times', reset_times, '--config', sample_dir, reference, running_command, delete_files, delete_samples, phase_sv, mosaic_sv,  *unknownargs]
         else:
             cmd = ['snakemake',  '-p', result, '-j', args.jobs, '--cluster-config', cluster_config, '--config', sample_dir, reference, running_command, delete_files, delete_samples, phase_sv, mosaic_sv, *unknownargs]

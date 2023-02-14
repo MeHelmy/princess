@@ -1,6 +1,6 @@
 
 ############################
-######  PHASNIG RULES ######
+######  PHASING RULES ######
 ###########################
 
 
@@ -67,7 +67,7 @@ rule allPhased:
     """
     input:lambda wildcards: expand(data_dir + "/phased/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list),
     output: temp(data_dir + "/phased/{aligner}/data.vcf")
-    conda: PRINCESS_ENV
+    conda: VARIANT_ENV
     params:
         sample_name = SAMPLE_NAME,
     benchmark: data_dir + "/benchmark/phase/{aligner}/concat_phased.benchmark.txt"
@@ -90,7 +90,7 @@ rule partionBam:
         snp_index = lambda wildcards: data_dir + "/phased/{aligner}/data_updated.vcf.gz.tbi" if config['update_snps'] else data_dir + "/phased/{aligner}/data.vcf.gz.tbi",
     output:
         hap_bam = data_dir + "/align/{aligner}/data_hap.bam"
-    message: "Partioning bam file"
+    message: "Portioning bam file"
     conda: WHATSHAP_ENV
     params:
         ref = REFERENCES

@@ -1,7 +1,7 @@
 ---
 
-long: &long_queue scavenger
-short: &short_queue medium
+long: &long_queue ill-prod #scavenger
+short: &short_queue ill-prod #medium
 
 __default__:
     "nCPUs"     : "16"
