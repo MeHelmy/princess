@@ -83,10 +83,10 @@ rule mvSNV:
     output:
         data_dir +'/result' + '/.SNVs.{aligner}.done'
     params:
-        vcf = data_dir +'/result' + '/SNVs.{aligner}.vcf.gz',
-        vcfindex = data_dir +'/result' + '/SNVs.{aligner}.vcf.gz.tbi',
-        bam = data_dir +'/result' + '/aligning.{aligner}.bam',
-        bamindex = data_dir +'/result' + '/aligning.{aligner}.bam.bai',
+        vcf = data_dir +'/result' + "/{sample}.{{aligner}}.SNVs.vcf.gz".format(sample=SAMPLE_NAME),
+        vcfindex = data_dir +'/result' + "/{sample}.{{aligner}}.SNVs.vcf.gz.tbi".format(sample=SAMPLE_NAME),
+        bam = data_dir +'/result' + "/{sample}.{{aligner}}.bam".format(sample=SAMPLE_NAME),
+        bamindex = data_dir +'/result' + "/{sample}.{{aligner}}.bam.bai".format(sample=SAMPLE_NAME),
     message: "Moving called SNVs to result directory {input}"
     priority: 1
     shell:"""

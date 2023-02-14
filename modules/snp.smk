@@ -63,7 +63,7 @@ def get_model(conda_dir):
 if config['gvcf_snv']:
     rule callSNVsChunk:
         """
-        Calling SNPs using clair
+        Calling SNPs using clair in case gVCF file is required.
         """
         input:
             bam=data_dir + "/align/{aligner}/data.bam",
@@ -164,7 +164,7 @@ if config['gvcf_snv']:
     # fi
     rule concatChromosome:
         """
-        Concat splited chromomsomes regions
+        Concat split chromosomes regions in case of gVCF file is required.
         """
         input:
             vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
@@ -182,7 +182,7 @@ if config['gvcf_snv']:
 else:
     rule concatChromosome:
         """
-        Concat splited chromomsomes regions
+        Concat split chromosomes regions
         """
         input:
             vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
@@ -212,24 +212,6 @@ rule updateHeader:
         sed 's/ID=PS,Number=1,Type=Integer,Descri/ID=PS,Number=1,Type=String,Descri/' {input} > {output}
         """
 
-#### BGZIP UPDATED FILE #######
-###############################
-
-# TODO:  The are a better way just by using {sample}.vcf as input , but debug needed cause it conflict with other rules. beside it conflict with rule bgzip_file:
-
-# rule bgzip_vcf:
-#     """
-#     bgzip phased file
-#     """
-#     input: "{sample}/data_update_header.vcf"
-#     output: "{sample}/data_update_header.vcf.gz"
-#     message: "bgzip the phased file"
-#     threads: config['bgzip_threads']
-#     shell:"""
-#         bgzip -c -@ {threads} {input} > {output}
-#         """
-
-
 
 #### INDEXING VCF FILE ########
 ###############################
@@ -251,7 +233,7 @@ rule vcfIndex:
 
 rule mergeParentalSNPs:
     """
-    If the user wanted to update identifed SNVs this will be the first rule in sequence,
+    If the user wanted to update identified SNVs this will be the first rule in sequence,
     Input: phased SNVs after updating header using update_header the bgzip and index it using
     bgzip_vcf and vcf_index respectively.
     """
@@ -263,7 +245,7 @@ rule mergeParentalSNPs:
     output: data_dir + "/phased/{aligner}/data_paternal_maternal.vcf.gz"
     message: data_dir + "/merging vcf from samplepaternal and maternal respectively"
     benchmark: data_dir + "/benchmark/snp/{aligner}/merge_parental.benchmark.txt"
-    conda: PRINCESS_ENV
+    conda: VARIANT_ENV
     shell:"""
         bcftools merge {input.sample_snps} {input.paternal_snps} {input.maternal_snps} | bgzip > {output}
         """
@@ -284,6 +266,7 @@ rule updateSNPs:
         phased_stat = data_dir + "/statistics/phased/phasing_stat.txt",
         block_tsv = data_dir + "/statistics/phased/blocks.tsv",
     benchmark: data_dir + "/benchmark/snp/{aligner}/update_snps.benchmark.txt"
+    conda: READ_STAT_ENV
     shell:"""
         mkdir -p statistics/phased  &&
         python {params.update_script} -i {input} -u {output.updated_vcf} -o {params.block_tsv} -s {params.phased_stat}
@@ -309,7 +292,7 @@ if config['gvcf_snv']:
         benchmark: data_dir + "/benchmark/snp/{aligner}/concat_snp.txt"
         params:
             sample_name = SAMPLE_NAME,
-        conda: PRINCESS_ENV
+        conda: VARIANT_ENV
         shell:"""
             echo "{params.sample_name}" > sample_name.txt && vcfcat {input.vcf} | vcfstreamsort | bcftools reheader --samples sample_name.txt -o {output.vcf} &&\
             vcfcat {input.gvcf} | vcfstreamsort | bcftools reheader --samples sample_name.txt -o {output.gvcf}
@@ -317,8 +300,8 @@ if config['gvcf_snv']:
 else:
     rule concactSNPs:
         """
-        Rule to concat the identifed SNPs this will only be called by the user
-        in case if he wanted to have only SNPs
+        Rule to concat the identified SNPs this will only be called by the user
+        in case if he wanted to have only SNPs and indels and no gVCF required.
         """
         input:
             vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list),
@@ -328,7 +311,7 @@ else:
         benchmark: data_dir + "/benchmark/snp/{aligner}/concat_snp.txt"
         params:
             sample_name = SAMPLE_NAME,
-        conda: PRINCESS_ENV
+        conda: VARIANT_ENV
         shell:"""
             echo "{params.sample_name}" > sample_name.txt && vcfcat {input.vcf} | vcfstreamsort | bcftools reheader --samples sample_name.txt -o {output.vcf}
             """
@@ -338,12 +321,12 @@ else:
 
 rule bgzipgVCFFile:
     """
-    General rule to bgzip files
+    General rule to bgzip gVCF files
     """
     input:data_dir + "/{name}.gvcf"
     output:data_dir + "/{name}.gvcf.gz"
     threads: config['bgzip_threads']
-    conda: PRINCESS_ENV
+    conda: VARIANT_ENV
     shell:"""
         bgzip -c -@ {threads} {input} > {output}
         """

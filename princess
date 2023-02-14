@@ -246,9 +246,10 @@ def snv(args, unknownargs, main_vars):
     chrs = "chrs="+ str(chr_list)
 
     # Will I filter the SNVs?
+    # TODO: filtering was developed for Clair2, now we do not, we need to devlop another procedure to filter variants identified by Clair3
     filter_snv = "filter_chrs=" +str(args.filter)
 
-    # Which model to use main_vars.conf_yaml['reference']
+    # Which model to use
     clair_model = "clair_model=" + args.clair_model if args.clair_model else "clair_model=''"
 
     # If we have samples let us create working directory If not exists.
