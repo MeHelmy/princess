@@ -1,5 +1,11 @@
-New princess implementation with sniffles2 and Clair3
-=======
+## What is new?
+- Clair3 for calling single nucleotide polymorphisms (SNPs) and insertions/deletions (indels)
+- Sniffles2 for detecting structural variants (SVs)
+- Generation of a gVCF file for cohort analysis
+- Generation of an SNF file for cohort structural variant analysis
+- The pipeline has been fully tested on both PBS and Slurm systems with easy configuration
+- The main conda environment has been updated for improved granularity.
+---
 
 Princess is a fast and scalable framework to detect and report haplotype resolved Single Nucleotide Variants (SNV) and Structural Variations (SVs) at scale. It can leverage your cluster environment to speed up the detection which starts with one or many fasta or fastq files.
 
