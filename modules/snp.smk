@@ -60,6 +60,7 @@ def get_model(conda_dir):
 # CLAIR CHUNK RULE
 #=================
 
+#  [ ! -f {output.gvcf} ] && cp {output.vcf} {output.gvcf} && cp {output.vcf}.tbi {output.gvcf}.tbi &&\
 if config['gvcf_snv']:
     rule callSNVsChunk:
         """
@@ -102,7 +103,9 @@ if config['gvcf_snv']:
             --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed \
             {params.gvcf} > {log} 2>&1 \
             &&\
-            [ ! -f {output.gvcf} ] && cp {output.vcf} {output.gvcf} && cp {output.vcf}.tbi {output.gvcf}.tbi &&\
+            if [ ! -f {output.gvcf} ]; then
+                cp {output.vcf} {output.gvcf} && cp {output.vcf}.tbi {output.gvcf}.tbi
+            fi &&\
             rm {wildcards.chr}.{params.start}.{params.end}.bed
             """
 else:
