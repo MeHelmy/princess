@@ -74,41 +74,84 @@ rule mvSV:
 #### SNVs Moving ########
 #########################
 
-rule mvSNV:
-    input:
-        vcf = data_dir + "/snp/{aligner}/data.vcf.gz",
-        vcfindex = data_dir + "/snp/{aligner}/data.vcf.gz.tbi",
-        bam = data_dir + "/align/{aligner}/data.bam",
-        bamindex = data_dir + "/align/{aligner}/data.bam.bai",
-    output:
-        data_dir +'/result' + '/.SNVs.{aligner}.done'
-    params:
-        vcf = data_dir +'/result' + "/{sample}.{{aligner}}.SNVs.vcf.gz".format(sample=SAMPLE_NAME),
-        vcfindex = data_dir +'/result' + "/{sample}.{{aligner}}.SNVs.vcf.gz.tbi".format(sample=SAMPLE_NAME),
-        bam = data_dir +'/result' + "/{sample}.{{aligner}}.bam".format(sample=SAMPLE_NAME),
-        bamindex = data_dir +'/result' + "/{sample}.{{aligner}}.bam.bai".format(sample=SAMPLE_NAME),
-    message: "Moving called SNVs to result directory {input}"
-    priority: 1
-    shell:"""
-    function rm_last2() {{
-    d1=$(dirname $1)
-    d2=$(dirname $d1)
-    rm -rf $d2
-    }}
-    mkdir -p {data_dir}/log &&\
-    mv {input.vcf} {params.vcf} &&\
-    mv {input.vcfindex} {params.vcfindex}  &&\
-    mv {input.bam} {params.bam} &&\
-    mv {input.bamindex} {params.bamindex}  &&\
-    if [ -f {data_dir}/snp/{wildcards.aligner}/*.log ]; then
-        mv {data_dir}/snp/{wildcards.aligner}/*.log {data_dir}/log || :
-    fi &&\
-    if [ -f {data_dir}/align/{wildcards.aligner}/*.log ]; then
-        mv {data_dir}/align/{wildcards.aligner}/*.log {data_dir}/log || :
-    fi &&\
-    rm_last2 {input.vcf} && rm_last2 {input.bam} &&\
-    touch {output}
-    """
+if config['gvcf_snv']:
+    rule mvSNV:
+        input:
+            vcf=data_dir + "/snp/{aligner}/data.vcf.gz",
+            gvcf=data_dir + "/snp/{aligner}/data.gvcf.gz",
+            vcfindex=data_dir + "/snp/{aligner}/data.vcf.gz.tbi",
+            gvcfindex=data_dir + "/snp/{aligner}/data.gvcf.gz.tbi",
+            bam=data_dir + "/align/{aligner}/data.bam",
+            bamindex=data_dir + "/align/{aligner}/data.bam.bai",
+        output:
+            data_dir + '/result' + '/.SNVs.{aligner}.done'
+        params:
+            vcf=data_dir + '/result' + "/{sample}.{{aligner}}.SNVs.vcf.gz".format(sample=SAMPLE_NAME),
+            gvcf=data_dir + '/result' + "/{sample}.{{aligner}}.SNVs.gvcf.gz".format(sample=SAMPLE_NAME),
+            vcfindex=data_dir + '/result' + "/{sample}.{{aligner}}.SNVs.vcf.gz.tbi".format(sample=SAMPLE_NAME),
+            gvcfindex=data_dir + '/result' + "/{sample}.{{aligner}}.SNVs.gvcf.gz.tbi".format(sample=SAMPLE_NAME),
+            bam=data_dir + '/result' + "/{sample}.{{aligner}}.bam".format(sample=SAMPLE_NAME),
+            bamindex=data_dir + '/result' + "/{sample}.{{aligner}}.bam.bai".format(sample=SAMPLE_NAME),
+        message: "Moving called SNVs to result directory {input}"
+        priority: 1
+        shell: """
+            function rm_last2() {{
+            d1=$(dirname $1)
+            d2=$(dirname $d1)
+            rm -rf $d2
+            }}
+            mkdir -p {data_dir}/log &&\
+            mv {input.vcf} {params.vcf} &&\
+            mv {input.gvcf} {params.gvcf} &&\
+            mv {input.vcfindex} {params.vcfindex}  &&\
+            mv {input.gvcfindex} {params.gvcfindex}  &&\
+            mv {input.bam} {params.bam} &&\
+            mv {input.bamindex} {params.bamindex}  &&\
+            if [ -f {data_dir}/snp/{wildcards.aligner}/*.log ]; then
+                mv {data_dir}/snp/{wildcards.aligner}/*.log {data_dir}/log || :
+            fi &&\
+            if [ -f {data_dir}/align/{wildcards.aligner}/*.log ]; then
+                mv {data_dir}/align/{wildcards.aligner}/*.log {data_dir}/log || :
+            fi &&\
+            rm_last2 {input.vcf} && rm_last2 {input.bam} &&\
+            touch {output}
+            """
+else:
+    rule mvSNV:
+        input:
+            vcf = data_dir + "/snp/{aligner}/data.vcf.gz",
+            vcfindex = data_dir + "/snp/{aligner}/data.vcf.gz.tbi",
+            bam = data_dir + "/align/{aligner}/data.bam",
+            bamindex = data_dir + "/align/{aligner}/data.bam.bai",
+        output:
+            data_dir +'/result' + '/.SNVs.{aligner}.done'
+        params:
+            vcf = data_dir +'/result' + "/{sample}.{{aligner}}.SNVs.vcf.gz".format(sample=SAMPLE_NAME),
+            vcfindex = data_dir +'/result' + "/{sample}.{{aligner}}.SNVs.vcf.gz.tbi".format(sample=SAMPLE_NAME),
+            bam = data_dir +'/result' + "/{sample}.{{aligner}}.bam".format(sample=SAMPLE_NAME),
+            bamindex = data_dir +'/result' + "/{sample}.{{aligner}}.bam.bai".format(sample=SAMPLE_NAME),
+        message: "Moving called SNVs to result directory {input}"
+        priority: 1
+        shell:"""
+        function rm_last2() {{
+        d1=$(dirname $1)
+        d2=$(dirname $d1)
+        rm -rf $d2
+        }}
+        mkdir -p {data_dir}/log &&\
+        mv {input.vcf} {params.vcf} &&\
+        mv {input.vcfindex} {params.vcfindex}  &&\
+        mv {input.bam} {params.bam} &&\
+        mv {input.bamindex} {params.bamindex}  &&\
+        if [ -f {data_dir}/snp/{wildcards.aligner}/*.log ]; then
+            mv {data_dir}/snp/{wildcards.aligner}/*.log {data_dir}/log || :
+        fi &&\
+        if [ -f {data_dir}/align/{wildcards.aligner}/*.log ]; then
+            mv {data_dir}/align/{wildcards.aligner}/*.log {data_dir}/log || :
+        fi &&\
+        rm_last2 {input.vcf} && rm_last2 {input.bam} &&\
+        touch {output}
+        """
 
 #### Variants Moving ########
 ############################

@@ -231,6 +231,19 @@ rule vcfIndex:
         tabix -p vcf {input}
         """
 
+rule gvcfIndex:
+    """
+    Index VCF file.
+    """
+    input: data_dir + "/{sample}.gvcf.gz"
+    output: data_dir + "/{sample}.gvcf.gz.tbi"
+    message: "Indexing vcf file {input}"
+    conda: VARIANT_ENV
+    shell:"""
+        tabix -p vcf {input}
+        """
+
+
 #### MERGING PHASED VCF FILE WITH PARENTAL SNPs ########
 ########################################################
 
