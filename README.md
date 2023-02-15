@@ -1,5 +1,6 @@
 ## What is new?
 - Clair3 for calling single nucleotide polymorphisms (SNPs) and insertions/deletions (indels)
+  - Ability to use different models than the default one that comes with Clair3, which can be helpful in cases where there is new kit/training dataset or when working with data other than the human genome.
 - Sniffles2 for detecting structural variants (SVs)
 - Generation of a gVCF file for cohort analysis
 - Generation of an SNF file for cohort structural variant analysis
