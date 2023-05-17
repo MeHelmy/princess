@@ -104,7 +104,7 @@ if config['gvcf_snv']:
             {params.gvcf} > {log} 2>&1 \
             &&\
             if [ ! -f {output.gvcf} ]; then
-                cp {output.vcf} {output.gvcf} && cp {output.vcf}.tbi {output.gvcf}.tbi
+                cp {output.vcf} {output.gvcf} 
             fi &&\
             rm {wildcards.chr}.{params.start}.{params.end}.bed
             """
@@ -148,11 +148,12 @@ else:
             --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed  > {log} 2>&1 \
             && rm {wildcards.chr}.{params.start}.{params.end}.bed
             """
-
+# resources:
+    # mem_mb=lambda wildcards, attempt: 1024 * (attempt + 1) if attempt < 3
 #         --model_path $CONDA_PREFIX{params.train_data} \
     # --model_path {params.train_data} \
 
-#### CALL VARINAT BY CHUNKS #######
+#### CALL VARIANT BY CHUNKS #######
 ###################################
 
 if config['gvcf_snv']:
@@ -176,11 +177,18 @@ if config['gvcf_snv']:
             vcf = temp(data_dir + "/snp/{aligner}/data.{chr}.vcf"),
             gvcf = temp(data_dir + "/snp/{aligner}/data.{chr}.gvcf")
         message: "Concat variant split per Chromosome"
+        params:
+            tmp_dir=config["tmp_directory"],
         conda: VARIANT_ENV
         benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
         shell:"""
-            bcftools concat {input.vcf} | bcftools sort > {output.vcf} &&\
+        if [[ ! -z "{params.tmp_dir}" ]]; then
+            bcftools concat {input.vcf} | bcftools sort -T {params.tmp_dir} > {output.vcf} &&\
+            bcftools concat {input.gvcf} | bcftools sort -T {params.tmp_dir} > {output.gvcf}
+        else
+            bcftools concat {input.vcf} | bcftools sort  > {output.vcf} &&\
             bcftools concat {input.gvcf} | bcftools sort > {output.gvcf}
+        fi
             """
 else:
     rule concatChromosome:
@@ -192,11 +200,18 @@ else:
         output:
             vcf = temp(data_dir + "/snp/{aligner}/data.{chr}.vcf")
         message: "Concat variant split per Chromosome"
+        params:
+            tmp_dir=config["tmp_directory"],
         conda: VARIANT_ENV
         benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
         shell:"""
-            bcftools concat {input.vcf} | bcftools sort > {output.vcf} 
+         if [[ ! -z "{params.tmp_dir}" ]]; then
+            bcftools concat {input.vcf} | bcftools sort  -T {params.tmp_dir} > {output.vcf} 
+         else
+             bcftools concat {input.vcf} | bcftools sort  > {output.vcf} 
+         fi
             """
+
 
 #### UPDATE HEADER #######
 ##########################
@@ -293,7 +308,7 @@ rule updateSNPs:
 #########################
 
 if config['gvcf_snv']:
-    rule concactSNPs:
+    rule concatSNPs:
         """
         Rule to concat the identifed SNPs this will only be called by the user
         in case if he wanted to have only SNPs
@@ -314,7 +329,7 @@ if config['gvcf_snv']:
             vcfcat {input.gvcf} | vcfstreamsort | bcftools reheader --samples sample_name.txt -o {output.gvcf}
             """
 else:
-    rule concactSNPs:
+    rule concatSNPs:
         """
         Rule to concat the identified SNPs this will only be called by the user
         in case if he wanted to have only SNPs and indels and no gVCF required.

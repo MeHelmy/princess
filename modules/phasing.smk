@@ -90,10 +90,10 @@ rule partionBam:
         snp_index = lambda wildcards: data_dir + "/phased/{aligner}/data_updated.vcf.gz.tbi" if config['update_snps'] else data_dir + "/phased/{aligner}/data.vcf.gz.tbi",
     output:
         hap_bam = data_dir + "/align/{aligner}/data_hap.bam"
-    message: "Portioning bam file"
+    message: "Partitioning bam file"
     conda: WHATSHAP_ENV
     params:
         ref = REFERENCES
     shell:"""
-        whatshap haplotag -o {output.hap_bam} -r {params.ref} {input.snp} {input.bam}
+        whatshap haplotag --ignore-read-groups -o {output.hap_bam} -r {params.ref} {input.snp} {input.bam}
         """

@@ -29,6 +29,7 @@ samtools_threads: 5
 #########
 aligner: "minimap" # minimap or ngmlr
 aligner_threads: 3
+#minimap_other_tags: ""
 minimap_other_tags: "-y"
 #########
 
@@ -53,6 +54,8 @@ filter_chrs: True # Case sensitive options [True, Fasle].
 clair_pypy: "/home/source/Clair/pypy3/pypy3.5-7.0.0-linux_x86_64-portable/bin/pypy"
 clair_model: ""
 gvcf_snv: 'False'
+#tmp_directory: "/tmp"
+tmp_directory: ""
 
 
 

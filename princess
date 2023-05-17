@@ -11,6 +11,7 @@ from pathlib import Path
 from collections import namedtuple
 import logging
 import filecmp
+from typing import Any
 
 # Create a custom logger
 logger = logging.getLogger(__name__)
@@ -246,11 +247,11 @@ def snv(args, unknownargs, main_vars):
     chrs = "chrs="+ str(chr_list)
 
     # Will I filter the SNVs?
-    # TODO: filtering was developed for Clair2, now we do not, we need to devlop another procedure to filter variants identified by Clair3
+    # TODO: filtering was developed for Clair2, now we do not, we need to develop another procedure to filter variants identified by Clair3
     filter_snv = "filter_chrs=" +str(args.filter)
 
     # Which model to use
-    clair_model = "clair_model=" + args.clair_model if args.clair_model else "clair_model=''"
+    clair_model: str = "clair_model=" + args.clair_model if args.clair_model else "clair_model=''"
 
     # If we have samples let us create working directory If not exists.
     if not os.path.exists(main_vars.work_dir):
@@ -318,7 +319,7 @@ def variant(args, unknownargs, main_vars):
     running_command = "running_command=" + args.command
     delete_files = "delete_files="+ main_vars.running_file
     delete_samples = "delete_samples=" + str(samples_names)
-    clair_model = "clair_model=" + args.clair_model if args.clair_model else "clair_model=''"
+    clair_model: str = "clair_model=" + args.clair_model if args.clair_model else "clair_model=''"
 
     if samples_names:
         samples, samples_names_str = get_sample_names(args, main_vars)

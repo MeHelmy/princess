@@ -144,7 +144,7 @@ Princess will create these directories:
 
 ---
 
-## Converting from Pbs to Slurm
+## Converting from PBS to Slurm
 1- Please ensure that you modify the `cluster/cluster_config.yaml` to specify the appropriate long-running node. For example, you can set the long queue system as follows:
     `long: &long_queue long_queue` 
     Where long_queue is the queue system that can run for a long time. Similarly, you can set the short queue in the following way:

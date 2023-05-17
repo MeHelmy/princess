@@ -44,9 +44,12 @@ rule minimap2:
     benchmark: data_dir + "/benchmark/align/{sample}.minimap.benchmark.txt"
     conda: MINIMAP2_ENV
     shell:"""
+    if [[ ! -z "{params.minimap_other_tags}" ]]; then
         minimap2 -Y -R '@RG\\tSM:{params.sample_name}\\tID:{params.sample_name}' {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" "{params.minimap_other_tags}"  2>{log} | samtools sort -@ {threads} - > "{output.dataout}" 2>>{log}
-        """
-
+    else
+        minimap2 -Y -R '@RG\\tSM:{params.sample_name}\\tID:{params.sample_name}' {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}"  2>{log} | samtools sort -@ {threads} - > "{output.dataout}" 2>>{log}
+    fi
+    """
 #### NGMLR ####
 ###############
 
