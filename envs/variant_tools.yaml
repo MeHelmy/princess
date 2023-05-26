@@ -1,0 +1,9 @@
+name: VariantTools
+channels:
+  - bioconda
+dependencies:
+  - bcftools=1.9
+  - bedtools=2.29.2
+  - vcflib=1.0.0
+  - tabix=0.2.6
+  - survivor=1.0.6

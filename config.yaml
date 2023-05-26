@@ -8,11 +8,14 @@ sample_extension: "gz" # please add sample extension ex: fastq , fasta or gz # d
 # sample list If specified this will overlap the default behavior which is all samples in directory specified above.
 # If you leave empty the input will be all the samples in directory.
 sample_list: []
+sample_name: "SAMPLE"
+delete_files: ""
+delete_samples: ""
 ###########################
 
 # Information about reference
 ###############################
-reference: ""
+reference: "/users/sedlazec/ccdg_tech/reference/GRCh38-2.1.0/genome.fa"
 chrs: []
 
 
@@ -25,14 +28,19 @@ samtools_threads: 5
 # Aligner
 #########
 aligner: "minimap" # minimap or ngmlr
-aligner_threads: 5
+aligner_threads: 3
+#minimap_other_tags: ""
+minimap_other_tags: "-y"
 #########
 
 
 # Structural Variant Parameters
 ###############################
-sniffles_coverage: 2
-min_conflict: 0
+min_sv_len: 50
+sv_threads: 5
+phase_sv: 'False'
+mosaic_sv: 'False'
+
 
 
 # Calling Variant Parameters
@@ -44,9 +52,11 @@ clair_threads: 5
 chr_split: 29925062
 filter_chrs: True # Case sensitive options [True, Fasle].
 clair_pypy: "/home/source/Clair/pypy3/pypy3.5-7.0.0-linux_x86_64-portable/bin/pypy"
-training_data_ccs: "bin/modules/ccs/model" #"/users/mmahmoud/home/source/Clair/training_data/pacbio/rsii/model"
-training_data_ont: "bin/modules/ont/model" #"/users/mmahmoud/home/source/Clair/training_data/ont/r94/model"
-training_data_clr: "bin/modules/clr/model-000008"
+clair_model: ""
+gvcf_snv: 'False'
+#tmp_directory: "/tmp"
+tmp_directory: ""
+
 
 
 # Update SNPs
@@ -80,6 +90,6 @@ hap_methylation: "scripts/update_meth_hp_ps.py"
 # Cluster
 ##########
 cluster_jobs: 10
-number_of_tries: 3
+number_of_tries: 0
 
 ...

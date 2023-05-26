@@ -1,6 +1,16 @@
 # Princess
 [![GitHub](https://img.shields.io/github/license/MeHelmy/princess)](https://opensource.org/licenses/MIT) ![GitHub last commit](https://img.shields.io/github/last-commit/MeHelmy/princess)
 ---
+## What is new?
+- Clair3 for calling single nucleotide polymorphisms (SNPs) and insertions/deletions (Indels)
+  - Ability to use different models than the default one that comes with Clair3, which can be helpful in cases where there is new kit/training dataset or when working with data other than the human genome.
+- Sniffles2 for detecting structural variants (SVs)
+- Generation of a gVCF file for cohort analysis
+- Generation of an SNF file for cohort structural variant analysis
+- The pipeline has been fully tested on both PBS and Slurm systems with easy configuration
+- The main conda environment has been updated for improved granularity.
+---
+
 Princess is a fast and scalable framework to detect and report haplotype resolved Single Nucleotide Variants (SNV) and Structural Variations (SVs) at scale. It can leverage your cluster environment to speed up the detection which starts with one or many fasta or fastq files.
 Publication: https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02486-w   
 
@@ -11,14 +21,16 @@ Publication: https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021
 
 ## Princess
 
-* __Mapping__:  NGMLR or Minimap2
-* __SNVs__: Clair (successor of Clairvoyante)
-* __SVs__: Sniffles
+* __Mapping__:   Minimap2 or NGMLR
+* __SNVs__: Clair3 
+* __SVs__: Sniffles2
 * __Phasing SNVs__: WhatsHap
-* __Phasing SVs__: PRINCESS-subtool
+* __Phasing SVs__: Sniffles2
 * __Extend Phasing__: PRINCESS-subtool
 * __Phased Methylation__: Nanopolish + PRINCESS-subtool
 * __QC Statistics__ for each step
+
+---
 
 ## Installation
 Princess was tested on CentOS release 6.7, Conda version 4.7.12 is installed:
@@ -34,13 +46,8 @@ conda install pyyaml
 ~~~
 git clone https://github.com/MeHelmy/princess.git
 ~~~
-3. Install Clair, Training models, pypy, and intervaltree
-~~~
-cd princess
-chmod +x install.sh
-./install.sh
-~~~
 
+---
 
 ## Tutorial
 
@@ -67,8 +74,8 @@ Sub-commands:
                         will be used by default.
     sv                  This command will use bam file to identify SV using
                         Sniffles.
-    snv                 This command will use bam file to identify SNVs usin
-                        Clair.
+    snv                 This command will use bam file to identify SNVs using
+                        Clair3.
     variant             This command will use bam file to identify SVs and
                         SNVs.
     phase               This command will use use reads to identify SNVs by
@@ -96,11 +103,11 @@ optional arguments:
   -d Working directory, --directory Working directory
                         Working directory.
   -r {ont,clr,ccs}, --ReadType {ont,clr,ccs}
-                        Read techonlogy
+                        Read technology (Note: clr is not supported anymore by clair3)
   -l, --removeFiles     remove princess source script after running default:
                         False)
   -u, --UseConda        Use conda for running default: True)
-  -e, --Cluster         Use cluster while runing default: True)
+  -e, --Cluster         Use cluster while running default: True)
   -a {minimap,ngmlr}, --Aligner {minimap,ngmlr}
                         In case if you want to choose specific aligner
                         otherwise default will be used default: minimap)
@@ -142,10 +149,10 @@ optional arguments:
   -d Working directory, --directory Working directory
                         Working directory.
   -r {ont,clr,ccs}, --ReadType {ont,clr,ccs}
-                        Read techonlogy
+                        Read technology
   -l, --removeFiles     remove princess source script after running default: False)
   -u, --UseConda        Use conda for running default: True)
-  -e, --Cluster         Use cluster while runing default: True)
+  -e, --Cluster         Use cluster while running default: True)
   -a {minimap,ngmlr}, --Aligner {minimap,ngmlr}
                         In case if you want to choose specific aligner otherwise default will be used default: minimap)
   -s sampleFiles [sampleFiles ...], --sampleFiles sampleFiles [sampleFiles ...]
@@ -165,7 +172,7 @@ By choosing the flag __`--methylation`__, Princess will call the methylation on 
 
 ## Test case
 
-We uploaded a HiFi compressed data file from the publically available HG002 data set.
+We uploaded a HiFi compressed data file from the publicly available HG002 data set.
 The complete data set (High-fidelity 15kb long-read dataset of HG002, Ashkenazim Son.) is available [Here](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb/)
 
 To download the test data run the following command:
@@ -205,3 +212,25 @@ cd benchmark  # There is a directory benchmark contains all the analyses that we
 find "$PWD" -type f | grep -v "myBenchMark.txt" > myBenchMark.txt
 while read -r line; do n=$(echo  $line | awk  -v FS=/ '{print $(NF-1)"-"$(NF)}');  awk -v f=$line -v o=$n 'NR!=1 {print o"\t"$(NF)}' $line  ;done < myBenchMark.txt
 ```  
+- meth    contains methylation info (if user choose to run methylation) 
+
+---
+
+## Converting from PBS to Slurm
+1- Please ensure that you modify the `cluster/cluster_config.yaml` to specify the appropriate long-running node. For example, you can set the long queue system as follows:
+    `long: &long_queue long_queue` 
+    Where long_queue is the queue system that can run for a long time. Similarly, you can set the short queue in the following way:
+    `short: &short_queue short_queue`, . Please refer to your cluster system administrator for more details.  
+2- Please, ensure that you changed `cluster/config.yaml` from `cluster-status: "pbs_status.py"` to `cluster-status: "slurm_status.py"`  
+3- In the `cluster/key_mapping.yaml` file. Please, change `system: "pbs"` to `system: "slurm"`  
+4- Finally, in the `cluster/cluster_config.yaml` file, I set CPU and memory to each job to suit my cluster.  
+E.g.
+```
+minimap2:
+  queue: *long_queue
+  time: "72:00:00"
+  nCPUs: "12"
+  mem: 20G
+```
+Here, I am using 12 CPUs, 20G memory, and the job running time is "72:00:00" maximum (three days.). You may need to use a different configuration based on the resources availability in your cluster. Please, refer to your system administrator for more details.
+

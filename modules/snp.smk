@@ -3,183 +3,215 @@
 #########################
 
 
-
-# TODO: Clair needs a lot of configuration to run not just environement
-
-
-
 #### CLAIR #######
 ##################
 
 # CLAIR Parameters
 #=================
 
-if config['read_type'] == "ccs":
-    training_data=config["training_data_ccs"]
-elif config['read_type'] == "ont":
-    training_data=config["training_data_ont"]
-elif config['read_type'] == "clr":
-    training_data=config["training_data_clr"]
-else:
-    print("Unknow data type, supported format are: ont, ccs, and clr")
-    exit(1)
+# if config["clair_model"]:
+#     training_data=config["clair_model"]
+def platform(wildcards):
+    if config['read_type'] == "ccs":
+        return "hifi"
+    elif config['read_type'] == "ont":
+        return "ont"
+    elif config['read_type'] == "clr":
+        return "hifi"
+    else:
+        print("Unknow data type, supported format are: ont, ccs, and clr")
+        exit(1)
+
+def get_model(conda_dir):
+    training_data = ""
+    if config['read_type'] == "ccs":
+        training_data=config["clair_model"] if config["clair_model"] else None
+    elif config['read_type'] == "ont":
+        training_data=config["clair_model"] if config["clair_model"] else None
+    elif config['read_type'] == "clr":
+        training_data=config["clair_model"] if config["clair_model"] else None
+    else:
+        print("Unknown data type, supported format are: ont, ccs, and clr")
+        exit(1)
+    return training_data
+# if config['read_type'] == "ccs":
+#     # training_data=config["training_data_ccs"]
+#     platform="hifi"
+#     training_data=config["clair_model"] if config["clair_model"] else os.path.join(os.environ['CONDA_PREFIX'], "bin/models/hifi")
+# elif config['read_type'] == "ont":
+#     # training_data=config["training_data_ont"]
+#     platform="ont"
+#     training_data=config["clair_model"] if config["clair_model"] else os.path.join(os.environ['CONDA_PREFIX'], "bin/models/ont")
+#     # training_data="/bin/models/ont"
+# elif config['read_type'] == "clr":
+#     platform="hifi"
+#     # training_data=config["training_data_clr"]
+#     training_data=config["clair_model"] if config["clair_model"] else os.path.join(os.environ['CONDA_PREFIX'], "bin/models/hifi")
+#     # training_data="/bin/models/hifi"
+# else:
+#     print("Unknow data type, supported format are: ont, ccs, and clr")
+#     exit(1)
+
 
 # CLAIR RULE
 #===========
 
-# rule call_snps:
-#     """
-#     Calling SNPs using clair
-#     """
-#     input:
-#         bam=data_dir + "/align/{aligner}/data.bam",
-#         data_index=data_dir + "/align/{aligner}/data.bam.bai",
-#         reference=REFERENCES[ref[0]],
-#     output:
-#         data_dir + "/snp/{aligner}/data.{chr}.vcf"
-#     params:
-#         train_data=training_data,
-#         minCoverage=config['clair_coverage'],
-#         clair_location=CLAIR,
-#         # process_script=process_clar,
-#         temp_out=data_dir + "/{chr}_vcf.tmp",
-#         mypypy=config['clair_pypy'],
-#     benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
-#     conda: CLAIR_ENV
-#     threads: config['clair_threads']
-#     shell:
-#         """
-#         export PATH=$PWD/bin/pypy3.5-7.0.0-linux_x86_64-portable/bin:$PATH && \
-#         clair.py callVarBam \
-#             --chkpnt_fn {params.train_data} \
-#             --bam_fn {input.bam} \
-#             --ref_fn {input.reference} \
-#             --minCoverage {params.minCoverage} \
-#             --ctgName {wildcards.chr} \
-#             --threads {threads} --call_fn {output}
-#         """
 
 # CLAIR CHUNK RULE
 #=================
-# TODO: add samtools to clair-env environement
-rule callSNVsChunk:
-    """
-    Calling SNPs using clair
-    """
-    input:
-        bam=data_dir + "/align/{aligner}/data.bam",
-        data_index=data_dir + "/align/{aligner}/data.bam.bai",
-        reference=REFERENCES,
-    output:
-        temp(data_dir + "/snp/{aligner}/{chrsplit}/chr.split.{chr}_{region,\d+}.vcf")
-    params:
-        train_data = training_data,
-        minCoverage = config['clair_coverage'],
-        start = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region)],
-        end = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region) + 1]
-    benchmark: data_dir + "/benchmark/snp/{aligner}/{chrsplit}/{chr}_{region,\d+}.benchmark.txt"
-    conda: CLAIR_ENV
-    log: data_dir + "/snp/{aligner}/{chrsplit}/data.split.{chr}_{region}.log"
-    # log: data_dir + "/snp/{aligner}/data.split.{chr,[A-Za-z0-9]+}_{region}.log"
-    threads: config['clair_threads']
-    shell:
+
+#  [ ! -f {output.gvcf} ] && cp {output.vcf} {output.gvcf} && cp {output.vcf}.tbi {output.gvcf}.tbi &&\
+if config['gvcf_snv']:
+    rule callSNVsChunk:
         """
-        export PATH=$PWD/bin/pypy/bin:$PATH && \
-        clair.py callVarBam \
-            --delay 0 \
-            --chkpnt_fn {params.train_data} \
+        Calling SNPs using clair in case gVCF file is required.
+        """
+        input:
+            bam=data_dir + "/align/{aligner}/data.bam",
+            data_index=data_dir + "/align/{aligner}/data.bam.bai",
+            reference=REFERENCES,
+        output:
+            vcf = temp(data_dir + "/snp/{aligner}/chr.split.{chr}_{region,\d+}/merge_output.vcf.gz"),
+            gvcf = temp(data_dir + "/snp/{aligner}/chr.split.{chr}_{region,\d+}/merge_output.gvcf.gz")
+        params:
+            train_data = lambda wildcards: get_model(os.environ['CONDA_PREFIX']),
+            platform = platform,
+            start = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region)],
+            end = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region) + 1],
+            gvcf = "--gvcf",
+        benchmark: data_dir + "/benchmark/snp/{aligner}/chr.split.{chr}_{region}/{chr}_{region}.benchmark.txt"
+        conda: CLAIR_ENV
+        log: data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/data.split.{chr}_{region}.log"
+        threads: config['clair_threads']
+        shell:
+            """
+            if [ {params.train_data} == "None" ]
+                then
+                model="$CONDA_PREFIX/bin/models/{params.platform}"
+            else
+                model="{params.train_data}"
+            fi
+
+            echo $'{wildcards.chr}\t{params.start}\t{params.end}' > {wildcards.chr}.{params.start}.{params.end}.bed  &&\
+            run_clair3.sh \
             --bam_fn {input.bam} \
             --ref_fn {input.reference} \
-            --minCoverage {params.minCoverage} \
-            --ctgName {wildcards.chr} \
-            --ctgStart {params.start} \
-            --ctgEnd {params.end} \
-            --threads {threads} --call_fn {output}  > {log} 2>&1
+            --threads {threads} \
+            --platform {params.platform} \
+            --model_path $model \
+            --output $PWD/snp/{wildcards.aligner}/chr.split.{wildcards.chr}_{wildcards.region} \
+            --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed \
+            {params.gvcf} > {log} 2>&1 \
+            &&\
+            if [ ! -f {output.gvcf} ]; then
+                cp {output.vcf} {output.gvcf} 
+            fi &&\
+            rm {wildcards.chr}.{params.start}.{params.end}.bed
+            """
+else:
+    rule callSNVsChunk:
         """
+        Calling SNPs using clair
+        """
+        input:
+            bam=data_dir + "/align/{aligner}/data.bam",
+            data_index=data_dir + "/align/{aligner}/data.bam.bai",
+            reference=REFERENCES,
+        output:
+            vcf = temp(data_dir + "/snp/{aligner}/chr.split.{chr}_{region,\d+}/merge_output.vcf.gz")
+        params:
+            train_data = lambda wildcards: get_model(os.environ['CONDA_PREFIX']),
+            platform = platform,
+            start = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region)],
+            end = lambda wildcards: chr_range[wildcards.chr][int(wildcards.region) + 1],
+        benchmark: data_dir + "/benchmark/snp/{aligner}/chr.split.{chr}_{region}/{chr}_{region}.benchmark.txt"
+        conda: CLAIR_ENV
+        log: data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/data.split.{chr}_{region}.log"
+        threads: config['clair_threads']
+        shell:
+            """
+            if [ {params.train_data} == "None" ]
+                then
+                model="$CONDA_PREFIX/bin/models/{params.platform}"
+            else
+                model="{params.train_data}"
+            fi
 
+            echo $'{wildcards.chr}\t{params.start}\t{params.end}' > {wildcards.chr}.{params.start}.{params.end}.bed  &&\
+            run_clair3.sh \
+            --bam_fn {input.bam} \
+            --ref_fn {input.reference} \
+            --threads {threads} \
+            --platform {params.platform} \
+            --model_path $model \
+            --output $PWD/snp/{wildcards.aligner}/chr.split.{wildcards.chr}_{wildcards.region} \
+            --bed_fn={wildcards.chr}.{params.start}.{params.end}.bed  > {log} 2>&1 \
+            && rm {wildcards.chr}.{params.start}.{params.end}.bed
+            """
+# resources:
+    # mem_mb=lambda wildcards, attempt: 1024 * (attempt + 1) if attempt < 3
+#         --model_path $CONDA_PREFIX{params.train_data} \
+    # --model_path {params.train_data} \
 
-#### CALL VARINAT BY CHUNKS #######
+#### CALL VARIANT BY CHUNKS #######
 ###################################
 
-rule concatChromosome:
-    """
-    Concat splited chromomsomes regions
-    """
-    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/chrsplit/chr.split.{chr}_{region}.vcf", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
-    output: temp(data_dir + "/snp/{aligner}/data.{chr}.vcf")
-    message: "Concat variant split per Chromosome"
-    conda: PRINCESS_ENV
-    benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
-    params:
-        temp_chr=data_dir + "/snp/{aligner}/data.{chr}_filtered.vcf",
-        filter=config['filter_chrs'],
-        read_type=config['read_type']
-    shell:"""
-        if [ {params.filter} == "True" ]; then
-            find_max(){{
-              filename=$(basename -- "$1")
-              extension="${{1##*.}}"
-              if [ "${{2}}" == "ont" ] || [ "${{2}}" == "clr" ]; then
-                if [ "${{extension}}" == "gz" ]; then
-                  zgrep -v "#" $1 | cut -f 6 | awk '$1 > 0 && $1 < 200 {{print}}' | sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -nr -k2,2 -k1,1 -t $'\t' | head -n1 |  awk '{{print $1}}'
-                else
-                  grep -v "#" $1 | cut -f 6 | awk '$1 > 0 && $1 < 200 {{print}}' | sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -nr -k2,2 -k1,1 -t $'\t' | head -n1 |  awk '{{print $1}}'
-                fi
-              elif [ "${{2}}" == "ccs" ]; then
-                if [ "${{extension}}" == "gz" ]; then
-                  zgrep -v "#" $1 | cut -f 6 | awk '$1 > 0 && $1 < 60 {{print}}' | sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -nr -k2,2 -k1,1 -t $'\t' | head -n1 |  awk '{{print $1}}'
-                else
-                  grep -v "#" $1 | cut -f 6 | awk '$1 > 0 && $1 < 60 {{print}}' | sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -nr -k2,2 -k1,1 -t $'\t' | head -n1 |  awk '{{print $1}}'
-                fi
-              else
-                echo -e "Unknown technology ${{2}}"
-              fi
-
-            }}
-
-            filsn () {{
-            filename=$(basename -- "$1")
-            extension="${{1##*.}}"
-            if [[ -z ${{2:-}} ]];then
-                min_qulaity=0
-            else
-              min_qulaity=$2
-             fi
-            if [ "${{extension}}" == "gz" ]; then
-                zgrep -v "#" $1 |  cut -f 6  | awk -v min=$min_qulaity '$1 > min && $1 < 900 {{print}}'| sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -b -k2V -k1V | head -n1 | awk '{{print $1}}'
-              else
-                grep -v "#" $1 |  cut -f 6  | awk -v min=$min_qulaity '$1 > min && $1 < 900 {{print}}'| sort -n | uniq -c | awk '{{print $2,"\t",$1}}' | sort -b -k2V -k1V | head -n1 | awk '{{print $1}}'
-            fi
-            }}
-
-            filecount=( {input} )
-            count=${{#filecount[@]}}
-            if [ "$count" -ge 2 ]; then
-                vcfcat {input} | vcfstreamsort  > {params.temp_chr}\
-                && first_max=$(find_max {params.temp_chr} {params.read_type})\
-                && threshold=$(filsn {params.temp_chr} $first_max)\
-                && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} | awk '/^#/ {{ print }} !/^#/ {{ if ($4 != $5 ) {{ print }} }}' > {output}
-            else
-                if $(head -n 1000 {input} | grep -q -v "#") ; then
-                    vcfcat {input}  | vcfstreamsort > {params.temp_chr}\
-                    && first_max=$(find_max {params.temp_chr} {params.read_type})\
-                    && threshold=$(filsn {params.temp_chr} $first_max)\
-                    && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} | awk '/^#/ {{ print }} !/^#/ {{ if ($4 != $5 ) {{ print }} }}' > {output}
-                else
-                    cp {input} {output}
-                fi
-            fi
-
-
-
-
-        elif [ {params.filter} == "False" ]; then
-            vcfcat {input} | awk '/^#/ {{ print }} !/^#/ {{ if ($4 != $5 ) {{ print }} }}' | vcfstreamsort | awk '/^#/ {{ print }} !/^#/ {{ if ($4 != $5 ) {{ print }} }}' > {output}
-        else
-            >&2 echo "Unknown option {params.filter}"
-            exit 1
-        fi
+if config['gvcf_snv']:
+    ## TODO: This function will raise an error if there is missing gvcf, missing gvcf results from calling varaint in alt contigs where there are no variants this no gVCF, solution is to check if the vcf file is empty then just copy it with gVCF name.
+    # if $(head -n 1000 {input} | grep -q -v "#") ; then
+    #     vcfcat {input}  | vcfstreamsort > {params.temp_chr}\
+    #     && first_max=$(find_max {params.temp_chr} {params.read_type})\
+    #     && threshold=$(filsn {params.temp_chr} $first_max)\
+    #     && awk -v threshold=$threshold '/^#/{{print}} !/^#/{{if ( $6 >= threshold ) {{print $0}}}}' {params.temp_chr} | awk '/^#/ {{ print }} !/^#/ {{ if ($4 != $5 ) {{ print }} }}' > {output}
+    # else
+    #     cp {input} {output}
+    # fi
+    rule concatChromosome:
         """
+        Concat split chromosomes regions in case of gVCF file is required.
+        """
+        input:
+            vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
+            gvcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.gvcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
+        output:
+            vcf = temp(data_dir + "/snp/{aligner}/data.{chr}.vcf"),
+            gvcf = temp(data_dir + "/snp/{aligner}/data.{chr}.gvcf")
+        message: "Concat variant split per Chromosome"
+        params:
+            tmp_dir=config["tmp_directory"],
+        conda: VARIANT_ENV
+        benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
+        shell:"""
+        if [[ ! -z "{params.tmp_dir}" ]]; then
+            bcftools concat {input.vcf} | bcftools sort -T {params.tmp_dir} > {output.vcf} &&\
+            bcftools concat {input.gvcf} | bcftools sort -T {params.tmp_dir} > {output.gvcf}
+        else
+            bcftools concat {input.vcf} | bcftools sort  > {output.vcf} &&\
+            bcftools concat {input.gvcf} | bcftools sort > {output.gvcf}
+        fi
+            """
+else:
+    rule concatChromosome:
+        """
+        Concat split chromosomes regions
+        """
+        input:
+            vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/chr.split.{chr}_{region}/merge_output.vcf.gz", aligner=wildcards.aligner, chr=wildcards.chr, region=list(range(0,len(chr_range[wildcards.chr]) - 1))),
+        output:
+            vcf = temp(data_dir + "/snp/{aligner}/data.{chr}.vcf")
+        message: "Concat variant split per Chromosome"
+        params:
+            tmp_dir=config["tmp_directory"],
+        conda: VARIANT_ENV
+        benchmark: data_dir + "/benchmark/snp/{aligner}/{chr}.benchmark.txt"
+        shell:"""
+         if [[ ! -z "{params.tmp_dir}" ]]; then
+            bcftools concat {input.vcf} | bcftools sort  -T {params.tmp_dir} > {output.vcf} 
+         else
+             bcftools concat {input.vcf} | bcftools sort  > {output.vcf} 
+         fi
+            """
+
 
 #### UPDATE HEADER #######
 ##########################
@@ -198,24 +230,6 @@ rule updateHeader:
         sed 's/ID=PS,Number=1,Type=Integer,Descri/ID=PS,Number=1,Type=String,Descri/' {input} > {output}
         """
 
-#### BGZIP UPDATED FILE #######
-###############################
-
-# TODO:  The are a better way just by using {sample}.vcf as input , but debug needed cause it conflict with other rules. beside it conflict with rule bgzip_file:
-
-# rule bgzip_vcf:
-#     """
-#     bgzip phased file
-#     """
-#     input: "{sample}/data_update_header.vcf"
-#     output: "{sample}/data_update_header.vcf.gz"
-#     message: "bgzip the phased file"
-#     threads: config['bgzip_threads']
-#     shell:"""
-#         bgzip -c -@ {threads} {input} > {output}
-#         """
-
-
 
 #### INDEXING VCF FILE ########
 ###############################
@@ -226,18 +240,31 @@ rule vcfIndex:
     """
     input: data_dir + "/{sample}.vcf.gz"
     output: data_dir + "/{sample}.vcf.gz.tbi"
-    message: "Indexing phacsed vcf file"
-    conda: PRINCESS_ENV
+    message: "Indexing vcf file {input}"
+    conda: VARIANT_ENV
     shell:"""
         tabix -p vcf {input}
         """
+
+rule gvcfIndex:
+    """
+    Index VCF file.
+    """
+    input: data_dir + "/{sample}.gvcf.gz"
+    output: data_dir + "/{sample}.gvcf.gz.tbi"
+    message: "Indexing vcf file {input}"
+    conda: VARIANT_ENV
+    shell:"""
+        tabix -p vcf {input}
+        """
+
 
 #### MERGING PHASED VCF FILE WITH PARENTAL SNPs ########
 ########################################################
 
 rule mergeParentalSNPs:
     """
-    If the user wanted to update identifed SNVs this will be the first rule in sequence,
+    If the user wanted to update identified SNVs this will be the first rule in sequence,
     Input: phased SNVs after updating header using update_header the bgzip and index it using
     bgzip_vcf and vcf_index respectively.
     """
@@ -249,7 +276,7 @@ rule mergeParentalSNPs:
     output: data_dir + "/phased/{aligner}/data_paternal_maternal.vcf.gz"
     message: data_dir + "/merging vcf from samplepaternal and maternal respectively"
     benchmark: data_dir + "/benchmark/snp/{aligner}/merge_parental.benchmark.txt"
-    conda: PRINCESS_ENV
+    conda: VARIANT_ENV
     shell:"""
         bcftools merge {input.sample_snps} {input.paternal_snps} {input.maternal_snps} | bgzip > {output}
         """
@@ -270,6 +297,7 @@ rule updateSNPs:
         phased_stat = data_dir + "/statistics/phased/phasing_stat.txt",
         block_tsv = data_dir + "/statistics/phased/blocks.tsv",
     benchmark: data_dir + "/benchmark/snp/{aligner}/update_snps.benchmark.txt"
+    conda: READ_STAT_ENV
     shell:"""
         mkdir -p statistics/phased  &&
         python {params.update_script} -i {input} -u {output.updated_vcf} -o {params.block_tsv} -s {params.phased_stat}
@@ -278,16 +306,58 @@ rule updateSNPs:
 
 #### CONCAT SNPs ########
 #########################
-rule concactSNPs:
+
+if config['gvcf_snv']:
+    rule concatSNPs:
+        """
+        Rule to concat the identifed SNPs this will only be called by the user
+        in case if he wanted to have only SNPs
+        """
+        input:
+            vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list),
+            gvcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.gvcf", aligner=wildcards.aligner, chr=chr_list),
+        output:
+            vcf = data_dir + "/snp/{aligner}/data.vcf",
+            gvcf = data_dir + "/snp/{aligner}/data.gvcf",
+        message: "Concat SNP files"
+        benchmark: data_dir + "/benchmark/snp/{aligner}/concat_snp.txt"
+        params:
+            sample_name = SAMPLE_NAME,
+        conda: VARIANT_ENV
+        shell:"""
+            echo "{params.sample_name}" > sample_name.txt && vcfcat {input.vcf} | vcfstreamsort | bcftools reheader --samples sample_name.txt -o {output.vcf} &&\
+            vcfcat {input.gvcf} | vcfstreamsort | bcftools reheader --samples sample_name.txt -o {output.gvcf}
+            """
+else:
+    rule concatSNPs:
+        """
+        Rule to concat the identified SNPs this will only be called by the user
+        in case if he wanted to have only SNPs and indels and no gVCF required.
+        """
+        input:
+            vcf = lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list),
+        output:
+            vcf = data_dir + "/snp/{aligner}/data.vcf"
+        message: "Concat SNP files"
+        benchmark: data_dir + "/benchmark/snp/{aligner}/concat_snp.txt"
+        params:
+            sample_name = SAMPLE_NAME,
+        conda: VARIANT_ENV
+        shell:"""
+            echo "{params.sample_name}" > sample_name.txt && vcfcat {input.vcf} | vcfstreamsort | bcftools reheader --samples sample_name.txt -o {output.vcf}
+            """
+
+# #### Bgzip gVCF #########
+# #########################
+
+rule bgzipgVCFFile:
     """
-    Rule to concat the identifed SNPs this will only be called by the user
-    in case if he wanted to have only SNPs
+    General rule to bgzip gVCF files
     """
-    input: lambda wildcards: expand(data_dir + "/snp/{aligner}/data.{chr}.vcf", aligner=wildcards.aligner, chr=chr_list),
-    output: data_dir + "/snp/{aligner}/data.vcf"
-    message: "Concat SNP files"
-    benchmark: data_dir + "/benchmark/snp/{aligner}/concat_snp.vcf"
-    conda: PRINCESS_ENV
+    input:data_dir + "/{name}.gvcf"
+    output:data_dir + "/{name}.gvcf.gz"
+    threads: config['bgzip_threads']
+    conda: VARIANT_ENV
     shell:"""
-        vcfcat {input} | vcfstreamsort > {output}
+        bgzip -c -@ {threads} {input} > {output}
         """

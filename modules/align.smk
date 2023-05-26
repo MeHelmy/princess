@@ -33,18 +33,23 @@ rule minimap2:
         h = minimap2_read_type,
         md = "--MD",
         x = x_param,
-        # rg = "@RG\\tSM:SAMPLE\\tID:LONG", shuld be used like -R {params.rg}
+        sample_name = SAMPLE_NAME,
+        # rg = "@RG\\tSM:SAMPLE\\tID:LONG", should be used like -R {params.rg}
+        minimap_other_tags = config['minimap_other_tags'],
     log:
         data_dir + "/align/minimap/{sample}.log"
     message:
-        "Running minimap2 , sample is: {wildcards.sample}"
+        "Running minimap2 , sample is: {wildcards.sample} in rule {rule}"
     threads: config['aligner_threads']
     benchmark: data_dir + "/benchmark/align/{sample}.minimap.benchmark.txt"
-    conda: PRINCESS_ENV
+    conda: MINIMAP2_ENV
     shell:"""
-            minimap2  {params.x} -Y -R "@RG\\tID:hg2" "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" | samtools sort -@ {threads} - > "{output.dataout}"
-            """
-
+    if [[ ! -z "{params.minimap_other_tags}" ]]; then
+        minimap2 -Y -R '@RG\\tSM:{params.sample_name}\\tID:{params.sample_name}' {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}" "{params.minimap_other_tags}"  2>{log} | samtools sort -@ {threads} - > "{output.dataout}" 2>>{log}
+    else
+        minimap2 -Y -R '@RG\\tSM:{params.sample_name}\\tID:{params.sample_name}' {params.x} "{params.reference}"  "{input.datain}" {params.h} "{params.md}" -t "{threads}"  2>{log} | samtools sort -@ {threads} - > "{output.dataout}" 2>>{log}
+    fi
+    """
 #### NGMLR ####
 ###############
 
@@ -97,7 +102,7 @@ rule indexBam:
         temp(data_dir + "/{sample}.bam.bai")
     benchmark: data_dir + "/benchmark/align/{sample}.index.benchmark.txt"
     message: "Indexing {input}"
-    conda: PRINCESS_ENV
+    conda: MINIMAP2_ENV
     shell:
         "samtools index {input}"
 
@@ -115,7 +120,7 @@ rule mergeAlign:
     benchmark: data_dir + "/benchmark/align/{aligner}.merging.benchmark.txt"
     log:
         data_dir + "/align/{aligner}/merge.log"
-    conda: PRINCESS_ENV
+    conda: MINIMAP2_ENV
     threads: config['aligner_threads']
     shell:"""
         samtools merge -@ {threads} {output} {input.bams} > {log} 2>&1
@@ -136,7 +141,7 @@ rule addRG:
 
 
 
-#### CONVER BAM FILE TO TAB ####
+#### CONVERT BAM FILE TO TAB ####
 ################################
 
 rule bam2tab:
