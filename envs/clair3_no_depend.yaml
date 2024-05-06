@@ -5,4 +5,4 @@ channels:
   - defaults
   - anaconda
 dependencies:
-  - clair3=0.1.11
+  - clair3=1.0.3 #0.1.11

@@ -28,7 +28,7 @@ samtools_threads: 5
 # Aligner
 #########
 aligner: "minimap" # minimap or ngmlr
-aligner_threads: 3
+aligner_threads: 10
 #minimap_other_tags: ""
 minimap_other_tags: "-y"
 #########
