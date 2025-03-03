@@ -15,7 +15,7 @@ delete_samples: ""
 
 # Information about reference
 ###############################
-reference: "/users/sedlazec/ccdg_tech/reference/GRCh38-2.1.0/genome.fa"
+reference: "/reference/GRCh38-2.1.0/genome.fa"
 chrs: []
 
 
